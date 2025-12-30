@@ -18,6 +18,8 @@ PROJECTS=(
     Win8Lock
     Win8Corner
     battery
+    switcher
+    switchgui
 )
 
 # ================================

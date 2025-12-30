@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/home/bharat/Documents/martian/Win8/win/build/switchgui",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QMLMETA_LIB -DQT_QMLMODELS_LIB -DQT_QMLWORKERSCRIPT_LIB -DQT_QML_LIB -DQT_QUICKCONTROLS2_LIB -DQT_QUICK_LIB -I/home/bharat/Documents/martian/Win8/win/build/switchgui/window-monitor_autogen/include -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtQmlMeta -isystem /usr/include/qt6/QtQmlModels -isystem /usr/include/qt6/QtQmlWorkerScript -isystem /usr/include/qt6/QtOpenGL -isystem /usr/include/qt6/QtQuickControls2 -O3 -DNDEBUG -std=gnu++20 -Wall -Wextra -Wpedantic -mno-direct-extern-access -o CMakeFiles/window-monitor.dir/window-monitor_autogen/mocs_compilation.cpp.o -c /home/bharat/Documents/martian/Win8/win/build/switchgui/window-monitor_autogen/mocs_compilation.cpp",
+  "file": "/home/bharat/Documents/martian/Win8/win/build/switchgui/window-monitor_autogen/mocs_compilation.cpp",
+  "output": "/home/bharat/Documents/martian/Win8/win/build/switchgui/CMakeFiles/window-monitor.dir/window-monitor_autogen/mocs_compilation.cpp.o"
+},
+{
+  "directory": "/home/bharat/Documents/martian/Win8/win/build/switchgui",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QMLMETA_LIB -DQT_QMLMODELS_LIB -DQT_QMLWORKERSCRIPT_LIB -DQT_QML_LIB -DQT_QUICKCONTROLS2_LIB -DQT_QUICK_LIB -I/home/bharat/Documents/martian/Win8/win/build/switchgui/window-monitor_autogen/include -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtQmlMeta -isystem /usr/include/qt6/QtQmlModels -isystem /usr/include/qt6/QtQmlWorkerScript -isystem /usr/include/qt6/QtOpenGL -isystem /usr/include/qt6/QtQuickControls2 -O3 -DNDEBUG -std=gnu++20 -Wall -Wextra -Wpedantic -mno-direct-extern-access -o CMakeFiles/window-monitor.dir/main.cpp.o -c /home/bharat/Documents/martian/Win8/win/switchgui/main.cpp",
+  "file": "/home/bharat/Documents/martian/Win8/win/switchgui/main.cpp",
+  "output": "/home/bharat/Documents/martian/Win8/win/build/switchgui/CMakeFiles/window-monitor.dir/main.cpp.o"
+},
+{
+  "directory": "/home/bharat/Documents/martian/Win8/win/build/switchgui",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QMLMETA_LIB -DQT_QMLMODELS_LIB -DQT_QMLWORKERSCRIPT_LIB -DQT_QML_LIB -DQT_QUICKCONTROLS2_LIB -DQT_QUICK_LIB -I/home/bharat/Documents/martian/Win8/win/build/switchgui/window-monitor_autogen/include -isystem /usr/include/qt6/QtCore -isystem /usr/include/qt6 -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtQmlMeta -isystem /usr/include/qt6/QtQmlModels -isystem /usr/include/qt6/QtQmlWorkerScript -isystem /usr/include/qt6/QtOpenGL -isystem /usr/include/qt6/QtQuickControls2 -O3 -DNDEBUG -std=gnu++20 -Wall -Wextra -Wpedantic -mno-direct-extern-access -o CMakeFiles/window-monitor.dir/window-monitor_autogen/EWIEGA46WW/qrc_resources.cpp.o -c /home/bharat/Documents/martian/Win8/win/build/switchgui/window-monitor_autogen/EWIEGA46WW/qrc_resources.cpp",
+  "file": "/home/bharat/Documents/martian/Win8/win/build/switchgui/window-monitor_autogen/EWIEGA46WW/qrc_resources.cpp",
+  "output": "/home/bharat/Documents/martian/Win8/win/build/switchgui/CMakeFiles/window-monitor.dir/window-monitor_autogen/EWIEGA46WW/qrc_resources.cpp.o"
+}
+]
