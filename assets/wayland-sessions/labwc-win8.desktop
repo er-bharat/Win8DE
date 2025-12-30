@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=labwc-win8
+Comment=A wayland stacking compositor
+Exec=labwc -C /home/bharat/.config/labwc3
+Icon=labwc
+Type=Application
+DesktopNames=labwc;wlroots

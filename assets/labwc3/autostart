@@ -1,0 +1,57 @@
+# Example autostart file for a labwc LXQt session
+# Applications started here won't be closed by `lxqt-leave --logout` and settings can be lost
+# Preferred place for starting wayland-only applications
+
+# Set background color or image (below the desktop):
+#swaybg -i /home/bharat/.config/hypr/wallpaper/n5tTVYg.jpeg  >/dev/null 2>&1 &
+Win8Wall &
+
+# Faster startup for GTK apps:
+dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY > /dev/null 2>&1 &
+
+# Hot corner
+Win8Corner &
+
+# win8Start
+Win8Start &
+
+# deskicons
+#FreeDesktopIcons &
+
+# Configure output directives such as mode, position, scale and transform.
+# Use wlr-randr to get your output names
+# Example ~/.config/kanshi/config below:
+#   profile {
+#     output HDMI-A-1 position 1366,0
+#     output eDP-1 position 0,0
+#   }
+# kanshi >/dev/null 2>&1 &
+# wdisplays can be used as well on the fly
+
+#
+# Note that in the context of idle system power management, it is *NOT* a good
+# idea to turn off displays by 'disabling outputs' for example by
+# `wlr-randr --output <whatever> --off` because this re-arranges views
+# (since a837fef). Instead use a wlr-output-power-management client such as
+# https://git.sr.ht/~leon_plickat/wlopm
+#
+# Suspending can be configured in LXQt power management settings
+# Screen locking can be configured in Session Settings
+# Turn off display(s) after 5 minutes:
+swayidle -w \
+           timeout 300 'Win8Lock' \
+           timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
+           before-sleep 'Win8Lock' &
+
+
+kdeconnect-indicator &
+
+Win8OSD-server &
+
+battery-daemon &
+
+/usr/bin/lxqt-policykit-agent &
+
+wlsunset -t 4000 -T 6500 -L 87.3 -l 23.6 &
+
+

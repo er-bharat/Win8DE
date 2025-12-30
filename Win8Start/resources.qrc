@@ -1,0 +1,19 @@
+<RCC>
+  <qresource prefix="/">
+    <file>main2.qml</file>
+    <file>icons/user.svg</file>
+    <file>icons/settings.svg</file>
+    <file>icons/power.svg</file>
+    <file>icons/emblem-system-symbolic.svg</file>
+    <file>icons/system-run.svg</file>
+    <file>icons/system-shutdown-symbolic.svg</file>
+    <file>icons/view-refresh-symbolic.svg</file>
+    <file>icons/system-log-out.svg</file>
+    <file>icons/power.svg</file>
+    <file>placeholder.svg</file>
+    <file>icons/peoplew.png</file>
+    <file>go-down-skip.svg</file>
+    <file>go-up-skip.svg</file>
+    <file>background.jpg</file>
+  </qresource>
+</RCC>

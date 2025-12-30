@@ -1,0 +1,19 @@
+#themerc-override. Content in this file overrides or adds settings to all themes.
+
+# Shadows (needs activation in rc.xml)
+window.active.shadow.size: 70
+window.inactive.shadow.size: 60
+window.active.shadow.color: #00000080
+window.inactive.shadow.color: #00000080
+
+# Overlay color when window touches screen borders
+snapping.overlay.edge.bg.color: #9ba3a150
+
+# window titlebar background
+window.active.title.bg.color: #3e4dd6
+window.inactive.title.bg.color: #96a1ff
+
+# window titlebar text
+window.active.label.text.color: #ffffff
+window.inactive.label.text.color: #000000
+window.label.text.justify: center

@@ -1,0 +1,17 @@
+[SddmGreeterTheme]
+Name=Win10login
+Description=Win10 clone
+Author=Bharat kumar
+Copyright=(c) 2025, Bharat kumar
+License=CC-BY-SA
+Type=sddm-theme
+Version=0.1
+Website=https://github.com/sddm/sddm
+Screenshot=hexos.png
+MainScript=main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations
+Email=bharatupsccse@gmail.com
+Theme-Id=Win10Login
+Theme-API=2.0
+QtVersion=6

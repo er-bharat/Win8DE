@@ -1,0 +1,80 @@
+## LXQt labwc environment file
+## Example ~/.config/labwc/environment file.
+## Uncomment lines starting with one '#' to suit your needs.
+##
+
+##
+## Cursor theme and size are set by LXQt and can be configured in"Appearance → Cursor".
+## No need to edit.
+# XCURSOR_THEME=
+# XCURSOR_SIZE=
+
+## Disable hardware cursors. Most users wouldn't want to do this, but if you
+## are experiencing issues with disappearing cursors, this might fix it.
+## Autodetected at startup on virtualized hardware which use systemd.
+
+# WLR_NO_HARDWARE_CURSORS=1
+
+##
+## In order for labwc to work out of the box, the environment variable below
+## is set to "1" by default to avoid menus with incorrect offset and blank
+## windows with Java applications such as JetBrains and Intellij Idea.
+## See https://github.com/swaywm/sway/issues/595
+## labwc will not override any already set environment variables, so if you for
+## some reason do not want this, then just set it to "0" (not recommended, but
+## mentioned here for completeness).
+##
+
+# _JAVA_AWT_WM_NONREPARENTING=0
+
+##
+## This allows xdg-desktop-portal-wlr to function (e.g. for screen-recording).
+## It is automatically set to "LXQt:labwc:wlroots" by LXQt though, so it is only
+## included here for completeness. Again, labwc will not over-write an
+## already set environment variable, so if you need it set to something else,
+## then uncomment and adjust.
+##
+
+ XDG_CURRENT_DESKTOP=LXQt:labwc:wlroots
+
+##
+## This causes a virtual output to be created automatically whenever there
+## are no outputs around. This helps for cases like wayvnc so there is always
+## an output available to connect to. The name can be chosen freely but there
+## must be no duplicate output names, for this reason using VIRTUAL-x or a
+## physical connector name like HDMI-A-1 is not recommended as wlroots may
+## want to create outputs with those names later on which would then fail.
+##
+## Using an output name that starts with NOOP- has the additional benefit
+## that wayvnc will detect it being a virtual output and allow clients to
+## resize the output to match the client resolution.
+##
+
+# LABWC_FALLBACK_OUTPUT=NOOP-fallback
+
+##
+## LXQt tries to set keyboard layout the first login, edit here to change and/or complete.
+## Use the XKB_DEFAULT_LAYOUT variable to set the keyboard layout. For example
+## to start with Swedish keyboard layout set it to 'se'. If you are unsure what
+## your country code is, refer to the layout section of:
+## /usr/share/X11/xkb/rules/evdev.lst
+##
+## Multiple keyboard layouts can be set by comma-separating the country codes.
+## If a variant layout is needed, the syntax is layout(variant)
+## If multiple layouts are used, specify the toggle-keybind using
+## XKB_DEFAULT_OPTIONS as show below. For possible values refer to the
+## refer to the option section of:
+## /usr/share/X11/xkb/rules/evdev.lst
+##
+## Compose Key: For possible values refer to the "Compose key - Position of Compose key"
+## in: /usr/share/X11/xkb/rules/evdev.lst
+##
+## For further details, see xkeyboard-config(7)
+##
+
+# XKB_DEFAULT_LAYOUT=se
+# XKB_DEFAULT_LAYOUT=se,us(intl)
+# XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle
+# XKB_DEFAULT_OPTIONS=grp:shift_caps_toggle,compose:ralt
+
+QT_QPA_PLATFORMTHEME=qt6ct

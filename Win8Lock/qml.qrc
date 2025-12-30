@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>New/main.qml</file>
+        <file>New/VirtualKeyboard.qml</file>
+        <file>New/peoplew.png</file>
+        <file>New/vkey.svg</file>
+    </qresource>
+</RCC>
