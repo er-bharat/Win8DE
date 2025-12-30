@@ -246,9 +246,20 @@ ApplicationWindow {
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
 
+            Timer {
+                id: refreshTimer
+                interval: 500
+                repeat: false
+                running: false
+                onTriggered: {
+                    AppLauncher.refreshApplications()
+                }
+            }
+
             onClicked: {
                 allapparea.y = 0
                 appGridView.focus = true
+                refreshTimer.start()
                 // searchField.focus = true
             }
         }
@@ -400,12 +411,14 @@ ApplicationWindow {
                                     if (event.modifiers & Qt.ControlModifier) {
                                         allapparea.y = 0
                                         appGridView.focus = true
+                                        refreshTimer.start()
                                         event.accepted = true
                                     }
                                     break
                                 case Qt.Key_PageDown:
                                     allapparea.y = 0
                                     appGridView.focus = true
+                                    refreshTimer.start()
                                     break
                                 case Qt.Key_Return:
                                 case Qt.Key_Enter:
@@ -1099,6 +1112,24 @@ ApplicationWindow {
                                     appGridView.focus = false
                                     container.focus = true
                                     break
+
+                                case Qt.Key_Menu:
+                                case Qt.Key_F10:
+                                    if (event.modifiers & Qt.ShiftModifier) {
+                                        var item = appGridView.currentItem
+                                        if (item) {
+                                            item.openActionMenu()
+                                        }
+                                        event.accepted = true
+                                    }
+                                    break
+                                case Qt.Key_F5:
+                                    if (AppLauncher) {
+                                        AppLauncher.refreshApplications()
+                                        event.accepted = true
+                                    }
+                                    break
+
                             }
                 }
 
@@ -1119,6 +1150,14 @@ ApplicationWindow {
                     width: appGridView.cellWidth - 100
                     spacing: 0
                     clip: false
+
+                    property string desktopFilePath: model.desktopFilePath
+
+                    function openActionMenu() {
+                        AppLauncher.loadDesktopActions(desktopFilePath, actionModel)
+                        actionMenu.popup(appRect)
+                    }
+
 
                     // 🔹 opacity logic
                     opacity: appGridView.launchingIndex === -1
@@ -1221,12 +1260,44 @@ ApplicationWindow {
                                 elide: Text.ElideRight
                             }
                         }
+                        Menu {
+                            id: actionMenu
+                            MenuItem {
+                                text: "Open"
+                                icon.name: "system-run"   // or application-x-executable
+
+                                onTriggered: {
+                                    appGridView.launchingIndex = index
+                                    AppLauncher.launchApp(model.command)
+                                    launchAnimAllapp.start()
+                                }
+                            }
+
+                            MenuSeparator { }
+                            Repeater {
+                                model: actionModel
+
+                                MenuItem {
+                                    text: model.name
+                                    icon.source: model.icon
+
+                                    onTriggered: {
+                                        launching = true
+                                        // appGridView.launchingIndex = index
+                                        AppLauncher.launchApp(model.command)
+                                        launchAnimAllapp.start()
+                                    }
+                                }
+                            }
+                        }
+
 
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
                             onEntered: appRect.hovered = true
                             onExited: appRect.hovered = false
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
 
                             property bool dragStarted: false
                             property point pressPos
@@ -1250,13 +1321,28 @@ ApplicationWindow {
 
                             onReleased: dragStarted = false
 
-                            onClicked: {
-                                appGridView.launchingIndex = index
-                                launching = true
-                                apptext.opacity = 0
-                                AppLauncher.launchApp(model.command)
-                                launchAnimAllapp.start()
+                            onClicked: function(mouse) {
+
+                                // LEFT CLICK → normal launch
+                                if (mouse.button === Qt.LeftButton) {
+                                    appGridView.launchingIndex = index
+                                    launching = true
+                                    apptext.opacity = 0
+                                    AppLauncher.launchApp(model.command)
+                                    launchAnimAllapp.start()
+                                }
+
+                                // RIGHT CLICK → open desktop actions menu
+                                if (mouse.button === Qt.RightButton) {
+                                    AppLauncher.loadDesktopActions(
+                                        model.desktopFilePath,
+                                        actionModel
+                                    )
+
+                                    actionMenu.popup()
+                                }
                             }
+
                         }
                     }
 
