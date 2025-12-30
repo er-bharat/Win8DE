@@ -83,7 +83,7 @@ find your compositors config loading command and make a .desktop file like this 
 `Exec=labwc -C /home/user1/.config/labwc3`\
 `Icon=labwc`\
 `Type=Application`\
-`DesktopNames=labwc;wlroots`\
+`DesktopNames=labwc;wlroots`
 
 and **paste** it in `/usr/share/wayland-sessions/`
 

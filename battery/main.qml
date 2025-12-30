@@ -17,62 +17,72 @@ ApplicationWindow {
         anchors.margins: 10
         color: "black"
 
-        Column {
+        Rectangle {
             anchors.fill: parent
-            anchors.margins: 0
-            spacing: 10
+            color: "black"
 
-            Rectangle {
+            Row {
                 anchors.fill: parent
-                color: "black"
 
-                Row {
-                    anchors.fill: parent
+                Rectangle {
+                    width: parent.width / 2
+                    height: parent.height
+                    color: "transparent"
 
-                    Rectangle {
-                        width: parent.width / 2
-                        height: width - 50
-                        color: "transparent"
-
-                        Image {
-                            id: logo
-                            anchors.margins: 30
-                            anchors.fill: parent
-                            // width: parent.width / 2
-                            // height: width-50
-                            source: "" // Will be set dynamically
-                            fillMode: Image.PreserveAspectFit
-                        }
-                    }
-
-                    Rectangle {
-
-                        width: parent.width / 2
-                        height: parent.height - dismissBtn.height
-                        color: "transparent"
-                        Text {
-                            id: message
-                            anchors.centerIn: parent
-                            text: ""
-                            color: "white"
-                            font.pixelSize: 50
-                            wrapMode: Text.Wrap
-                            // width: parent.width - logo.width - 10  // Subtract spacing
-                        }
+                    Image {
+                        id: logo
+                        anchors.margins: 30
+                        anchors.fill: parent
+                        // width: parent.width / 2
+                        // height: width-50
+                        source: "" // Will be set dynamically
+                        fillMode: Image.PreserveAspectFit
                     }
                 }
-            }
 
-            Button {
-                id: dismissBtn
-                // visible: popup.persistent
-                text: "Dismiss"
-                onClicked: {
-                    popup.visible = false;
-                    popup.persistent = false;
+                Rectangle {
+
+                    width: parent.width / 2
+                    height: parent.height
+                    color: "transparent"
+
+                    Column {
+                        anchors.centerIn: parent
+                        // width: parent.width
+                        // height: parent.height
+                        spacing: 6
+                        Text {
+                            id: percent
+                            text: Battery.percentage + "%"
+                            color: "white"
+                            font.pixelSize: 50
+                            font.weight: Font.Black
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+                        Text {
+                            id: message
+                            text: ""
+                            color: "white"
+                            font.pixelSize: 20
+                            wrapMode: Text.Wrap
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+                    }
+
                 }
             }
         }
+
+        Button {
+            id: dismissBtn
+            visible: popup.persistent
+            text: "Dismiss"
+            onClicked: {
+                popup.visible = false;
+                popup.persistent = false;
+            }
+        }
+
     }
 
     Timer {
@@ -102,7 +112,7 @@ ApplicationWindow {
         target: Battery
 
         function onLowBattery() {
-            popup.showNotification(Battery.percentage + "%", "electricx.svg", true);
+            popup.showNotification("Battey Low", "electricx.svg", true);
         }
 
         function onFullBattery() {
@@ -111,9 +121,9 @@ ApplicationWindow {
 
         function onAcChanged() {
             if (Battery.acConnected) {
-                popup.showNotification(Battery.percentage + "%", "electric.svg");
+                popup.showNotification("Charging", "electric.svg");
             } else {
-                popup.showNotification(Battery.percentage + "%", "electricx.svg");
+                popup.showNotification("Discharging", "electricx.svg");
             }
         }
     }
