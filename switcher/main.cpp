@@ -69,7 +69,7 @@ QString find_icon_for_app(const std::string &app_id) {
                       "/usr/local/share/applications",
                       QDir::homePath() + "/.local/share/applications"};
 
-  QString fallbackIcon; // store partial match if no exact found
+  QString fallbackIcon;
 
   for (const QString &dir : dirs) {
     QDirIterator it(dir, QStringList() << "*.desktop", QDir::Files);
@@ -82,6 +82,19 @@ QString find_icon_for_app(const std::string &app_id) {
       QString wmclass = desktop.value("StartupWMClass").toString();
       QString exec = desktop.value("Exec").toString();
       QString icon = desktop.value("Icon").toString();
+      QString onlyShowIn = desktop.value("OnlyShowIn").toString();
+
+      // ---- NEW: skip desktop handlers / services ----
+      bool isDesktopHandler =
+          exec.contains("--desktop", Qt::CaseInsensitive) ||
+          name.compare("Desktop", Qt::CaseInsensitive) == 0 ||
+          !onlyShowIn.isEmpty();
+
+      if (isDesktopHandler) {
+        desktop.endGroup();
+        continue;
+      }
+      // ----------------------------------------------
 
       // exact match first
       if (name.compare(shortName, Qt::CaseInsensitive) == 0 ||
@@ -91,7 +104,7 @@ QString find_icon_for_app(const std::string &app_id) {
         return icon;
       }
 
-      // store partial match if needed
+      // partial match fallback
       if ((name.contains(shortName, Qt::CaseInsensitive) ||
            wmclass.contains(shortName, Qt::CaseInsensitive) ||
            exec.contains(shortName, Qt::CaseInsensitive)) &&
@@ -103,11 +116,9 @@ QString find_icon_for_app(const std::string &app_id) {
     }
   }
 
-  // fallback to partial match if exact not found
   if (!fallbackIcon.isEmpty())
     return fallbackIcon;
 
-  // fallback: shortName itself
   return shortName;
 }
 
