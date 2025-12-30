@@ -1,3 +1,42 @@
-build/
-.cache/
-.directory/
+# Build directories
+/build
+/build-*
+/.directory
+
+# Qt
+*.pro.user
+*.qmlc
+*.jsc
+.moc/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Ninja
+.ninja_*
+.ninja_log
+.ninja_deps
+
+# Object files
+*.o
+*.obj
+
+# Executables
+*.exe
+*.out
+*.AppImage
+
+# Logs
+*.log
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+
+# OS junk
+.DS_Store
+Thumbs.db
