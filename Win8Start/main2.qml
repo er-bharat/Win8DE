@@ -1052,14 +1052,31 @@ ApplicationWindow {
                             // Alphanumeric key handling: focus searchField
                             let text = event.text
                             if (text.length === 1 && /[a-zA-Z0-9]/.test(text)) {
+
+                                // If searchField wasn't focused, this is the first keypress
+                                let firstKey = !searchField.activeFocus
+
                                 searchField.forceActiveFocus()
+
+                                if (firstKey) {
+                                    searchField.text = ""      // clear once
+                                }
+
                                 searchField.text += text
                                 searchField.cursorPosition = searchField.text.length
                                 event.accepted = true
                                 return
                             }
 
+
                             switch (event.key) {
+                                case Qt.Key_Backspace:
+                                    // Empty search field
+                                    searchField.text = ""
+                                    searchField.cursorPosition = 0
+                                    event.accepted = true
+                                    break
+
                                 case Qt.Key_Down:
                                     // Move down 1 item but never exceed last index
                                     currentIndex = Math.min(currentIndex + 1, count - 1)
