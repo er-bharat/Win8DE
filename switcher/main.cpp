@@ -156,6 +156,33 @@ void write_all_windows_to_ini() {
 
   settings.sync();
 }
+void activate_only(const QString &title) {
+  zwlr_foreign_toplevel_handle_v1 *targetHandle = nullptr;
+
+  // First pass: find target
+  for (auto &[handle, win] : windows) {
+    if (QString::fromStdString(win.title) == title) {
+      targetHandle = handle;
+      break;
+    }
+  }
+
+  if (!targetHandle)
+    return;
+
+  // Second pass: minimize everything else
+  for (auto &[handle, win] : windows) {
+    if (handle != targetHandle) {
+      zwlr_foreign_toplevel_handle_v1_set_minimized(handle);
+    }
+  }
+
+  // Activate target
+  if (seat)
+    zwlr_foreign_toplevel_handle_v1_activate(targetHandle, seat);
+
+  wl_display_flush(display);
+}
 
 // ------------------------------------------------------------
 // Command handling
@@ -177,9 +204,10 @@ void handle_command(const QString &cmd) {
     return;
 
   // Map of allowed actions
-  enum class Action { Activate, Minimize, Maximize, Unmaximize, Close };
+  enum class Action { Activate, Minimize, Maximize, Unmaximize, Close, ActivateOnly };
   static const std::map<QString, Action> actionMap = {
       {"activate", Action::Activate},
+      {"activate-only", Action::ActivateOnly},
       {"minimize", Action::Minimize},
       {"maximize", Action::Maximize},
       {"unmaximize", Action::Unmaximize},
@@ -218,6 +246,10 @@ void handle_command(const QString &cmd) {
   case Action::Close:
     zwlr_foreign_toplevel_handle_v1_close(targetHandle);
     break;
+  case Action::ActivateOnly:
+    activate_only(title);
+    return; // already flushed
+
   }
 
   wl_display_flush(display);
@@ -328,6 +360,7 @@ int main(int argc, char **argv) {
           << "  " << argv[0] << " [COMMAND] [WINDOW_TITLE]\n\n"
           << "Commands:\n"
           << "  --activate TITLE     Activate the window with the given TITLE\n"
+          << "  --activate-only TITLE  Activate TITLE and minimize all other windows\n"
           << "  --minimize TITLE     Minimize the window with the given TITLE\n"
           << "  --maximize TITLE     Maximize the window with the given TITLE\n"
           << "  --unmaximize TITLE   Unmaximize the window with the given "
@@ -356,6 +389,8 @@ int main(int argc, char **argv) {
       cmd = "unmaximize " + title;
     if (flag == "--close")
       cmd = "close " + title;
+    if (flag == "--activate-only")
+      cmd = "activate-only " + title;
 
     if (!cmd.isEmpty()) {
       QLocalSocket sock;

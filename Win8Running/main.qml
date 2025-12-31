@@ -75,15 +75,15 @@ ApplicationWindow {
                         hoverEnabled: true
                         acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-                        onEntered: hoverTimer.start()
-                        onExited: hoverTimer.stop()
+                        // onEntered: hoverTimer.start()
+                        // onExited: hoverTimer.stop()
 
                         onClicked: function (mouse) {
                             if (mouse.button === Qt.LeftButton) {
                                 windowModel.activate(title);
-                                WindowController.hide();
+                                // WindowController.hide();
                             } else if (mouse.button === Qt.RightButton) {
-                                windowModel.activate(title);
+                                windowModel.activateOnly(title);
                             }
                         }
                     }
@@ -149,7 +149,7 @@ ApplicationWindow {
 
                     Timer {
                         id: hoverTimer
-                        interval: 50
+                        interval: 150
                         repeat: false
                         onTriggered: windowModel.activate(title)
                     }

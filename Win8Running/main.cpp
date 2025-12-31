@@ -91,6 +91,7 @@ public:
     }
 
     Q_INVOKABLE void activate(const QString &title)   { run({"--activate", title}); }
+    Q_INVOKABLE void activateOnly(const QString &title){ run({"--activate-only", title}); }
     Q_INVOKABLE void minimize(const QString &title)   { run({"--minimize", title}); }
     Q_INVOKABLE void maximize(const QString &title)   { run({"--maximize", title}); }
     Q_INVOKABLE void unmaximize(const QString &title) { run({"--unmaximize", title}); }
