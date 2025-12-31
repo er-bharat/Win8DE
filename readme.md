@@ -1,4 +1,4 @@
-# Windows 8 revival on Linux.
+<img width="1920" height="1080" alt="lock" src="https://github.com/user-attachments/assets/0453185e-f363-4518-b450-fd582c9bae2e" /># Windows 8 revival on Linux.
 
 If you are one of who enjoyed the windows 8 and miss its fluid animations but have since moved to linux.
 And cant go back to windows 8, because all apps are non functional there. And if you can bear that you
@@ -9,12 +9,12 @@ it dosent provide charms menu because i always thought its useless.
 
 ## Screenshots
 
-![start](/home/bharat/Documents/martian/Win8/win/screenshots/start.png)
-![allapp](/home/bharat/Documents/martian/Win8/win/screenshots/allapp.png)
-![runningapp](/home/bharat/Documents/martian/Win8/win/screenshots/runningapps.png)
-![lock](/home/bharat/Documents/martian/Win8/win/screenshots/lock.png)
-![lockdialog](/home/bharat/Documents/martian/Win8/win/screenshots/lock-dialog.png)
-![lockdvkey](/home/bharat/Documents/martian/Win8/win/screenshots/lock-vkey.png)
+<img width="1920" height="1080" alt="start" src="https://github.com/user-attachments/assets/e8bc7877-165f-4028-bbfa-ae693064b118" />
+<img width="1920" height="1080" alt="allapp" src="https://github.com/user-attachments/assets/77e450a7-e43e-43dd-9a3f-789c0eb6e52b" />
+<img width="1920" height="1080" alt="lock-dialog" src="https://github.com/user-attachments/assets/60b711ff-a947-4ac4-bb07-df368f9fa13a" />
+<img width="1920" height="1080" alt="lock-vkey" src="https://github.com/user-attachments/assets/10dbb0b8-5839-4c96-ba56-726a760ad5c2" />
+<img width="1920" height="1080" alt="runningapps" src="https://github.com/user-attachments/assets/83ae8072-b697-4b3e-a1f9-b220b58e0424" />
+<img width="1920" height="1080" alt="lock" src="https://github.com/user-attachments/assets/2afc4a9e-00e1-4baf-aea3-be8021915862" />
 
 ## Features
 ---
