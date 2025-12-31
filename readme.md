@@ -1,4 +1,4 @@
-<img width="1920" height="1080" alt="lock" src="https://github.com/user-attachments/assets/0453185e-f363-4518-b450-fd582c9bae2e" /># Windows 8 revival on Linux.
+# Windows 8 revival on Linux.
 
 If you are one of who enjoyed the windows 8 and miss its fluid animations but have since moved to linux.
 And cant go back to windows 8, because all apps are non functional there. And if you can bear that you
