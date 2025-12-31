@@ -19,7 +19,7 @@ PROJECTS=(
     Win8Corner
     battery
     switcher
-    switchgui
+    Win8Running
 )
 
 # ================================

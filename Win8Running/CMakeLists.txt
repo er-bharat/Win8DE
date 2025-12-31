@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(WaylandWindowMonitorUI)
+project(Win8Running)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,7 +28,7 @@ find_package(LayerShellQt REQUIRED)
 # ----------------------------
 # Executable
 # ----------------------------
-add_executable(window-monitor
+add_executable(Win8Running
     main.cpp
     resources.qrc
 )
@@ -36,7 +36,7 @@ add_executable(window-monitor
 # ----------------------------
 # Link Qt libraries
 # ----------------------------
-target_link_libraries(window-monitor
+target_link_libraries(Win8Running
     Qt6::Core
     Qt6::Gui
     Qt6::Qml
@@ -48,7 +48,7 @@ target_link_libraries(window-monitor
 # ----------------------------
 # Compile flags
 # ----------------------------
-target_compile_options(window-monitor PRIVATE
+target_compile_options(Win8Running PRIVATE
     -Wall
     -Wextra
     -Wpedantic
@@ -58,7 +58,7 @@ target_compile_options(window-monitor PRIVATE
 # Copy compile_commands.json for ccls
 # ----------------------------
 add_custom_command(
-    TARGET window-monitor POST_BUILD
+    TARGET Win8Running POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_BINARY_DIR}/compile_commands.json
         ${CMAKE_SOURCE_DIR}/compile_commands.json
