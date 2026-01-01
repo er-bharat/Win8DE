@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # Find Qt packages including Widgets
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 QuickLayouts)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 QuickLayouts DBus)
 
 # LayerShellQt (for Linux panel behavior)
 find_package(LayerShellQt REQUIRED)
@@ -30,6 +30,7 @@ target_link_libraries(Win8Start
             Qt6::Quick
             Qt6::QuickControls2
             Qt6::QuickLayouts
+            Qt6::DBus
             Qt6::Concurrent
             LayerShellQt::Interface
 )

@@ -38,6 +38,10 @@
 #include <QtConcurrent>
 #include <functional>
 
+#include <QDBusInterface>
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QVariantMap>
 // ----------------------------
 // Simple Async helper
 // ----------------------------
@@ -497,16 +501,20 @@ public:
   }
   Q_INVOKABLE void loadDesktopActions(const QString &desktopFile,
                                       DesktopActionModel *model) {
-      if (!model)
-          return;
+    if (!model)
+      return;
 
-      m_async.run(
-          [=]() { return parseDesktopActions(desktopFile); },
-                  [=](QList<DesktopAction> actions) {
-                      model->setActions(actions);
-                  });
+    QPointer<DesktopActionModel> safeModel(model);
 
-                                    }
+    m_async.run(
+      [this, desktopFile]() {
+        return parseDesktopActions(desktopFile);
+      },
+      [safeModel](QList<DesktopAction> actions) {
+        if (safeModel)
+          safeModel->setActions(actions);
+      });}
+
 
 
   // ------------------------------------
@@ -852,7 +860,7 @@ public:
           ret.size = "medium";
           return ret;
         },
-        [=](Tile t) {
+        [this](Tile t) {
           // back on main thread: insert tile and persist
           beginInsertRows(QModelIndex(), m_tiles.count(), m_tiles.count());
           m_tiles.append(t);
@@ -891,7 +899,7 @@ public:
   // ---------- Async load/save ----------
   void loadAsync() {
     m_async.run(
-        [=]() -> QList<Tile> {
+        [this]() -> QList<Tile> {
           QList<Tile> tiles;
           QFile file(jsonPath());
           if (!file.exists())
@@ -930,7 +938,8 @@ public:
     // Use a new Async object so we don't tie to constness of this
     Async *localAsync = new Async(const_cast<TileModel *>(this));
     localAsync->run(
-        [=]() -> bool {
+      [this, tiles]() -> bool {
+
           QJsonArray arr;
           for (const auto &t : tiles) {
             QJsonObject o;
@@ -997,6 +1006,8 @@ public:
 // ----------------------------
 // Battery (unchanged)
 // ----------------------------
+
+
 class Battery : public QObject {
   Q_OBJECT
   Q_PROPERTY(int percent READ percent NOTIFY percentChanged)
@@ -1006,14 +1017,33 @@ class Battery : public QObject {
 
 public:
   explicit Battery(QObject *parent = nullptr)
-      : QObject(parent), m_percent(-1), m_charging(false), m_present(false),
-        m_status("Unknown") {
-    probeBatteryPaths();
-    refresh();
+  : QObject(parent),
+  m_percent(-1),
+  m_present(false),
+  m_charging(false),
+  m_status("Unknown") {
 
-    QTimer *t = new QTimer(this);
-    connect(t, &QTimer::timeout, this, &Battery::refresh);
-    t->start(10000); // refresh every 10 seconds
+    m_iface = new QDBusInterface(
+      "org.freedesktop.UPower",
+      "/org/freedesktop/UPower/devices/DisplayDevice",
+      "org.freedesktop.UPower.Device",
+      QDBusConnection::systemBus(),
+                                 this);
+
+    if (!m_iface->isValid())
+      return;
+
+    // Initial read (one-time)
+    readAllProperties();
+
+    // Listen for DBus updates
+    QDBusConnection::systemBus().connect(
+      "org.freedesktop.UPower",
+      "/org/freedesktop/UPower/devices/DisplayDevice",
+      "org.freedesktop.DBus.Properties",
+      "PropertiesChanged",
+      this,
+      SLOT(onPropertiesChanged(QString, QVariantMap, QStringList)));
   }
 
   int percent() const { return m_percent; }
@@ -1021,110 +1051,97 @@ public:
   bool present() const { return m_present; }
   bool charging() const { return m_charging; }
 
-  Q_INVOKABLE void refresh() {
-    if (m_batteryPaths.isEmpty())
-      probeBatteryPaths();
-
-    int sumPercent = 0;
-    int count = 0;
-    bool anyPresent = false;
-    bool anyCharging = false;
-    bool anyDischarging = false;
-    bool anyFull = false;
-
-    for (const auto &p : m_batteryPaths) {
-      int cap = readIntFromFile(p + "/capacity", -1);
-      QString st = readStringFromFile(p + "/status").trimmed().toLower();
-      int pres =
-          readIntFromFile(p + "/present", 1); // assume present if missing
-
-      if (cap >= 0) {
-        sumPercent += cap;
-        count++;
-      }
-
-      if (pres == 1)
-        anyPresent = true;
-
-      if (st == "charging")
-        anyCharging = true;
-      else if (st == "discharging")
-        anyDischarging = true;
-      else if (st == "full")
-        anyFull = true;
-    }
-
-    int newPercent = (count > 0) ? (sumPercent / count) : -1;
-
-    QString newStatus = "Unknown";
-    if (anyCharging && !anyFull)
-      newStatus = "Charging";
-    else if (anyFull)
-      newStatus = "Full";
-    else if (anyDischarging)
-      newStatus = "Discharging";
-
-    updateProperty(m_percent, newPercent, &Battery::percentChanged);
-    updateProperty(m_status, newStatus, &Battery::statusChanged);
-    updateProperty(m_present, anyPresent, &Battery::presentChanged);
-    updateProperty(m_charging, anyCharging && !anyFull,
-                   &Battery::chargingChanged);
-  }
-
 signals:
   void percentChanged();
   void statusChanged();
   void presentChanged();
   void chargingChanged();
 
+private slots:
+  void onPropertiesChanged(const QString &iface,
+                           const QVariantMap &changed,
+                           const QStringList &) {
+    if (iface != "org.freedesktop.UPower.Device")
+      return;
+
+    if (changed.contains("Percentage")) {
+      updateProperty(
+        m_percent,
+        int(changed.value("Percentage").toDouble() + 0.5),
+                     &Battery::percentChanged);
+    }
+
+    if (changed.contains("IsPresent")) {
+      updateProperty(
+        m_present,
+        changed.value("IsPresent").toBool(),
+                     &Battery::presentChanged);
+    }
+
+    if (changed.contains("State")) {
+      updateState(changed.value("State").toUInt());
+    }
+                           }
+
 private:
   int m_percent;
-  bool m_charging;
   bool m_present;
+  bool m_charging;
   QString m_status;
-  QStringList m_batteryPaths;
+
+  QDBusInterface *m_iface;
+
+  void readAllProperties() {
+    updateProperty(m_percent,
+                   reflect<int>("Percentage"),
+                   &Battery::percentChanged);
+
+    updateProperty(m_present,
+                   reflect<bool>("IsPresent"),
+                   &Battery::presentChanged);
+
+    updateState(reflect<uint>("State"));
+  }
+
+  template<typename T>
+  T reflect(const char *prop) {
+    return m_iface->property(prop).value<T>();
+  }
+
+  void updateState(uint state) {
+    QString newStatus = "Unknown";
+    bool newCharging = false;
+
+    // UPower states:
+    // 1 = Charging
+    // 2 = Discharging
+    // 4 = Fully charged
+    switch (state) {
+      case 1:
+        newStatus = "Charging";
+        newCharging = true;
+        break;
+      case 2:
+        newStatus = "Discharging";
+        break;
+      case 4:
+        newStatus = "Full";
+        break;
+    }
+
+    updateProperty(m_status, newStatus, &Battery::statusChanged);
+    updateProperty(m_charging, newCharging, &Battery::chargingChanged);
+  }
 
   template <typename T>
   void updateProperty(T &property, const T &value, void (Battery::*signal)()) {
     if (property != value) {
       property = value;
-      emit(this->*signal)();
-    }
-  }
-
-  static int readIntFromFile(const QString &path, int fallback = -1) {
-    QFile f(path);
-    if (!f.open(QFile::ReadOnly | QFile::Text))
-      return fallback;
-    bool ok = false;
-    int val = QString(f.readAll().trimmed()).toInt(&ok);
-    return ok ? val : fallback;
-  }
-
-  static QString readStringFromFile(const QString &path) {
-    QFile f(path);
-    if (!f.open(QFile::ReadOnly | QFile::Text))
-      return QString();
-    return QString::fromUtf8(f.readAll());
-  }
-
-  void probeBatteryPaths() {
-    m_batteryPaths.clear();
-    QDir d("/sys/class/power_supply");
-    if (!d.exists())
-      return;
-
-    for (const QFileInfo &fi :
-         d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-      QString typeFile = fi.absoluteFilePath() + "/type";
-      QString typeStr = readStringFromFile(typeFile).trimmed();
-      if (typeStr.toLower().contains("battery") ||
-          fi.fileName().toLower().startsWith("bat")) {
-        m_batteryPaths << fi.absoluteFilePath();
-      }
+      emit (this->*signal)();
     }
   }
 };
+
 
 class WindowController : public QObject {
   Q_OBJECT
