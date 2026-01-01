@@ -95,8 +95,6 @@ int main(int argc, char* argv[])
     layerWindow->setMargins({200, 0, 0, 0});
 
     window->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    window->setWidth(200);
-    window->setHeight(400);
 
     // Start hidden
     window->hide();

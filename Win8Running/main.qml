@@ -86,6 +86,11 @@ ApplicationWindow {
                                 windowModel.activateOnly(title);
                             }
                         }
+
+                        onDoubleClicked: {
+                            windowModel.activate(title);
+                            WindowController.hide();
+                        }
                     }
 
                     // Top-right control buttons

@@ -12,6 +12,9 @@ dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY > /dev/null
 # Hot corner
 Win8Corner &
 
+# running apps
+list-windows &
+
 # win8Start
 Win8Start &
 

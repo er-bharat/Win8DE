@@ -4,8 +4,8 @@ import QtQuick.Window
 Window {
     id: root
     visible: false
-    width: 1900
-    height: 1240
+    width: 80
+    height: 320
     color: "transparent"
 
     flags: Qt.FramelessWindowHint
