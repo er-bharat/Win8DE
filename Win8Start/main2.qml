@@ -441,26 +441,39 @@ ApplicationWindow {
 
             MouseArea {
                 anchors.fill: parent
-                acceptedButtons: Qt.NoButton    // ensures it doesn’t block clicks or drags
+                acceptedButtons: Qt.NoButton
                 hoverEnabled: false
                 propagateComposedEvents: true
 
                 onWheel: function(wheel) {
-                    // desired movement
-                    let delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
+                    let isTouchpad = wheel.pixelDelta.x !== 0 || wheel.pixelDelta.y !== 0
 
-                    // apply with brakes (clamping)
-                    let newX = container.contentX + delta
+                    // Touchpad vertical UP → go to top
+                    if (isTouchpad && wheel.pixelDelta.y < 0) {
+                        allapparea.y = 0
+                    }
 
-                    // clamp to prevent overscroll
-                    newX = Math.max(0, Math.min(newX, container.contentWidth - container.width))
+                    // Horizontal scrolling
+                    let delta = 0
+                    if (isTouchpad) {
+                        // Touchpad: horizontal ONLY
+                        delta = -wheel.pixelDelta.x
+                    } else {
+                        // Mouse wheel: original behavior
+                        delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
+                    }
 
-                    container.contentX = newX
-
-                    wheel.accepted = true
+                    if (delta !== 0) {
+                        let newX = container.contentX + delta
+                        newX = Math.max(0,
+                                        Math.min(newX,
+                                                 container.contentWidth - container.width))
+                        container.contentX = newX
+                        wheel.accepted = true
+                    }
                 }
-
             }
+
 
             DropArea {
                 anchors.fill: parent
@@ -727,7 +740,7 @@ ApplicationWindow {
                             tile.hovered = false
                         }
 
-                        onPressed: {
+                        onPressed: function(mouse) {
                             if (mouse.button === Qt.LeftButton)
                                 dragging = true
 
@@ -748,7 +761,7 @@ ApplicationWindow {
                             tileModel.updateTilePosition(model.index, tile.x, tile.y)
                         }
 
-                        onClicked: {
+                        onClicked: function(mouse){
                             if (mouse.button === Qt.LeftButton) {
                                 tile.launch()
                             } else if (mouse.button === Qt.RightButton) {
@@ -1034,14 +1047,34 @@ ApplicationWindow {
                     propagateComposedEvents: true
 
                     onWheel: function(wheel) {
-                        let delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
-                        let newX = appGridView.contentX + delta
-                        newX = Math.max(0,
-                                        Math.min(newX, appGridView.contentWidth - appGridView.width))
-                        appGridView.contentX = newX
-                        wheel.accepted = true
+                        let isTouchpad = wheel.pixelDelta.x !== 0 || wheel.pixelDelta.y !== 0
+
+                        // Touchpad vertical DOWN → go to bottom
+                        if (isTouchpad && wheel.pixelDelta.y > 0) {
+                            allapparea.y = allapparea.height
+                        }
+
+                        // Horizontal scrolling
+                        let delta = 0
+                        if (isTouchpad) {
+                            // Touchpad: horizontal ONLY
+                            delta = -wheel.pixelDelta.x
+                        } else {
+                            // Mouse wheel: original behavior
+                            delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
+                        }
+
+                        if (delta !== 0) {
+                            let newX = appGridView.contentX + delta
+                            newX = Math.max(0,
+                                            Math.min(newX,
+                                                     appGridView.contentWidth - appGridView.width))
+                            appGridView.contentX = newX
+                            wheel.accepted = true
+                        }
                     }
                 }
+
 
                 Keys.onPressed: function(event) {
                     let columns = Math.floor(width / cellWidth)
