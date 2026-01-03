@@ -22,6 +22,42 @@ if [ ! -d "$BIN_SRC" ]; then
     exit 1
 fi
 
+# ------------------------------------------------------------
+# Detect and stop running binaries
+# ------------------------------------------------------------
+
+echo
+echo "🛑 Detecting and stopping running binaries"
+
+RUNNING_BINS=()
+
+for bin in "$BIN_SRC"/*; do
+    if [ -f "$bin" ] && [ -x "$bin" ]; then
+        name="$(basename "$bin")"
+
+        if pgrep -x "$name" > /dev/null; then
+            echo "⚠️  $name is running → stopping"
+            RUNNING_BINS+=("$name")
+            pkill -TERM -x "$name"
+        fi
+    fi
+done
+
+# Allow graceful shutdown
+sleep 1
+
+# Force kill if needed
+for name in "${RUNNING_BINS[@]}"; do
+    if pgrep -x "$name" > /dev/null; then
+        echo "🔥 $name did not exit, killing"
+        pkill -KILL -x "$name"
+    fi
+done
+
+# ------------------------------------------------------------
+# Install binaries
+# ------------------------------------------------------------
+
 echo
 echo "📦 Installing binaries to $BIN_DST"
 
@@ -32,6 +68,10 @@ for bin in "$BIN_SRC"/*; do
         sudo install -v -m 0755 "$bin" "$BIN_DST/$name"
     fi
 done
+
+# ------------------------------------------------------------
+# Install labwc3 assets
+# ------------------------------------------------------------
 
 echo
 echo "🎨 Installing labwc3 assets to $CONFIG_DST"
@@ -44,6 +84,10 @@ fi
 mkdir -p "$CONFIG_DST"
 cp -a "$ASSET_SRC/." "$CONFIG_DST/"
 
+# ------------------------------------------------------------
+# Install SDDM theme
+# ------------------------------------------------------------
+
 echo
 echo "🖥️  Installing SDDM theme Win8Login"
 
@@ -54,6 +98,10 @@ fi
 
 sudo mkdir -p "$SDDM_DST"
 sudo cp -a "$SDDM_SRC/." "$SDDM_DST/"
+
+# ------------------------------------------------------------
+# Install Wayland session
+# ------------------------------------------------------------
 
 echo
 echo "🧩 Installing Wayland session labwc-win8"
@@ -66,6 +114,22 @@ fi
 sudo install -v -m 0644 \
     "$WAYLAND_SESSION_SRC" \
     "$WAYLAND_SESSION_DST"
+
+# ------------------------------------------------------------
+# Restart previously running binaries
+# ------------------------------------------------------------
+
+echo
+echo "🚀 Restarting previously running binaries"
+
+for name in "${RUNNING_BINS[@]}"; do
+    if command -v "$name" >/dev/null; then
+        echo "▶️  Restarting $name"
+        "$name" &
+    else
+        echo "❌ Cannot restart $name (not found in PATH)"
+    fi
+done
 
 echo
 echo "✅ Build + installation complete"

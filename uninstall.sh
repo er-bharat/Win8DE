@@ -15,6 +15,42 @@ if [ ! -d "$BIN_SRC" ]; then
     exit 1
 fi
 
+# ------------------------------------------------------------
+# Detect and stop running binaries
+# ------------------------------------------------------------
+
+echo "🛑 Detecting and stopping running binaries"
+
+RUNNING_BINS=()
+
+for bin in "$BIN_SRC"/*; do
+    if [ -f "$bin" ] && [ -x "$bin" ]; then
+        name="$(basename "$bin")"
+
+        if pgrep -x "$name" > /dev/null; then
+            echo "⚠️  $name is running → stopping"
+            RUNNING_BINS+=("$name")
+            pkill -TERM -x "$name"
+        fi
+    fi
+done
+
+# Allow graceful shutdown
+sleep 1
+
+# Force kill if needed
+for name in "${RUNNING_BINS[@]}"; do
+    if pgrep -x "$name" > /dev/null; then
+        echo "🔥 $name did not exit, killing"
+        pkill -KILL -x "$name"
+    fi
+done
+
+# ------------------------------------------------------------
+# Uninstall binaries
+# ------------------------------------------------------------
+
+echo
 echo "🧹 Uninstalling binaries from $BIN_DST"
 
 for bin in "$BIN_SRC"/*; do
@@ -29,6 +65,10 @@ for bin in "$BIN_SRC"/*; do
     fi
 done
 
+# ------------------------------------------------------------
+# Remove labwc3 config
+# ------------------------------------------------------------
+
 echo
 echo "🧹 Removing labwc3 config"
 
@@ -38,6 +78,10 @@ else
     echo "⚠️  $CONFIG_DST not found"
 fi
 
+# ------------------------------------------------------------
+# Remove SDDM theme
+# ------------------------------------------------------------
+
 echo
 echo "🧹 Removing SDDM theme Win8Login"
 
@@ -46,6 +90,10 @@ if [ -d "$SDDM_DST" ]; then
 else
     echo "⚠️  SDDM theme not found"
 fi
+
+# ------------------------------------------------------------
+# Remove Wayland session
+# ------------------------------------------------------------
 
 echo
 echo "🧹 Removing Wayland session labwc-win8"
