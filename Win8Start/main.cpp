@@ -728,8 +728,8 @@ struct Tile {
   QString icon;
   QString desktopFile;
   QString command;
-  double x;
-  double y;
+  double modelX;
+  double modelY;
   QString size;
 };
 
@@ -737,21 +737,26 @@ Q_DECLARE_METATYPE(Tile)
 
 class TileModel : public QAbstractListModel {
   Q_OBJECT
+
 public:
   enum Roles {
     NameRole = Qt::UserRole + 1,
     IconRole,
     DesktopFileRole,
     CommandRole,
-    XRole,
-    YRole,
+    ModelXRole,
+    ModelYRole,
     SizeRole
   };
 
-  TileModel(QObject *parent = nullptr) : QAbstractListModel(parent) {
-    // Load asynchronously on construction
+  TileModel(QObject *parent = nullptr)
+  : QAbstractListModel(parent) {
     loadAsync();
   }
+
+  // -------------------------------------------------
+  // Model basics
+  // -------------------------------------------------
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     Q_UNUSED(parent);
@@ -760,165 +765,170 @@ public:
 
   QVariant data(const QModelIndex &index, int role) const override {
     if (!index.isValid() || index.row() >= m_tiles.count())
-      return QVariant();
+      return {};
+
     const Tile &t = m_tiles[index.row()];
     switch (role) {
-    case NameRole:
-      return t.name;
-    case IconRole:
-      return t.icon;
-    case DesktopFileRole:
-      return t.desktopFile;
-    case CommandRole:
-      return t.command;
-    case XRole:
-      return t.x;
-    case YRole:
-      return t.y;
-    case SizeRole:
-      return t.size;
-    default:
-      return QVariant();
+      case NameRole:        return t.name;
+      case IconRole:        return t.icon;
+      case DesktopFileRole: return t.desktopFile;
+      case CommandRole:     return t.command;
+      case ModelXRole:      return t.modelX;
+      case ModelYRole:      return t.modelY;
+      case SizeRole:        return t.size;
+      default:              return {};
     }
   }
 
   QHash<int, QByteArray> roleNames() const override {
-    return {{NameRole, "name"},
-            {IconRole, "icon"},
-            {DesktopFileRole, "desktopFile"},
-            {CommandRole, "command"},
-            {XRole, "x"},
-            {YRole, "y"},
-            {SizeRole, "size"}};
+    return {
+      {NameRole,        "name"},
+      {IconRole,        "icon"},
+      {DesktopFileRole, "desktopFile"},
+      {CommandRole,     "command"},
+      {ModelXRole,      "modelX"},
+      {ModelYRole,      "modelY"},
+      {SizeRole,        "size"}
+    };
   }
 
-  // ---------- Async add tile ----------
-  Q_INVOKABLE void addTileFromDesktopFile(const QString &filePath, double dropX,
-                                          double dropY) {
-    // parse on background thread
-    m_async.run(
-        [=]() -> Tile {
-          Tile t;
-          QFile f(filePath);
-          if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            t.name = QFileInfo(filePath).baseName();
-            t.icon.clear();
-            t.desktopFile = filePath;
-            t.command.clear();
-            t.x = dropX;
-            t.y = dropY;
-            t.size = "medium";
-            return t;
-          }
-
-          QString name, icon, command;
-          bool inMainSection = false;
-
-          while (!f.atEnd()) {
-            QString line = f.readLine().trimmed();
-
-            if (line.startsWith('[')) {
-              // Only process the main [Desktop Entry] section
-              if (line == "[Desktop Entry]") {
-                inMainSection = true;
-                continue;
-              } else if (line.startsWith("[Desktop Action")) {
-                // Stop reading once subactions begin
-                break;
-              } else {
-                inMainSection = false;
-                continue;
-              }
-            }
-
-            if (!inMainSection)
-              continue;
-
-            if (line.startsWith("Name="))
-              name = line.mid(5).trimmed();
-            else if (line.startsWith("Icon="))
-              icon = line.mid(5).trimmed();
-            else if (line.startsWith("Exec=")) {
-              command = line.mid(5).trimmed();
-              // Remove placeholders like %U, %F, %u etc.
-              command.replace(QRegularExpression("%[UuFfDdNnVvMm]"), "");
-            }
-          }
-
-          f.close();
-
-          if (name.isEmpty())
-            name = QFileInfo(filePath).baseName();
-
-          Tile ret;
-          ret.name = name;
-          ret.icon = icon;
-          ret.desktopFile = filePath;
-          ret.command = command;
-          ret.x = dropX;
-          ret.y = dropY;
-          ret.size = "medium";
-          return ret;
-        },
-        [this](Tile t) {
-          // back on main thread: insert tile and persist
-          beginInsertRows(QModelIndex(), m_tiles.count(), m_tiles.count());
-          m_tiles.append(t);
-          endInsertRows();
-          saveAsync();
-          qDebug() << "✅ Added tile (async):" << t.name << "→" << t.command;
-        });
-  }
+  // -------------------------------------------------
+  // Tile manipulation (QML invokable)
+  // -------------------------------------------------
 
   Q_INVOKABLE void updateTilePosition(int index, double x, double y) {
     if (index < 0 || index >= m_tiles.count())
       return;
-    m_tiles[index].x = x;
-    m_tiles[index].y = y;
-    emit dataChanged(this->index(index), this->index(index), {XRole, YRole});
+
+    m_tiles[index].modelX = x;
+    m_tiles[index].modelY = y;
+
+    emit dataChanged(
+      this->index(index),
+                     this->index(index),
+                     { ModelXRole, ModelYRole }
+    );
+
     saveAsync();
   }
 
   Q_INVOKABLE void resizeTile(int index, const QString &size) {
     if (index < 0 || index >= m_tiles.count())
       return;
+
     m_tiles[index].size = size;
-    emit dataChanged(this->index(index), this->index(index), {SizeRole});
+    emit dataChanged(
+      this->index(index),
+                     this->index(index),
+                     { SizeRole }
+    );
+
     saveAsync();
   }
 
   Q_INVOKABLE void removeTile(int index) {
     if (index < 0 || index >= m_tiles.count())
       return;
+
     beginRemoveRows(QModelIndex(), index, index);
     m_tiles.removeAt(index);
     endRemoveRows();
+
     saveAsync();
   }
 
-  // ---------- Async load/save ----------
-  void loadAsync() {
+  // -------------------------------------------------
+  // Async add from .desktop file
+  // -------------------------------------------------
+
+  Q_INVOKABLE void addTileFromDesktopFile(
+    const QString &filePath,
+    double dropX,
+    double dropY) {
+
     m_async.run(
+      [=]() -> Tile {
+        Tile t;
+        t.desktopFile = filePath;
+        t.modelX = dropX;
+        t.modelY = dropY;
+        t.size = "medium";
+
+        QFile f(filePath);
+        if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+          t.name = QFileInfo(filePath).baseName();
+          return t;
+        }
+
+        bool inMainSection = false;
+
+        while (!f.atEnd()) {
+          QString line = f.readLine().trimmed();
+
+          if (line.startsWith('[')) {
+            if (line == "[Desktop Entry]") {
+              inMainSection = true;
+            } else if (line.startsWith("[Desktop Action")) {
+              break;
+            } else {
+              inMainSection = false;
+            }
+            continue;
+          }
+
+          if (!inMainSection)
+            continue;
+
+          if (line.startsWith("Name="))
+            t.name = line.mid(5).trimmed();
+          else if (line.startsWith("Icon="))
+            t.icon = line.mid(5).trimmed();
+          else if (line.startsWith("Exec=")) {
+            t.command = line.mid(5).trimmed();
+            t.command.replace(
+              QRegularExpression("%[UuFfDdNnVvMm]"), "");
+          }
+        }
+
+        if (t.name.isEmpty())
+          t.name = QFileInfo(filePath).baseName();
+
+        return t;
+      },
+      [this](Tile t) {
+        beginInsertRows(QModelIndex(), m_tiles.count(), m_tiles.count());
+        m_tiles.append(t);
+        endInsertRows();
+
+        saveAsync();
+        qDebug() << "✅ Added tile:" << t.name;
+      }
+    );
+    }
+
+    // -------------------------------------------------
+    // Async load / save
+    // -------------------------------------------------
+
+    void loadAsync() {
+      m_async.run(
         [this]() -> QList<Tile> {
           QList<Tile> tiles;
           QFile file(jsonPath());
-          if (!file.exists())
-            return tiles;
           if (!file.open(QIODevice::ReadOnly))
             return tiles;
+
           QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-          file.close();
-          QJsonArray arr = doc.array();
-          for (auto v : arr) {
+          for (const auto &v : doc.array()) {
             QJsonObject o = v.toObject();
             Tile t;
-            t.name = o["name"].toString();
-            t.icon = o["icon"].toString();
+            t.name        = o["name"].toString();
+            t.icon        = o["icon"].toString();
             t.desktopFile = o["desktopFile"].toString();
-            t.command = o["command"].toString();
-            t.x = o["x"].toDouble();
-            t.y = o["y"].toDouble();
-            t.size = o["size"].toString("medium");
+            t.command     = o["command"].toString();
+            t.modelX      = o["modelX"].toDouble();
+            t.modelY      = o["modelY"].toDouble();
+            t.size        = o["size"].toString("medium");
             tiles.append(t);
           }
           return tiles;
@@ -927,58 +937,57 @@ public:
           beginResetModel();
           m_tiles = tiles;
           endResetModel();
-          qDebug() << "✅ TileModel loaded (async):" << m_tiles.size();
-        });
-  }
+          qDebug() << "✅ TileModel loaded:" << m_tiles.size();
+        }
+      );
+    }
 
-  void saveAsync() const {
-    // copy for thread-safety
-    QList<Tile> tiles = m_tiles;
+    void saveAsync() const {
+      QList<Tile> tiles = m_tiles;
+      Async *async = new Async(const_cast<TileModel *>(this));
 
-    // Use a new Async object so we don't tie to constness of this
-    Async *localAsync = new Async(const_cast<TileModel *>(this));
-    localAsync->run(
-      [this, tiles]() -> bool {
-
+      async->run(
+        [tiles, this]() -> bool {
           QJsonArray arr;
           for (const auto &t : tiles) {
             QJsonObject o;
-            o["name"] = t.name;
-            o["icon"] = t.icon;
+            o["name"]        = t.name;
+            o["icon"]        = t.icon;
             o["desktopFile"] = t.desktopFile;
-            o["command"] = t.command;
-            o["x"] = t.x;
-            o["y"] = t.y;
-            o["size"] = t.size;
+            o["command"]     = t.command;
+            o["modelX"]      = t.modelX;
+            o["modelY"]      = t.modelY;
+            o["size"]        = t.size;
             arr.append(o);
           }
+
           QFile file(jsonPath());
           QDir().mkpath(QFileInfo(file).absolutePath());
-          if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            file.write(QJsonDocument(arr).toJson(QJsonDocument::Indented));
-            file.close();
-            return true;
-          }
-          return false;
+          if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+            return false;
+
+          file.write(QJsonDocument(arr).toJson(QJsonDocument::Indented));
+          file.close();
+          return true;
         },
-        [=](bool ok) {
-          Q_UNUSED(ok);
-          // delete will be handled by parent (we set parent in constructor)
-        });
-  }
+        [](bool) {}
+      );
+    }
 
 private:
   QList<Tile> m_tiles;
   Async m_async;
 
   QString jsonPath() const {
-    return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) +
-           "/launcher_tiles8_1.json";
+    return QStandardPaths::writableLocation(
+      QStandardPaths::AppConfigLocation)
+    + "/launcher_tiles.json";
   }
 };
 
+
 // ----------------------------
-// PowerControl (unchanged)
+// PowerControl
 // ----------------------------
 class PowerControl : public QObject {
   Q_OBJECT

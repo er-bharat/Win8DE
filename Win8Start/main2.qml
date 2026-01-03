@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
-// import QtQuick.Layouts
+
+pragma ComponentBehavior: Bound
 
 ApplicationWindow {
 
@@ -9,19 +10,19 @@ ApplicationWindow {
     width: screen.width
     height: screen.height
     title: "Linux Start Menu Clone"
-    color: "#180052"
+    color: "#180052"  // background color in case no wallpaper
 
     Image {
         id: background
         anchors.fill: parent
-        source: startWallpaper
+        source: startWallpaper // choose from Win8Settings
         fillMode: Image.PreserveAspectCrop
     }
 
+    // area at bottom to hide the start screen on click
     MouseArea {
         anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
+        width: parent.width
         height: 100
         acceptedButtons: Qt.RightButton | Qt.LeftButton
 
@@ -498,11 +499,15 @@ ApplicationWindow {
                     id: tile
                     z: (launching || dragArea.dragging) ? 200 : 0
 
-                    property string appCommand: model.command
-
-
                     // --- Size handling ---
-                    property string size: model.size
+
+                    required property int index
+                    required property real modelX
+                    required property real modelY
+                    required property string name
+                    required property string icon
+                    required property string command
+                    required property string size
 
                     readonly property int smallSize:   container.halfGrid - 5
                     readonly property int mediumSize:  container.halfGrid * 2 - 5
@@ -522,14 +527,14 @@ ApplicationWindow {
                     : size === "xlarge"  ? xlargeSize
                     : mediumSize
 
-                    x: model.x
-                    y: model.y
+                    x: modelX
+                    y: modelY
 
                     property bool hovered: false
 
-                    color: dragArea.dragging || container.focusedIndex === model.index || hovered ? Win8Colors.TileHighlight : Win8Colors.Tile
+                    color: dragArea.dragging || container.focusedIndex === index || hovered ? Win8Colors.TileHighlight : Win8Colors.Tile
                     border.width: 1
-                    border.color: container.focusedIndex === model.index || hovered
+                    border.color: container.focusedIndex === index || hovered
                     ? "white"
                     : Qt.rgba(1,1,1,0.2)
 
@@ -540,7 +545,7 @@ ApplicationWindow {
 
                             tile.launching = true
                             container.anyTileLaunching = true
-                            AppLauncher.launchApp(tile.appCommand)
+                            AppLauncher.launchApp(tile.command)
                     }
 
 
@@ -598,14 +603,14 @@ ApplicationWindow {
                             NumberAnimation {
                                 target: zoomScale
                                 property: "xScale"
-                                to: screen.width / tile.width * 1.05
+                                to: mainwindow.width / tile.width * 1.05
                                 duration: 650
                                 easing.type: Easing.InOutQuad
                             }
                             NumberAnimation {
                                 target: zoomScale
                                 property: "yScale"
-                                to: screen.height / tile.height * 1.05
+                                to: mainwindow.height / tile.height * 1.05
                                 duration: 650
                                 easing.type: Easing.InOutQuad
                             }
@@ -613,7 +618,7 @@ ApplicationWindow {
                             NumberAnimation {
                                 target: zoomiconScale
                                 property: "xScale"
-                                to: (screen.height / tile.height) / (screen.width / tile.width)/2
+                                to: (mainwindow.height / tile.height) / (mainwindow.width / tile.width)/2
                                 duration: 350
                                 easing.type: Easing.InOutQuad
                             }
@@ -657,8 +662,8 @@ ApplicationWindow {
                                 container.anyTileLaunching = false
 
                                 // Reset tile position to its model position
-                                tile.x = model.x
-                                tile.y = model.y
+                                tile.x = x
+                                tile.y = y
 
                                 // Reset transforms
                                 zoomScale.xScale = 1
@@ -681,9 +686,9 @@ ApplicationWindow {
                         anchors.left: parent.left
                         anchors.bottom: parent.bottom
                         anchors.margins: 4
-                        text: model.name
+                        text: tile.name
                         color: "white"
-                        font.pointSize: size === "small" ? 1 : 12
+                        font.pointSize: tile.size === "small" ? 1 : 12
                         wrapMode: Text.Wrap
                         width: parent.width - 10
                         visible: !tile.launching
@@ -698,7 +703,7 @@ ApplicationWindow {
                         width: parent.height / 2
                         height: width
                         fillMode: Image.PreserveAspectFit
-                        source: AppLauncher.resolveIcon(model.icon)
+                        source: AppLauncher.resolveIcon(tile.icon)
                         sourceSize.width: 256
                         sourceSize.height: 256
                         // transforms
@@ -758,7 +763,7 @@ ApplicationWindow {
                             tile.x = snappedX
                             tile.y = snappedY
 
-                            tileModel.updateTilePosition(model.index, tile.x, tile.y)
+                            tileModel.updateTilePosition(tile.index, tile.x, tile.y)
                         }
 
                         onClicked: function(mouse){
@@ -775,12 +780,12 @@ ApplicationWindow {
                     //-----------------------------------------------------------
                     Menu {
                         id: contextMenu
-                        MenuItem { text: "Small";   onTriggered: tileModel.resizeTile(model.index, "small") }
-                        MenuItem { text: "Medium";  onTriggered: tileModel.resizeTile(model.index, "medium") }
-                        MenuItem { text: "Large";   onTriggered: tileModel.resizeTile(model.index, "large") }
-                        MenuItem { text: "XLarge";  onTriggered: tileModel.resizeTile(model.index, "xlarge") }
+                        MenuItem { text: "Small";   onTriggered: tileModel.resizeTile(tile.index, "small") }
+                        MenuItem { text: "Medium";  onTriggered: tileModel.resizeTile(tile.index, "medium") }
+                        MenuItem { text: "Large";   onTriggered: tileModel.resizeTile(tile.index, "large") }
+                        MenuItem { text: "XLarge";  onTriggered: tileModel.resizeTile(tile.index, "xlarge") }
                         MenuSeparator {}
-                        MenuItem { text: "Remove";  onTriggered: tileModel.removeTile(model.index) }
+                        MenuItem { text: "Remove";  onTriggered: tileModel.removeTile(tile.index) }
                     }
 
                     // --- APPEAR ANIMATION ---
@@ -800,7 +805,7 @@ ApplicationWindow {
                         PropertyAnimation {
                             target: tile
                             property: "x"
-                            from: container.width/4; to: model.x
+                            from: container.width/4; to: tile.modelX
                             duration: 500
                             easing.type: Easing.OutCubic
                         }
@@ -809,8 +814,8 @@ ApplicationWindow {
                             PropertyAnimation {
                                 target: tile
                                 property: "y"
-                                from: model.y
-                                to: model.y - 10
+                                from: tile.modelY
+                                to: tile.modelY - 10
                                 duration: 180
                                 easing.type: Easing.OutCubic
                             }
@@ -819,8 +824,8 @@ ApplicationWindow {
                             PropertyAnimation {
                                 target: tile
                                 property: "y"
-                                from: model.y - 10
-                                to: model.y + 10      // overshoot 30px down
+                                from: tile.modelY - 10
+                                to: tile.modelY + 10      // overshoot 30px down
                                 duration: 130
                                 easing.type: Easing.InCubic
                             }
@@ -829,8 +834,8 @@ ApplicationWindow {
                             PropertyAnimation {
                                 target: tile
                                 property: "y"
-                                from: model.y + 10
-                                to: model.y
+                                from: tile.modelY + 10
+                                to: tile.modelY
                                 duration: 180
                                 easing.type: Easing.OutCubic
                             }
@@ -967,7 +972,6 @@ ApplicationWindow {
 
                 Keys.onTabPressed: {
                     appGridView.forceActiveFocus()
-                    event.accepted = true
                 }
                 Keys.onPressed: function(event) {
                     switch (event.key) {
@@ -1197,12 +1201,17 @@ ApplicationWindow {
                 }
 
                 delegate: Column {
+                    id: apptilecol
                     width: appGridView.cellWidth - 100
                     spacing: 0
                     clip: false
 
-                    property string desktopFilePath: model.desktopFilePath
-
+                    // 🔑 REQUIRED MODEL ROLES (Qt 6)
+                    required property int index
+                    required property string name
+                    required property string icon
+                    required property string command
+                    required property string desktopFilePath
                     function openActionMenu() {
                         AppLauncher.loadDesktopActions(desktopFilePath, actionModel)
                         actionMenu.popup(appRect)
@@ -1226,7 +1235,7 @@ ApplicationWindow {
                     function launch() {
                         launching = true
                         apptext.opacity = 0
-                        AppLauncher.launchApp(model.command)
+                        AppLauncher.launchApp(command)
                         launchAnimAllapp.start()
                     }
 
@@ -1234,7 +1243,7 @@ ApplicationWindow {
                         id: appRect
                         width: parent.width - 10
                         height: 50
-                        color: (appGridView.currentIndex === index || hovered)
+                        color: (appGridView.currentIndex === apptilecol.index || hovered)
                         ? "#0078D7"
                         : "transparent"
 
@@ -1275,7 +1284,7 @@ ApplicationWindow {
                                 Image {
                                     anchors.centerIn: parent
                                     id: appIcon
-                                    source: icon
+                                    source: apptilecol.icon
                                     sourceSize.width: 256
                                     sourceSize.height: 256
                                     width: 32
@@ -1304,7 +1313,7 @@ ApplicationWindow {
                             Text {
                                 id: apptext
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: model.name
+                                text: apptilecol.name
                                 color: "white"
                                 font.pointSize: 16
                                 elide: Text.ElideRight
@@ -1317,8 +1326,8 @@ ApplicationWindow {
                                 icon.name: "system-run"   // or application-x-executable
 
                                 onTriggered: {
-                                    appGridView.launchingIndex = index
-                                    AppLauncher.launchApp(model.command)
+                                    appGridView.launchingIndex = apptilecol.index
+                                    AppLauncher.launchApp(apptilecol.command)
                                     launchAnimAllapp.start()
                                 }
                             }
@@ -1328,13 +1337,15 @@ ApplicationWindow {
                                 model: actionModel
 
                                 MenuItem {
-                                    text: model.name
-                                    icon.source: model.icon
+                                    required property string name
+                                    required property string command
+
+                                    text: name
 
                                     onTriggered: {
-                                        launching = true
+                                        apptilecol.launching = true
                                         // appGridView.launchingIndex = index
-                                        AppLauncher.launchApp(model.command)
+                                        AppLauncher.launchApp(command)
                                         launchAnimAllapp.start()
                                     }
                                 }
@@ -1364,7 +1375,7 @@ ApplicationWindow {
                                     if (Math.sqrt(dx*dx + dy*dy) > 10) {
                                         dragStarted = true
                                         AppLauncher.startSystemDrag(
-                                            model.desktopFilePath, appIcon)
+                                            apptilecol.desktopFilePath, appIcon)
                                     }
                                 }
                             }
@@ -1375,17 +1386,17 @@ ApplicationWindow {
 
                                 // LEFT CLICK → normal launch
                                 if (mouse.button === Qt.LeftButton) {
-                                    appGridView.launchingIndex = index
-                                    launching = true
+                                    appGridView.launchingIndex = apptilecol.index
+                                    apptilecol.launching = true
                                     apptext.opacity = 0
-                                    AppLauncher.launchApp(model.command)
+                                    AppLauncher.launchApp(apptilecol.command)
                                     launchAnimAllapp.start()
                                 }
 
                                 // RIGHT CLICK → open desktop actions menu
                                 if (mouse.button === Qt.RightButton) {
                                     AppLauncher.loadDesktopActions(
-                                        model.desktopFilePath,
+                                        apptilecol.desktopFilePath,
                                         actionModel
                                     )
 
@@ -1436,7 +1447,7 @@ ApplicationWindow {
                             allapptile.y = 0
 
                             // Reset opacity and launching state
-                            launching = false
+                            apptilecol.launching = false
                             appGridView.launchingIndex = -1
                             apptext.opacity = 1
 
@@ -1466,14 +1477,14 @@ ApplicationWindow {
                             NumberAnimation {
                                 target: zoomScal
                                 property: "xScale"
-                                to: screen.width / allapptile.width
+                                to: mainwindow.width / allapptile.width
                                 duration: 650
                                 easing.type: Easing.InOutCubic
                             }
                             NumberAnimation {
                                 target: zoomScal
                                 property: "yScale"
-                                to: screen.height / allapptile.height
+                                to: mainwindow.height / allapptile.height
                                 duration: 650
                                 easing.type: Easing.InOutCubic
                             }
@@ -1481,7 +1492,7 @@ ApplicationWindow {
                             NumberAnimation {
                                 target: zoomiconScal
                                 property: "xScale"
-                                to: (screen.height / allapptile.height) / (screen.width / allapptile.width) / 3.2
+                                to: (mainwindow.height / allapptile.height) / (mainwindow.width / allapptile.width) / 3.2
                                 duration: 350
                                 easing.type: Easing.InOutCubic
                             }
@@ -1520,8 +1531,8 @@ ApplicationWindow {
 
         DropArea {
             id: backgroundDropArea
-            width: screen.width
-            height: screen.height
+            width: mainwindow.width
+            height: mainwindow.height
             onEntered: allapparea.y=allapparea.height
         }
 
