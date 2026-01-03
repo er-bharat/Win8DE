@@ -11,7 +11,7 @@ ApplicationWindow {
     height: screen.height
     title: "Linux Start Menu Clone"
     color: "#180052"  // background color in case no wallpaper
-
+    // start wallpaper
     Image {
         id: background
         anchors.fill: parent
@@ -27,862 +27,846 @@ ApplicationWindow {
         acceptedButtons: Qt.RightButton | Qt.LeftButton
 
         onClicked: (mouse)=>{
-            WindowController.hide()
+            WindowController.hide()  //c++ function to hide the mainwindow.
         }
     }
 
-
+    // hide when reach to bottom with holding a desktop file to be put somewhere like desktop or editor.
     DropArea {
         anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
+        width: parent.width
         height: 100
         z: 0
         onEntered: {
-            mainwindow.close()
+            WindowController.hide()
         }
     }
-
-    Text {
-        id: start
-        text: "Start"
-        color: "white"
-        font.pixelSize: 60
-        font.weight: Font.Thin
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.margins: 30
-        anchors.leftMargin: 120
-        anchors.topMargin: 50
-    }
-
-    // Battery display next to "Start"
+    // main start screen
     Item {
-        id: batteryDisplay
-        width: 120
-        height: 40
-        anchors.verticalCenter: userCard.verticalCenter
-        anchors.right: userCard.left
-        anchors.rightMargin: 40
+        anchors.fill: parent
 
-        // Battery fill (with rounded corners)
-        Rectangle {
-            id: batteryFill
-            x: batteryOutline.x + 2
-            y: batteryOutline.y + 2
-            height: batteryOutline.height - 4
-            width: (batteryOutline.width - 4) * Math.min(Math.max(battery.percent / 100, 0), 1)
-            radius: 0
-            color: battery.charging ? "#FFD700"  // gold/yellow for charging
-            : battery.percent < 20 ? "#FF4C4C" // red for low
-            : "white"  // green for normal
-            smooth: true
-        }
-
-        // Outer battery shape
-        Rectangle {
-            id: batteryOutline
-            width: 50
-            height: 30
-            radius: 0
-            color: "transparent"
-            border.color: "white"
-            border.width: 4
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-
-
-        // Battery tip (small rounded rectangle)
-        Rectangle {
-            width: 6
-            height: batteryOutline.height / 2
-            radius: 0
-            color: "#CCCCCC"
-            anchors.left: batteryOutline.right
-            anchors.verticalCenter: batteryOutline.verticalCenter
-        }
-
-        // Percent text
         Text {
-            text: battery.percent >= 0 ? battery.percent + "%" : "N/A"
-            color: "#FFFFFF"
-            font.pixelSize: 30
+            id: start
+            text: "Start"
+            color: "white"
+            font.pixelSize: 60
             font.weight: Font.Thin
-            anchors.verticalCenter: batteryOutline.verticalCenter
-            anchors.left: batteryOutline.right
-            anchors.leftMargin: 12
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.margins: 30
+            anchors.leftMargin: 120
+            anchors.topMargin: 50
         }
 
-        // Optional: subtle shadow behind battery
-        Rectangle {
-            anchors.fill: batteryOutline
-            radius: batteryOutline.radius
-            color: "transparent"
-            border.color: "transparent"
-
-        }
-    }
-
-    Rectangle {
-        id: userCard
-        width: 150
-        height: 50
-        color: "transparent"
-        radius: 12
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: 30
-        anchors.rightMargin: 120
-        anchors.topMargin: 50
-
-        Row {
-            spacing: 12
-            anchors.centerIn: parent
-
-            Text {
-                text: AppLauncher.getCurrentUser()
-                color: "white"
-                font.pixelSize: 40
-                font.weight: Font.Thin
-                verticalAlignment: Text.AlignVCenter
-            }
-            Rectangle {
-                width: 48
-                height: 48
-                color: "transparent"
-                Image {
-                    id: userIcon
-                    source: "icons/peoplew.png"
-                    width: 48
-                    height: 48
-                    fillMode: Image.PreserveAspectFit
-                }
-                Image {
-                    id: userIcon2
-                    source: "file:///var/lib/AccountsService/icons/" + AppLauncher.getCurrentUser()
-                    width: 48
-                    height: 48
-                    fillMode: Image.PreserveAspectFit
-                }
-            }
-        }
-
-        Menu {
-            id: powerMenu
-
-            MenuItem {
-                text: "Shutdown"
-                icon.source: "/icons/system-shutdown-symbolic.svg"
-                onTriggered: powerControl.shutdown()
-            }
-
-            MenuItem {
-                text: "Reboot"
-                icon.source: "/icons/view-refresh-symbolic.svg"
-                onTriggered: powerControl.reboot()
-            }
-
-            MenuItem {
-                text: "Suspend"
-                icon.source: "/icons/system-run.svg"
-                onTriggered: powerControl.suspend()
-            }
-
-            MenuItem {
-                text: "Logout"
-                icon.source: "/icons/system-log-out.svg"
-                onTriggered: powerControl.logout()
-            }
-
-            MenuItem {
-                text: "Settings"
-                icon.source: "/icons/emblem-system-symbolic.svg"
-                onTriggered: {
-                    Launcher.launch("Win8Settings")
-                    WindowController.hide()
-                }
-            }
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.RightButton | Qt.LeftButton
-            cursorShape: Qt.PointingHandCursor
-            onClicked: (mouse)=>{
-                powerMenu.popup()
-            }
-        }
-    }
-
-
-    Rectangle {
-        id: allAppsButton
-        width: 50
-        height: 50
-        radius: width/2
-        border.width: 2
-        border.color: "white"
-        color: "transparent"
-        anchors.left: parent.left
-        anchors.bottom: parent.bottom
-        anchors.margins: 30
-        anchors.leftMargin: 120
-
-        Image {
-            id: iconImg
-            anchors.centerIn: parent
-            width: 40
+        // Battery display next to "Start"
+        Item {
+            id: batteryDisplay
+            width: 120
             height: 40
-            source: "go-down-skip.svg"
-            sourceSize.width: 50
-            sourceSize.height: 50
-            fillMode: Image.PreserveAspectFit
+            anchors.verticalCenter: userCard.verticalCenter
+            anchors.right: userCard.left
+            anchors.rightMargin: 40
+
+            // Battery fill
+            Rectangle {
+                id: batteryFill
+                x: batteryOutline.x + 2
+                y: batteryOutline.y + 2
+                height: batteryOutline.height - 4
+                width: (batteryOutline.width - 4) * Math.min(Math.max(battery.percent / 100, 0), 1)
+                radius: 0
+                color: battery.charging ? "#FFD700"  // gold/yellow for charging
+                : battery.percent < 20 ? "#FF4C4C" // red for low
+                : "white"  // green for normal
+                smooth: true
+            }
+
+            // Outer battery shape
+            Rectangle {
+                id: batteryOutline
+                width: 50
+                height: 30
+                radius: 0
+                color: "transparent"
+                border.color: "white"
+                border.width: 4
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            // Battery tip (small rounded rectangle)
+            Rectangle {
+                width: 6
+                height: batteryOutline.height / 2
+                radius: 0
+                color: "#CCCCCC"
+                anchors.left: batteryOutline.right
+                anchors.verticalCenter: batteryOutline.verticalCenter
+            }
+
+            // Percent text
+            Text {
+                text: battery.percent >= 0 ? battery.percent + "%" : "N/A"
+                color: "#FFFFFF"
+                font.pixelSize: 30
+                font.weight: Font.Thin
+                anchors.verticalCenter: batteryOutline.verticalCenter
+                anchors.left: batteryOutline.right
+                anchors.leftMargin: 12
+            }
+
+            // Optional: subtle shadow behind battery
+            Rectangle {
+                anchors.fill: batteryOutline
+                radius: batteryOutline.radius
+                color: "transparent"
+                border.color: "transparent"
+
+            }
         }
+        // the user icon at top right hosts power menu and settings.
+        Rectangle {
+            id: userCard
+            width: 150
+            height: 50
+            color: "transparent"
+            radius: 12
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 30
+            anchors.rightMargin: 120
+            anchors.topMargin: 50
 
-        MouseArea {
-            id: mouseArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
+            Row {
+                spacing: 12
+                anchors.centerIn: parent
 
-            Timer {
-                id: refreshTimer
-                interval: 500
-                repeat: false
-                running: false
-                onTriggered: {
-                    AppLauncher.refreshApplications()
+                Text {
+                    text: AppLauncher.getCurrentUser()
+                    color: "white"
+                    font.pixelSize: 40
+                    font.weight: Font.Thin
+                    verticalAlignment: Text.AlignVCenter
+                }
+                Rectangle {
+                    width: 48
+                    height: 48
+                    color: "transparent"
+                    //backup user icon
+                    Image {
+                        id: userIcon
+                        source: "icons/peoplew.png"
+                        width: 48
+                        height: 48
+                        fillMode: Image.PreserveAspectFit
+                    }
+                    //icon set for linux account.
+                    Image {
+                        id: userIcon2
+                        source: "file:///var/lib/AccountsService/icons/" + AppLauncher.getCurrentUser()
+                        width: 48
+                        height: 48
+                        fillMode: Image.PreserveAspectFit
+                    }
                 }
             }
+            // powermenu shutdown power logout etc
+            Menu {
+                id: powerMenu
 
-            onClicked: {
-                allapparea.y = 0
-                appGridView.focus = true
-                refreshTimer.start()
-                // searchField.focus = true
+                MenuItem {
+                    text: "Shutdown"
+                    icon.source: "/icons/system-shutdown-symbolic.svg"
+                    onTriggered: powerControl.shutdown()
+                }
+
+                MenuItem {
+                    text: "Reboot"
+                    icon.source: "/icons/view-refresh-symbolic.svg"
+                    onTriggered: powerControl.reboot()
+                }
+
+                MenuItem {
+                    text: "Suspend"
+                    icon.source: "/icons/system-run.svg"
+                    onTriggered: powerControl.suspend()
+                }
+
+                MenuItem {
+                    text: "Logout"
+                    icon.source: "/icons/system-log-out.svg"
+                    onTriggered: powerControl.logout()
+                }
+
+                MenuItem {
+                    text: "Settings"
+                    icon.source: "/icons/emblem-system-symbolic.svg"
+                    onTriggered: {
+                        Launcher.launch("Win8Settings")
+                        WindowController.hide()
+                    }
+                }
             }
-        }
-
-    }
-
-
-    Rectangle {
-        id: tilearea
-        // anchors.verticalCenter: parent.verticalCenter
-        anchors.top: start.bottom
-        anchors.bottom: allAppsButton.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.leftMargin: 120
-        anchors.topMargin: 30
-        anchors.bottomMargin: 30
-        width: parent.width-120
-        // height: parent.height*0.7
-        color: "transparent"
-
-        Flickable {
-            id: container
-            width: parent.width
-            height: parent.height
-            contentWidth: parent.width * 2
-            contentHeight: parent.height
-            property bool anyTileLaunching: false
-            clip: !anyTileLaunching
-
-            focus: true                       // >>> KEYBOARD NAVIGATION <<<
-            activeFocusOnTab: true            // >>> KEYBOARD NAVIGATION <<<
-
-
-
-            property int gridSize: tilearea.height/5
-            property int halfGrid: gridSize / 2
-            property int cols: Math.floor(width / halfGrid)
-
-            // >>> KEYBOARD NAVIGATION <<<
-            property int focusedIndex: -1
-
-            function ensureVisible(index) {
-                let t = tileRepeater.itemAt(index)
-                if (!t) return
-
-                    if (t.x < contentX)
-                        contentX = t.x
-                        else if (t.x + t.width > contentX + width)
-                            contentX = t.x + t.width - width
-            }
-
-            Keys.onPressed: (event) => {
-                if (tileRepeater.count === 0)
-                    return
-
-                    if (focusedIndex < 0)
-                        focusedIndex = 0
-
-                        let currentItem = tileRepeater.itemAt(focusedIndex)
-                        if (!currentItem)
-                            return
-
-                            function distance(a, b) {
-                                return Math.hypot(a.x - b.x, a.y - b.y);
-                            }
-
-                            function findNext(dx, dy) {
-                                let best = -1;
-                                let bestDist = Infinity;
-                                let fallback = -1;
-                                let fallbackDist = Infinity;
-
-                                const cx = currentItem.x + currentItem.width / 2;
-                                const cy = currentItem.y + currentItem.height / 2;
-                                const cLeft = currentItem.x;
-                                const cRight = currentItem.x + currentItem.width;
-                                const cTop = currentItem.y;
-                                const cBottom = currentItem.y + currentItem.height;
-
-                                for (let i = 0; i < tileRepeater.count; ++i) {
-                                    if (i === focusedIndex)
-                                        continue;
-
-                                    let item = tileRepeater.itemAt(i);
-                                    if (!item)
-                                        continue;
-
-                                    const ix = item.x + item.width / 2;
-                                    const iy = item.y + item.height / 2;
-                                    const iLeft = item.x;
-                                    const iRight = item.x + item.width;
-                                    const iTop = item.y;
-                                    const iBottom = item.y + item.height;
-
-                                    const vx = ix - cx;
-                                    const vy = iy - cy;
-
-                                    // Direction filter
-                                    if ((dx !== 0 && Math.sign(vx) !== dx) ||
-                                        (dy !== 0 && Math.sign(vy) !== dy))
-                                        continue;
-
-                                    // Axis-alignment check using edges
-                                    let aligned = false;
-                                    if (dx !== 0) {
-                                        // LEFT/RIGHT: check if vertical spans overlap
-                                        aligned = !(cBottom < iTop || cTop > iBottom);
-                                    } else {
-                                        // UP/DOWN: check if horizontal spans overlap
-                                        aligned = !(cRight < iLeft || cLeft > iRight);
-                                    }
-
-                                    const dist = distance({x: ix, y: iy}, {x: cx, y: cy});
-
-                                    if (aligned) {
-                                        if (dist < bestDist) {
-                                            bestDist = dist;
-                                            best = i;
-                                        }
-                                    } else {
-                                        if (dist < fallbackDist) {
-                                            fallbackDist = dist;
-                                            fallback = i;
-                                        }
-                                    }
-                                }
-
-                                return best !== -1 ? best : fallback;
-                            }
-
-                            let next = -1
-
-                            switch (event.key) {
-                                case Qt.Key_Left:
-                                    next = findNext(-1, 0)
-                                    break
-                                case Qt.Key_Right:
-                                    next = findNext(1, 0)
-                                    break
-                                case Qt.Key_Up:
-                                    next = findNext(0, -1)
-                                    break
-                                case Qt.Key_Down:
-                                    next = findNext(0, 1)
-                                    break
-                                case Qt.Key_A:
-                                    // Check for Ctrl modifier
-                                    if (event.modifiers & Qt.ControlModifier) {
-                                        allapparea.y = 0
-                                        appGridView.focus = true
-                                        refreshTimer.start()
-                                        event.accepted = true
-                                    }
-                                    break
-                                case Qt.Key_PageDown:
-                                    allapparea.y = 0
-                                    appGridView.focus = true
-                                    refreshTimer.start()
-                                    break
-                                case Qt.Key_Return:
-                                case Qt.Key_Enter:
-                                case Qt.Key_Space:
-                                    currentItem.launch()
-
-                                    event.accepted = true
-                                    return
-                            }
-
-                            if (next !== -1) {
-                                focusedIndex = next
-                                ensureVisible(next)
-                                event.accepted = true
-                            }
-            }
-
-            // >>> END KEYBOARD NAVIGATION <<<
-
 
             MouseArea {
                 anchors.fill: parent
-                acceptedButtons: Qt.NoButton
-                hoverEnabled: false
-                propagateComposedEvents: true
-
-                onWheel: function(wheel) {
-                    let isTouchpad = wheel.pixelDelta.x !== 0 || wheel.pixelDelta.y !== 0
-
-                    // Touchpad vertical UP → go to top
-                    if (isTouchpad && wheel.pixelDelta.y < 0) {
-                        allapparea.y = 0
-                    }
-
-                    // Horizontal scrolling
-                    let delta = 0
-                    if (isTouchpad) {
-                        // Touchpad: horizontal ONLY
-                        delta = -wheel.pixelDelta.x
-                    } else {
-                        // Mouse wheel: original behavior
-                        delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
-                    }
-
-                    if (delta !== 0) {
-                        let newX = container.contentX + delta
-                        newX = Math.max(0,
-                                        Math.min(newX,
-                                                 container.contentWidth - container.width))
-                        container.contentX = newX
-                        wheel.accepted = true
-                    }
+                acceptedButtons: Qt.RightButton | Qt.LeftButton
+                cursorShape: Qt.PointingHandCursor
+                onClicked: (mouse)=>{
+                    powerMenu.popup()
                 }
             }
+        }
+        // button to open all apps section.
+        Rectangle {
+            id: allAppsButton
+            width: 50
+            height: 50
+            radius: width/2
+            border.width: 2
+            border.color: "white"
+            color: "transparent"
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.margins: 30
+            anchors.leftMargin: 120
 
+            Image {
+                id: iconImg
+                anchors.centerIn: parent
+                width: 40
+                height: 40
+                source: "go-down-skip.svg"
+                sourceSize.width: 50
+                sourceSize.height: 50
+                fillMode: Image.PreserveAspectFit
+            }
 
-            DropArea {
+            MouseArea {
+                id: mouseArea
                 anchors.fill: parent
-                onDropped: (drop) => {
-                    if (drop.hasUrls) {
-                        for (let i = 0; i < drop.urls.length; ++i) {
-                            const url = drop.urls[i];
-                            if (url.toString().endsWith(".desktop")) {
-                                const localPath = url.toString().replace("file://", "");
-                                tileModel.addTileFromDesktopFile(localPath, drop.x, drop.y);
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                Timer {
+                    id: refreshTimer
+                    interval: 500
+                    repeat: false
+                    running: false
+                    onTriggered: {
+                        AppLauncher.refreshApplications()
+                    }
+                }
+                // show allapparea focus the grid and once refresh the list.
+                onClicked: {
+                    allapparea.y = 0
+                    appGridView.focus = true
+                    refreshTimer.start()
+                    // searchField.focus = true
+                }
+            }
+        }
+        // holds the area in which the flickable lives
+        Item {
+            id: tilearea
+            // anchors.verticalCenter: parent.verticalCenter
+            anchors.top: start.bottom
+            anchors.bottom: allAppsButton.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 120
+            anchors.topMargin: 30
+            anchors.bottomMargin: 30
+            width: parent.width-120
+            Flickable {
+                id: container
+                width: parent.width
+                height: parent.height
+                contentWidth: parent.width * 2  //allows 2x width of screen for tiles so that it can have scrollin.
+                contentHeight: parent.height
+                clip: !anyTileLaunching
+
+                focus: true                       // KEYBOARD NAVIGATION
+                activeFocusOnTab: true            // KEYBOARD NAVIGATION
+                property bool anyTileLaunching: false
+                property int gridSize: tilearea.height/5
+                property int halfGrid: gridSize / 2
+                property int cols: Math.floor(width / halfGrid)
+                property int focusedIndex: -1
+                // keeps the focused item in view when using keyboard navigation.
+                function ensureVisible(index) {
+                    let t = tileRepeater.itemAt(index)
+                    if (!t) return
+                        if (t.x < contentX)
+                            contentX = t.x
+                            else if (t.x + t.width > contentX + width)
+                                contentX = t.x + t.width - width
+                }
+                Keys.onPressed: (event) => {
+                    if (tileRepeater.count === 0)
+                        return
+                        if (focusedIndex < 0)
+                            focusedIndex = 0
+                            let currentItem = tileRepeater.itemAt(focusedIndex)
+                            if (!currentItem)
+                                return
+
+                                function distance(a, b) {
+                                    return Math.hypot(a.x - b.x, a.y - b.y);
+                                }
+
+                                function findNext(dx, dy) {
+                                    let best = -1;
+                                    let bestDist = Infinity;
+                                    let fallback = -1;
+                                    let fallbackDist = Infinity;
+
+                                    const cx = currentItem.x + currentItem.width / 2;
+                                    const cy = currentItem.y + currentItem.height / 2;
+                                    const cLeft = currentItem.x;
+                                    const cRight = currentItem.x + currentItem.width;
+                                    const cTop = currentItem.y;
+                                    const cBottom = currentItem.y + currentItem.height;
+
+                                    for (let i = 0; i < tileRepeater.count; ++i) {
+                                        if (i === focusedIndex)
+                                            continue;
+
+                                        let item = tileRepeater.itemAt(i);
+                                        if (!item)
+                                            continue;
+
+                                        const ix = item.x + item.width / 2;
+                                        const iy = item.y + item.height / 2;
+                                        const iLeft = item.x;
+                                        const iRight = item.x + item.width;
+                                        const iTop = item.y;
+                                        const iBottom = item.y + item.height;
+
+                                        const vx = ix - cx;
+                                        const vy = iy - cy;
+
+                                        // Direction filter
+                                        if ((dx !== 0 && Math.sign(vx) !== dx) ||
+                                            (dy !== 0 && Math.sign(vy) !== dy))
+                                            continue;
+
+                                        // Axis-alignment check using edges
+                                        let aligned = false;
+                                        if (dx !== 0) {
+                                            // LEFT/RIGHT: check if vertical spans overlap
+                                            aligned = !(cBottom < iTop || cTop > iBottom);
+                                        } else {
+                                            // UP/DOWN: check if horizontal spans overlap
+                                            aligned = !(cRight < iLeft || cLeft > iRight);
+                                        }
+
+                                        const dist = distance({x: ix, y: iy}, {x: cx, y: cy});
+
+                                        if (aligned) {
+                                            if (dist < bestDist) {
+                                                bestDist = dist;
+                                                best = i;
+                                            }
+                                        } else {
+                                            if (dist < fallbackDist) {
+                                                fallbackDist = dist;
+                                                fallback = i;
+                                            }
+                                        }
+                                    }
+                                    return best !== -1 ? best : fallback;
+                                }
+                                let next = -1
+
+                                switch (event.key) {
+                                    case Qt.Key_Left:
+                                        next = findNext(-1, 0)
+                                        break
+                                    case Qt.Key_Right:
+                                        next = findNext(1, 0)
+                                        break
+                                    case Qt.Key_Up:
+                                        next = findNext(0, -1)
+                                        break
+                                    case Qt.Key_Down:
+                                        next = findNext(0, 1)
+                                        break
+                                    case Qt.Key_A:
+                                        // Check for Ctrl modifier
+                                        if (event.modifiers & Qt.ControlModifier) {
+                                            allapparea.y = 0
+                                            appGridView.focus = true
+                                            refreshTimer.start()
+                                            event.accepted = true
+                                        }
+                                        break
+                                    case Qt.Key_PageDown:
+                                        allapparea.y = 0
+                                        appGridView.focus = true
+                                        refreshTimer.start()
+                                        break
+                                    case Qt.Key_Return:
+                                    case Qt.Key_Enter:
+                                    case Qt.Key_Space:
+                                        currentItem.launch()
+
+                                        event.accepted = true
+                                        return
+                                }
+
+                                if (next !== -1) {
+                                    focusedIndex = next
+                                    ensureVisible(next)
+                                    event.accepted = true
+                                }
+                }
+                // >>> END KEYBOARD NAVIGATION <<<
+                // touchpad and mouse wheel behaviour
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.NoButton
+                    hoverEnabled: false
+                    propagateComposedEvents: true
+
+                    onWheel: function(wheel) {
+                        let isTouchpad = wheel.pixelDelta.x !== 0 || wheel.pixelDelta.y !== 0
+
+                        // Touchpad vertical top opens allapparea
+                        if (isTouchpad && wheel.pixelDelta.y < 0) {
+                            allapparea.y = 0
+                            appGridView.focus = true
+                            refreshTimer.start()
+                        }
+                        // Horizontal scrolling
+                        let delta = 0
+                        if (isTouchpad) {
+                            // Touchpad: horizontal ONLY
+                            delta = -wheel.pixelDelta.x
+                        } else {
+                            // Mouse wheel: original behavior
+                            delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
+                        }
+
+                        if (delta !== 0) {
+                            let newX = container.contentX + delta
+                            newX = Math.max(0,
+                                            Math.min(newX,
+                                                     container.contentWidth - container.width))
+                            container.contentX = newX
+                            wheel.accepted = true
+                        }
+                    }
+                }
+                //Recieves desktop files to place on new tiles.
+                DropArea {
+                    anchors.fill: parent
+                    onDropped: (drop) => {
+                        if (drop.hasUrls) {
+                            for (let i = 0; i < drop.urls.length; ++i) {
+                                const url = drop.urls[i];
+                                if (url.toString().endsWith(".desktop")) {
+                                    const localPath = url.toString().replace("file://", "");
+                                    tileModel.addTileFromDesktopFile(localPath, drop.x, drop.y);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            Repeater {
-                id: tileRepeater
-                model: tileModel
+                Repeater {
+                    id: tileRepeater
+                    model: tileModel
 
-                Rectangle {
-                    id: tile
-                    z: (launching || dragArea.dragging) ? 200 : 0
+                    Rectangle {
+                        id: tile
+                        z: (launching || dragArea.dragging) ? 200 : 0
 
-                    // --- Size handling ---
+                        // --- Size handling ---
 
-                    required property int index
-                    required property real modelX
-                    required property real modelY
-                    required property string name
-                    required property string icon
-                    required property string command
-                    required property string size
+                        required property int index
+                        required property real modelX
+                        required property real modelY
+                        required property string name
+                        required property string icon
+                        required property string command
+                        required property string size
 
-                    readonly property int smallSize:   container.halfGrid - 5
-                    readonly property int mediumSize:  container.halfGrid * 2 - 5
-                    readonly property int largeWidth:  container.halfGrid * 4 - 5
-                    readonly property int largeHeight: container.halfGrid * 2 - 5
-                    readonly property int xlargeSize:  container.halfGrid * 4 - 5   // 4x4 tile
+                        //size setup of tiles.
+                        readonly property int smallSize:   container.halfGrid - 5
+                        readonly property int mediumSize:  container.halfGrid * 2 - 5
+                        readonly property int largeWidth:  container.halfGrid * 4 - 5
+                        readonly property int largeHeight: container.halfGrid * 2 - 5
+                        readonly property int xlargeSize:  container.halfGrid * 4 - 5   // 4x4 tile
 
-                    width:  size === "small"   ? smallSize
-                    : size === "medium"  ? mediumSize
-                    : size === "large"   ? largeWidth
-                    : size === "xlarge"  ? xlargeSize
-                    : mediumSize
+                        width:  size === "small"   ? smallSize
+                        : size === "medium"  ? mediumSize
+                        : size === "large"   ? largeWidth
+                        : size === "xlarge"  ? xlargeSize
+                        : mediumSize
 
-                    height: size === "small"   ? smallSize
-                    : size === "medium"  ? mediumSize
-                    : size === "large"   ? largeHeight
-                    : size === "xlarge"  ? xlargeSize
-                    : mediumSize
+                        height: size === "small"   ? smallSize
+                        : size === "medium"  ? mediumSize
+                        : size === "large"   ? largeHeight
+                        : size === "xlarge"  ? xlargeSize
+                        : mediumSize
 
-                    x: modelX
-                    y: modelY
+                        x: modelX
+                        y: modelY
 
-                    property bool hovered: false
+                        property bool hovered: false
 
-                    color: dragArea.dragging || container.focusedIndex === index || hovered ? Win8Colors.TileHighlight : Win8Colors.Tile
-                    border.width: 1
-                    border.color: container.focusedIndex === index || hovered
-                    ? "white"
-                    : Qt.rgba(1,1,1,0.2)
-
-
-                    function launch() {
-                        if (tile.launching)
-                            return
-
-                            tile.launching = true
-                            container.anyTileLaunching = true
-                            AppLauncher.launchApp(tile.command)
-                    }
+                        color: dragArea.dragging || container.focusedIndex === index || hovered ? Win8Colors.TileHighlight : Win8Colors.Tile
+                        border.width: 1
+                        border.color: container.focusedIndex === index || hovered
+                        ? "white"
+                        : Qt.rgba(1,1,1,0.2)
 
 
-                    //-----------------------------------------------------------
-                    // LAUNCH ANIMATION PROPERTIES
-                    //-----------------------------------------------------------
-                    property bool launching: false
+                        function launch() {
+                            if (tile.launching)
+                                return
 
-                    // fixed center target
-                    property real finalX: container.contentX + container.width  / 2 - width  / 2 - 60
-                    property real finalY: container.contentY + container.height / 2 - height / 2 -(start.height-allAppsButton.height)
-
-                    // transforms
-                    transform: [
-                        Rotation {
-                            id: flipRotation
-                            origin.x: tile.width / 2
-                            origin.y: tile.height / 2
-                            axis { x: 0; y: 1; z: 0 }
-                            angle: 0
-                        },
-                        Scale {
-                            id: zoomScale
-                            origin.x: tile.width / 2
-                            origin.y: tile.height / 2
-                            xScale: 1
-                            yScale: 1
-                        }
-                    ]
-
-                    SequentialAnimation {
-                        id: launchAnim
-                        running: tile.launching
-
-                        ParallelAnimation {
-                            id: launchAnim2
-
-                            // --- flip ---
-                            NumberAnimation {
-                                target: flipRotation
-                                property: "angle"
-                                to: 180
-                                duration: 650
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                target: flipiconRotation
-                                property: "angle"
-                                to: 180
-                                duration: 650
-                                easing.type: Easing.InOutQuad
-                            }
-
-                            // --- zoom ---
-                            NumberAnimation {
-                                target: zoomScale
-                                property: "xScale"
-                                to: mainwindow.width / tile.width * 1.05
-                                duration: 650
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                target: zoomScale
-                                property: "yScale"
-                                to: mainwindow.height / tile.height * 1.05
-                                duration: 650
-                                easing.type: Easing.InOutQuad
-                            }
-
-                            NumberAnimation {
-                                target: zoomiconScale
-                                property: "xScale"
-                                to: (mainwindow.height / tile.height) / (mainwindow.width / tile.width)/2
-                                duration: 350
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                target: zoomiconScale
-                                property: "yScale"
-                                to: 1/2
-                                duration: 350
-                                easing.type: Easing.InOutQuad
-                            }
-
-                            // --- move to center ---
-                            NumberAnimation {
-                                target: tile
-                                property: "x"
-                                to: tile.finalX
-                                duration: 400
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                target: tile
-                                property: "y"
-                                to: tile.finalY
-                                duration: 400
-                                easing.type: Easing.InOutQuad
-                            }
+                                tile.launching = true
+                                container.anyTileLaunching = true
+                                AppLauncher.launchApp(tile.command)
                         }
 
-                        // ✅ delay AFTER animation
-                        PauseAnimation {
-                            duration: 500
-                        }
+                        //-----------------------------------------------------------
+                        // LAUNCH ANIMATION PROPERTIES
+                        //-----------------------------------------------------------
+                        property bool launching: false
 
-                        ScriptAction {
-                            script: {
-                                // Hide the window
-                                WindowController.hide()
+                        // fixed center target
+                        property real finalX: container.contentX + container.width  / 2 - width  / 2 - 60
+                        property real finalY: container.contentY + container.height / 2 - height / 2 -(start.height-allAppsButton.height)
 
-                                // Reset tile properties
-                                tile.launching = false
-                                container.anyTileLaunching = false
-
-                                // Reset tile position to its model position
-                                tile.x = x
-                                tile.y = y
-
-                                // Reset transforms
-                                zoomScale.xScale = 1
-                                zoomScale.yScale = 1
-                                flipRotation.angle = 0
-
-                                zoomiconScale.xScale = 1
-                                zoomiconScale.yScale = 1
-                                flipiconRotation.angle = 0
-                            }
-                        }
-
-                    }
-
-
-                    //-----------------------------------------------------------
-                    // Name
-                    //-----------------------------------------------------------
-                    Text {
-                        anchors.left: parent.left
-                        anchors.bottom: parent.bottom
-                        anchors.margins: 4
-                        text: tile.name
-                        color: "white"
-                        font.pointSize: tile.size === "small" ? 1 : 12
-                        wrapMode: Text.Wrap
-                        width: parent.width - 10
-                        visible: !tile.launching
-                    }
-
-                    //-----------------------------------------------------------
-                    // Icon
-                    //-----------------------------------------------------------
-                    Image {
-                        id: tileicon
-                        anchors.centerIn: parent
-                        width: parent.height / 2
-                        height: width
-                        fillMode: Image.PreserveAspectFit
-                        source: AppLauncher.resolveIcon(tile.icon)
-                        sourceSize.width: 256
-                        sourceSize.height: 256
                         // transforms
                         transform: [
                             Rotation {
-                                id: flipiconRotation
-                                origin.x: tileicon.width / 2
-                                origin.y: tileicon.height / 2
+                                id: flipRotation
+                                origin.x: tile.width / 2
+                                origin.y: tile.height / 2
                                 axis { x: 0; y: 1; z: 0 }
                                 angle: 0
                             },
                             Scale {
-                                id: zoomiconScale
-                                origin.x: tileicon.width / 2
-                                origin.y: tileicon.height / 2
+                                id: zoomScale
+                                origin.x: tile.width / 2
+                                origin.y: tile.height / 2
                                 xScale: 1
                                 yScale: 1
                             }
                         ]
-                    }
 
-
-                    //-----------------------------------------------------------
-                    // Dragging & Click
-                    //-----------------------------------------------------------
-                    MouseArea {
-                        id: dragArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton
-                        cursorShape: dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor
-                        drag.target: tile
-
-                        property bool dragging: false
-                        onEntered: {
-                            tile.hovered = true
-                        }
-                        onExited: {
-                            tile.hovered = false
-                        }
-
-                        onPressed: function(mouse) {
-                            if (mouse.button === Qt.LeftButton)
-                                dragging = true
-
-                        }
-
-                        onReleased: {
-                            dragging = false
-
-                            var snappedX = Math.round(tile.x / container.halfGrid) * container.halfGrid
-                            var snappedY = Math.round(tile.y / container.halfGrid) * container.halfGrid
-
-                            snappedX = Math.max(0, Math.min(snappedX, container.contentWidth - tile.width))
-                            snappedY = Math.max(0, snappedY)
-
-                            tile.x = snappedX
-                            tile.y = snappedY
-
-                            tileModel.updateTilePosition(tile.index, tile.x, tile.y)
-                        }
-
-                        onClicked: function(mouse){
-                            if (mouse.button === Qt.LeftButton) {
-                                tile.launch()
-                            } else if (mouse.button === Qt.RightButton) {
-                                contextMenu.open()
-                            }
-                        }
-                    }
-
-                    //-----------------------------------------------------------
-                    // Right-click menu
-                    //-----------------------------------------------------------
-                    Menu {
-                        id: contextMenu
-                        MenuItem { text: "Small";   onTriggered: tileModel.resizeTile(tile.index, "small") }
-                        MenuItem { text: "Medium";  onTriggered: tileModel.resizeTile(tile.index, "medium") }
-                        MenuItem { text: "Large";   onTriggered: tileModel.resizeTile(tile.index, "large") }
-                        MenuItem { text: "XLarge";  onTriggered: tileModel.resizeTile(tile.index, "xlarge") }
-                        MenuSeparator {}
-                        MenuItem { text: "Remove";  onTriggered: tileModel.removeTile(tile.index) }
-                    }
-
-                    // --- APPEAR ANIMATION ---
-                    property bool appeared: false
-                    // property bool anyTileLaunching: false
-                    opacity: 0.2
-                    scale: 0.6
-                    transformOrigin: Item.Left
-
-
-                    ParallelAnimation {
-                        id: appearAnim
-                        running: false
-                        onStarted: container.clip = false
-                        // onStopped: container.clip = !anyTileLaunching
-
-                        PropertyAnimation {
-                            target: tile
-                            property: "x"
-                            from: container.width/4; to: tile.modelX
-                            duration: 500
-                            easing.type: Easing.OutCubic
-                        }
                         SequentialAnimation {
-                            // 1. move upward (bounce start)
+                            id: launchAnim
+                            running: tile.launching
+
+                            ParallelAnimation {
+                                id: launchAnim2
+
+                                // --- flip ---
+                                NumberAnimation {
+                                    target: flipRotation
+                                    property: "angle"
+                                    to: 180
+                                    duration: 650
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    target: flipiconRotation
+                                    property: "angle"
+                                    to: 180
+                                    duration: 650
+                                    easing.type: Easing.InOutQuad
+                                }
+
+                                // --- zoom ---
+                                NumberAnimation {
+                                    target: zoomScale
+                                    property: "xScale"
+                                    to: mainwindow.width / tile.width * 1.05
+                                    duration: 650
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    target: zoomScale
+                                    property: "yScale"
+                                    to: mainwindow.height / tile.height * 1.05
+                                    duration: 650
+                                    easing.type: Easing.InOutQuad
+                                }
+
+                                NumberAnimation {
+                                    target: zoomiconScale
+                                    property: "xScale"
+                                    to: (mainwindow.height / tile.height) / (mainwindow.width / tile.width)/2
+                                    duration: 350
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    target: zoomiconScale
+                                    property: "yScale"
+                                    to: 1/2
+                                    duration: 350
+                                    easing.type: Easing.InOutQuad
+                                }
+
+                                // --- move to center ---
+                                NumberAnimation {
+                                    target: tile
+                                    property: "x"
+                                    to: tile.finalX
+                                    duration: 400
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    target: tile
+                                    property: "y"
+                                    to: tile.finalY
+                                    duration: 400
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+
+                            // ✅ delay AFTER animation
+                            PauseAnimation {
+                                duration: 500
+                            }
+
+                            ScriptAction {
+                                script: {
+                                    // Hide the window
+                                    WindowController.hide()
+
+                                    // Reset tile properties
+                                    tile.launching = false
+                                    container.anyTileLaunching = false
+
+                                    // Reset tile position to its model position
+                                    tile.x = x
+                                    tile.y = y
+
+                                    // Reset transforms
+                                    zoomScale.xScale = 1
+                                    zoomScale.yScale = 1
+                                    flipRotation.angle = 0
+
+                                    zoomiconScale.xScale = 1
+                                    zoomiconScale.yScale = 1
+                                    flipiconRotation.angle = 0
+                                }
+                            }
+
+                        }
+
+
+                        //-----------------------------------------------------------
+                        // Name
+                        //-----------------------------------------------------------
+                        Text {
+                            anchors.left: parent.left
+                            anchors.bottom: parent.bottom
+                            anchors.margins: 4
+                            text: tile.name
+                            color: "white"
+                            font.pointSize: tile.size === "small" ? 1 : 12
+                            wrapMode: Text.Wrap
+                            width: parent.width - 10
+                            visible: !tile.launching
+                        }
+
+                        //-----------------------------------------------------------
+                        // Icon
+                        //-----------------------------------------------------------
+                        Image {
+                            id: tileicon
+                            anchors.centerIn: parent
+                            width: parent.height / 2
+                            height: width
+                            fillMode: Image.PreserveAspectFit
+                            source: AppLauncher.resolveIcon(tile.icon)
+                            sourceSize.width: 256
+                            sourceSize.height: 256
+                            // transforms
+                            transform: [
+                                Rotation {
+                                    id: flipiconRotation
+                                    origin.x: tileicon.width / 2
+                                    origin.y: tileicon.height / 2
+                                    axis { x: 0; y: 1; z: 0 }
+                                    angle: 0
+                                },
+                                Scale {
+                                    id: zoomiconScale
+                                    origin.x: tileicon.width / 2
+                                    origin.y: tileicon.height / 2
+                                    xScale: 1
+                                    yScale: 1
+                                }
+                            ]
+                        }
+
+
+                        //-----------------------------------------------------------
+                        // Dragging & Click
+                        //-----------------------------------------------------------
+                        MouseArea {
+                            id: dragArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            cursorShape: dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+                            drag.target: tile
+
+                            property bool dragging: false
+                            onEntered: {
+                                tile.hovered = true
+                            }
+                            onExited: {
+                                tile.hovered = false
+                            }
+
+                            onPressed: function(mouse) {
+                                if (mouse.button === Qt.LeftButton)
+                                    dragging = true
+
+                            }
+
+                            onReleased: {
+                                dragging = false
+
+                                var snappedX = Math.round(tile.x / container.halfGrid) * container.halfGrid
+                                var snappedY = Math.round(tile.y / container.halfGrid) * container.halfGrid
+
+                                snappedX = Math.max(0, Math.min(snappedX, container.contentWidth - tile.width))
+                                snappedY = Math.max(0, snappedY)
+
+                                tile.x = snappedX
+                                tile.y = snappedY
+
+                                tileModel.updateTilePosition(tile.index, tile.x, tile.y)
+                            }
+
+                            onClicked: function(mouse){
+                                if (mouse.button === Qt.LeftButton) {
+                                    tile.launch()
+                                } else if (mouse.button === Qt.RightButton) {
+                                    contextMenu.open()
+                                }
+                            }
+                        }
+
+                        //-----------------------------------------------------------
+                        // Right-click menu
+                        //-----------------------------------------------------------
+                        Menu {
+                            id: contextMenu
+                            MenuItem { text: "Small";   onTriggered: tileModel.resizeTile(tile.index, "small") }
+                            MenuItem { text: "Medium";  onTriggered: tileModel.resizeTile(tile.index, "medium") }
+                            MenuItem { text: "Large";   onTriggered: tileModel.resizeTile(tile.index, "large") }
+                            MenuItem { text: "XLarge";  onTriggered: tileModel.resizeTile(tile.index, "xlarge") }
+                            MenuSeparator {}
+                            MenuItem { text: "Remove";  onTriggered: tileModel.removeTile(tile.index) }
+                        }
+
+                        // --- APPEAR ANIMATION ---
+                        property bool appeared: false
+                        // property bool anyTileLaunching: false
+                        opacity: 0.2
+                        scale: 0.6
+                        transformOrigin: Item.Left
+
+
+                        ParallelAnimation {
+                            id: appearAnim
+                            running: false
+                            onStarted: container.clip = false
+                            // onStopped: container.clip = !anyTileLaunching
+
                             PropertyAnimation {
                                 target: tile
-                                property: "y"
-                                from: tile.modelY
-                                to: tile.modelY - 10
-                                duration: 180
+                                property: "x"
+                                from: container.width/4; to: tile.modelX
+                                duration: 500
+                                easing.type: Easing.OutCubic
+                            }
+                            SequentialAnimation {
+                                // 1. move upward (bounce start)
+                                PropertyAnimation {
+                                    target: tile
+                                    property: "y"
+                                    from: tile.modelY
+                                    to: tile.modelY - 10
+                                    duration: 180
+                                    easing.type: Easing.OutCubic
+                                }
+
+                                // 2. fall down past the final position (overshoot)
+                                PropertyAnimation {
+                                    target: tile
+                                    property: "y"
+                                    from: tile.modelY - 10
+                                    to: tile.modelY + 10      // overshoot 30px down
+                                    duration: 130
+                                    easing.type: Easing.InCubic
+                                }
+
+                                // 3. settle back to the final position (real bounce)
+                                PropertyAnimation {
+                                    target: tile
+                                    property: "y"
+                                    from: tile.modelY + 10
+                                    to: tile.modelY
+                                    duration: 180
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+
+
+                            PropertyAnimation {
+                                target: tile
+                                property: "scale"
+                                from: 0.6; to: 1
+                                duration: 700
                                 easing.type: Easing.OutCubic
                             }
 
-                            // 2. fall down past the final position (overshoot)
                             PropertyAnimation {
                                 target: tile
-                                property: "y"
-                                from: tile.modelY - 10
-                                to: tile.modelY + 10      // overshoot 30px down
-                                duration: 130
-                                easing.type: Easing.InCubic
-                            }
-
-                            // 3. settle back to the final position (real bounce)
-                            PropertyAnimation {
-                                target: tile
-                                property: "y"
-                                from: tile.modelY + 10
-                                to: tile.modelY
-                                duration: 180
+                                property: "opacity"
+                                from: 0.2; to: 1
+                                duration: 800
                                 easing.type: Easing.OutCubic
                             }
                         }
 
-
-                        PropertyAnimation {
-                            target: tile
-                            property: "scale"
-                            from: 0.6; to: 1
-                            duration: 700
-                            easing.type: Easing.OutCubic
-                        }
-
-                        PropertyAnimation {
-                            target: tile
-                            property: "opacity"
-                            from: 0.2; to: 1
-                            duration: 800
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-
-                    Component.onCompleted: {
-                        if (!appeared) {
-                            appeared = true
-                            appearAnim.start()
-                        }
-                    }
-                    Connections {
-                        target: WindowController
-
-                        function onVisibleChanged(visible) {
-                            if (visible) {
-                                tile.appeared = false
+                        Component.onCompleted: {
+                            if (!appeared) {
+                                appeared = true
                                 appearAnim.start()
                             }
                         }
-                    }
+                        Connections {
+                            target: WindowController
 
+                            function onVisibleChanged(visible) {
+                                if (visible) {
+                                    tile.appeared = false
+                                    appearAnim.start()
+                                }
+                            }
+                        }
+
+                    }
                 }
             }
+
+
         }
-
-
     }
-
+    // shows all app in fullscreen rectangle.
     Rectangle {
         id: allapparea
         width: parent.width
@@ -946,6 +930,7 @@ ApplicationWindow {
             }
 
         }
+        //Searchfield searches for apps.
         Rectangle {
             anchors.right: parent.right
             anchors.top: parent.top
@@ -1006,11 +991,10 @@ ApplicationWindow {
                             break
                     }
                 }
-
             }
         }
 
-        Rectangle {
+        Item {
             anchors.top: apps.bottom
             anchors.bottom: allAppsButton2.top
             anchors.left: parent.left
@@ -1019,10 +1003,6 @@ ApplicationWindow {
             anchors.topMargin: 30
             anchors.bottomMargin: 30
             width: parent.width - 120
-            height: parent.height*0.7
-            color: "transparent"
-
-
 
             GridView {
                 id: appGridView
@@ -1034,12 +1014,11 @@ ApplicationWindow {
                 flow: GridView.TopToBottom
                 boundsBehavior: Flickable.StopAtBounds
                 keyNavigationEnabled: true
-                // keyNavigationNavigationWraps: true
                 highlightFollowsCurrentItem: true
                 flickableDirection: Flickable.HorizontalFlick
                 currentIndex: 0
 
-                // 🔹 index of currently launching delegate
+                // index of currently launching delegate
                 property int launchingIndex: -1
 
                 ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
@@ -1078,7 +1057,6 @@ ApplicationWindow {
                         }
                     }
                 }
-
 
                 Keys.onPressed: function(event) {
                     let columns = Math.floor(width / cellWidth)
@@ -1183,10 +1161,8 @@ ApplicationWindow {
                                         event.accepted = true
                                     }
                                     break
-
                             }
                 }
-
 
                 function launchCurrent() {
                     if (currentIndex < 0 || currentIndex >= count)
@@ -1217,8 +1193,7 @@ ApplicationWindow {
                         actionMenu.popup(appRect)
                     }
 
-
-                    // 🔹 opacity logic
+                    // opacity logic
                     opacity: appGridView.launchingIndex === -1
                     ? 1
                     : (index === appGridView.launchingIndex ? 1 : 0)
@@ -1352,7 +1327,6 @@ ApplicationWindow {
                             }
                         }
 
-
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
@@ -1399,7 +1373,6 @@ ApplicationWindow {
                                         apptilecol.desktopFilePath,
                                         actionModel
                                     )
-
                                     actionMenu.popup()
                                 }
                             }
@@ -1525,8 +1498,6 @@ ApplicationWindow {
                     }
                 }
             }
-
-
         }
 
         DropArea {
@@ -1535,7 +1506,5 @@ ApplicationWindow {
             height: mainwindow.height
             onEntered: allapparea.y=allapparea.height
         }
-
     }
-
 }
