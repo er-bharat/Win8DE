@@ -18,7 +18,7 @@ PROJECTS=(
     Win8Lock
     Win8Corner
     battery
-    switcher
+    list-windows
     Win8Running
 )
 

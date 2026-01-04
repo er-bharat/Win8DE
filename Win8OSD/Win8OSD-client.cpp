@@ -5,7 +5,7 @@
 #include <QRegularExpression>
 #include <algorithm>
 
-const QString socketName = "osd_instance_socket"; // ✅ No full path
+const QString socketName = "osd_instance_socket";
 
 void adjustVolumeAlsa(int deltaPercent)
 {

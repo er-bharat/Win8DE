@@ -54,13 +54,3 @@ target_compile_options(Win8Running PRIVATE
     -Wpedantic
 )
 
-# ----------------------------
-# Copy compile_commands.json for ccls
-# ----------------------------
-add_custom_command(
-    TARGET Win8Running POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_BINARY_DIR}/compile_commands.json
-        ${CMAKE_SOURCE_DIR}/compile_commands.json
-    COMMENT "Copying compile_commands.json to source directory for ccls"
-)

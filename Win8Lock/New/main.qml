@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Shapes
 import QtQuick.Window
-import QtQuick.Effects
 
 Window {
     id: root
@@ -11,16 +9,12 @@ Window {
     // visible: true
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-    Keys.onPressed: {
+    Keys.onPressed: function(event) {
         console.log("Key pressed:", event.key);
         event.accepted = true;
     }
     property string username: systemUsername
     property string password: ""
-
-    // import "."
-
-
 
     // ---- CLOCK UPDATE FUNCTION ----
     function updateClock() {
@@ -91,11 +85,10 @@ Window {
 
         Rectangle {
             id: box1
-            // anchors.centerIn: parent
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
             anchors.topMargin: height
-            width: screen.height* 0.5
+            width: root.height* 0.5
             height: width*0.5
             color: "skyblue"
 
@@ -125,7 +118,6 @@ Window {
                         width:box1.height *0.9
                         placeholderText: root.username
                         font.pixelSize: 22
-                        // font.family: "Orbitron"
                         font.weight: Font.Black
                         color: "red"
                         focus: false
@@ -133,7 +125,6 @@ Window {
 
                         onActiveFocusChanged: if (activeFocus) {
                             vkeyboard.currentField = usernameField
-                            // vkeyboard.show()
                         }
                     }
                     TextField {
@@ -142,10 +133,8 @@ Window {
                         placeholderText: "Password"
                         echoMode: TextInput.Password
                         font.pixelSize: 22
-                        // font.family: "Orbitron"
                         font.weight: Font.Black
                         color: "red"
-                        // background: null
                         focus: false
                         Keys.onPressed: (event) => {
                             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
@@ -158,7 +147,6 @@ Window {
 
                         onActiveFocusChanged: if (activeFocus) {
                             vkeyboard.currentField = passwordField
-                            // vkeyboard.hide()
                         }
                     }
                     Row {
@@ -191,15 +179,7 @@ Window {
                             height: 50
                             z: -1
                             color: "transparent"
-                            // Text {
-                            //
-                            //     anchors.centerIn: parent
-                            //     text: "vkey"
-                            //     color: "red"
-                            //     font.family: "Orbitron"
-                            //     font.pixelSize: 22
-                            //     font.weight: Font.Black
-                            // }
+
                             Image {
                                 id: icon
                                 source: "vkey.svg"
@@ -208,7 +188,6 @@ Window {
                                 fillMode: Image.PreserveAspectFit   // recommended for SVG
                                 smooth: true
                             }
-
 
                             MouseArea {
                                 anchors.fill: parent
@@ -228,15 +207,13 @@ Window {
         }
     }
 
-
-
     // Top Rectangle that hosts clock and lockscreen wallpaper
     Rectangle {
         id: lockTop
-        width: screen.width
-        height: screen.height
+        width: root.width
+        height: root.height
         color: "grey"
-        y: -screen.height
+        y: -root.height
         focus: true
 
         Image {
@@ -274,9 +251,6 @@ Window {
                 text: ""
             }
         }
-
-
-
         // Initialize the clock immediately
         Component.onCompleted: {
             updateClock()
@@ -311,7 +285,7 @@ Window {
         id: slideUp
         target: lockTop
         property: "y"
-        to: -screen.height
+        to: -root.height
         duration: box1.height *0.9
     }
     PropertyAnimation {
@@ -368,8 +342,6 @@ Window {
         }
     }
 
-
-
     Connections {
         function onAuthResult(success) {
             if (success) {
@@ -388,5 +360,4 @@ Window {
         slideDown.start()
         showPassAnim.start()
     }
-
 }

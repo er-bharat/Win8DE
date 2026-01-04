@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     layerWindow->setExclusiveZone(0);
 
     window->setFlags(Qt::FramelessWindowHint);
-    window->showFullScreen();
+    window->show();
 
     return app.exec();
 }

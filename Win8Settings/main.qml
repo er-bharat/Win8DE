@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs 6.4
-
+pragma ComponentBehavior: Bound
 ApplicationWindow {
     id: window
     visible: true
@@ -68,24 +68,24 @@ ApplicationWindow {
                         text: "Wallpaper"
                         width: parent.width
                         checkable: true
-                        checked: currentPage === 0
-                        onClicked: currentPage = 0
+                        checked: window.currentPage === 0
+                        onClicked: window.currentPage = 0
                     }
 
                     Button {
                         text: "Colors"
                         width: parent.width
                         checkable: true
-                        checked: currentPage === 1
-                        onClicked: currentPage = 1
+                        checked: window.currentPage === 1
+                        onClicked: window.currentPage = 1
                     }
 
                     Button {
                         text: "Hot Corners"
                         width: parent.width
                         checkable: true
-                        checked: currentPage === 2
-                        onClicked: currentPage = 2
+                        checked: window.currentPage === 2
+                        onClicked: window.currentPage = 2
                     }
 
                 }
@@ -103,14 +103,13 @@ ApplicationWindow {
 
             StackLayout {
                 anchors.fill: parent
-                currentIndex: currentPage
+                currentIndex: window.currentPage
 
                 // ==================================================
                 // ================= Wallpaper Page =================
                 // ==================================================
                 Item {
-                    anchors.fill: parent
-
+                    Layout.alignment: Qt.AlignLeft
                     Column {
                         anchors.fill: parent
                         spacing: 20
@@ -125,11 +124,14 @@ ApplicationWindow {
                                 model: ["Desktop", "Lockscreen", "Start"]
 
                                 delegate: Column {
+                                    id: walltype
                                     width: parent.width / 3 - 20
                                     spacing: 8
 
+                                    required property string modelData
+
                                     Text {
-                                        text: modelData
+                                        text: walltype.modelData
                                         font.bold: true
                                         horizontalAlignment: Text.AlignHCenter
                                         width: parent.width
@@ -142,27 +144,27 @@ ApplicationWindow {
 
                                         Rectangle {
                                             anchors.fill: parent
-                                            border.width: selectedWallpaperType === modelData ? 4 : 1
-                                            border.color: selectedWallpaperType === modelData ? "dodgerblue" : "#666"
+                                            border.width: window.selectedWallpaperType === walltype.modelData ? 4 : 1
+                                            border.color: window.selectedWallpaperType === walltype.modelData ? "dodgerblue" : "#666"
                                         }
 
                                         Image {
                                             anchors.fill: parent
                                             anchors.margins: 10
                                             fillMode: Image.PreserveAspectCrop
-                                            source: modelData === "Desktop"
+                                            source: walltype.modelData === "Desktop"
                                             ? toUrl(SettingsManager.desktopWallpaper)
-                                            : modelData === "Lockscreen"
+                                            : walltype.modelData === "Lockscreen"
                                             ? toUrl(SettingsManager.lockscreenWallpaper)
                                             : toUrl(SettingsManager.startWallpaper)
                                         }
 
                                         MouseArea {
                                             anchors.fill: parent
-                                            onClicked: selectedWallpaperType = modelData
+                                            onClicked: window.selectedWallpaperType = walltype.modelData
                                             onDoubleClicked: {
                                                 let file = SettingsManager.openWallpaperFileDialog()
-                                                if (file) SettingsManager.setWallpaper(modelData, file)
+                                                if (file) SettingsManager.setWallpaper(walltype.modelData, file)
                                             }
                                         }
                                     }
@@ -174,10 +176,10 @@ ApplicationWindow {
                             id: folderbtn
                             text: "Select Wallpaper Folder"
                             onClicked: {
-                                let folder = SettingsManager.openWallpaperFolderDialog(currentFolder)
+                                let folder = SettingsManager.openWallpaperFolderDialog(window.currentFolder)
                                 if (folder) {
-                                    currentFolder = folder
-                                    folderImages = SettingsManager.listImagesInFolder(folder)
+                                    window.currentFolder = folder
+                                    window.folderImages = SettingsManager.listImagesInFolder(folder)
                                 }
                             }
                         }
@@ -187,13 +189,16 @@ ApplicationWindow {
                             height: parent.height-wallview.height-folderbtn.height-40
                             cellWidth: 200
                             cellHeight: 114
-                            model: folderImages
+                            model: window.folderImages
                             clip: true
 
                             delegate: Rectangle {
+                                id: wallpreview
                                 width: 200
                                 height: 114
                                 border.width: 0
+
+                                required property string modelData
 
                                 Rectangle {
                                     anchors.fill: parent
@@ -204,18 +209,21 @@ ApplicationWindow {
                                         anchors.fill: parent
                                         anchors.margins: 5
                                         fillMode: Image.PreserveAspectFit
-                                        source: toUrl(modelData)
-                                        sourceSize.width: 200     // load smaller width
-                                        sourceSize.height: 200    // load smaller height
+                                        source: toUrl(wallpreview.modelData)
+                                        // sourceSize.width: 200     // load smaller width
+                                        // sourceSize.height: 200    // load smaller height
 
+                                        asynchronous: true        // ✅ BIG WIN
+                                        cache: true               // ✅ reuse decoded image
+                                        mipmap: true
                                     }
                                 }
 
                                 MouseArea {
                                     anchors.fill: parent
                                     onClicked: {
-                                        if (selectedWallpaperType)
-                                            SettingsManager.setWallpaper(selectedWallpaperType, modelData)
+                                        if (window.selectedWallpaperType)
+                                            SettingsManager.setWallpaper(window.selectedWallpaperType, wallpreview.modelData)
                                     }
                                 }
                             }
@@ -228,42 +236,47 @@ ApplicationWindow {
                 // ================= Colors Page ====================
                 // ==================================================
                 Item {
-                    anchors.fill: parent
-                    anchors.margins: 40
+                    Layout.alignment: Qt.AlignLeft
 
-                    Column {
-                        anchors.margins: 40
-                        spacing: 20
+                    Item {
+                        anchors.fill:parent
+                        Column {
+                            padding: 20
+                            spacing: 20
 
-                        Repeater {
-                            model: ["Background", "Tile", "TileHighlight"]
+                            Repeater {
+                                model: ["Background", "Tile", "TileHighlight"]
 
-                            delegate: Row {
-                                spacing: 10
+                                delegate: Row {
+                                    id: colortype
+                                    spacing: 10
 
-                                Text { text: modelData; width: 120 }
+                                    required property string modelData
 
-                                Rectangle {
-                                    id: preview
-                                    width: 50
-                                    height: 25
-                                    border.width: 1
+                                    Text { text: colortype.modelData; width: 120 }
 
-                                    Component.onCompleted: {
-                                        color = SettingsManager.getColor(modelData) || "white"
-                                    }
+                                    Rectangle {
+                                        id: preview
+                                        width: 50
+                                        height: 25
+                                        border.width: 1
 
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: dialog.open()
-                                    }
+                                        Component.onCompleted: {
+                                            color = SettingsManager.getColor(colortype.modelData) || "white"
+                                        }
 
-                                    ColorDialog {
-                                        id: dialog
-                                        selectedColor: preview.color
-                                        onAccepted: {
-                                            preview.color = selectedColor
-                                            SettingsManager.setColor(modelData, selectedColor)
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: dialog.open()
+                                        }
+
+                                        ColorDialog {
+                                            id: dialog
+                                            selectedColor: preview.color
+                                            onAccepted: {
+                                                preview.color = selectedColor
+                                                SettingsManager.setColor(colortype.modelData, selectedColor)
+                                            }
                                         }
                                     }
                                 }
@@ -277,13 +290,12 @@ ApplicationWindow {
                 // ================= Hot Corners Page =================
                 // ==================================================
                 Item {
-                    anchors.fill: parent
-                    anchors.margins: 40
+                    Layout.alignment: Qt.AlignLeft
 
                     Column {
                         anchors.fill: parent
                         spacing: 20
-                        anchors.margins: 20
+                        padding: 20
 
                         Repeater {
                             model: [
@@ -294,11 +306,16 @@ ApplicationWindow {
                             ]
 
                             delegate: Row {
+                                id: cornertype
                                 spacing: 10
                                 width: parent.width
 
+                                required property string modelData
+                                required property string name
+                                required property string value
+
                                 Text {
-                                    text: modelData.name
+                                    text: cornertype.name
                                     width: 120
                                     font.bold: true
                                     verticalAlignment: Text.AlignVCenter
@@ -306,23 +323,22 @@ ApplicationWindow {
 
                                 TextField {
                                     id: cmdField
-                                    text: modelData.value
+                                    text: cornertype.value
                                     width: parent.width - 140
                                     placeholderText: "Enter command to run on hover"
 
                                     onEditingFinished: {
                                         // Update SettingsManager hot corner property dynamically
-                                        if (modelData.name === "TopLeft") SettingsManager.topLeftCorner = text
-                                            else if (modelData.name === "TopRight") SettingsManager.topRightCorner = text
-                                                else if (modelData.name === "BottomLeft") SettingsManager.bottomLeftCorner = text
-                                                    else if (modelData.name === "BottomRight") SettingsManager.bottomRightCorner = text
+                                        if (cornertype.name === "TopLeft") SettingsManager.topLeftCorner = text
+                                            else if (cornertype.name === "TopRight") SettingsManager.topRightCorner = text
+                                                else if (cornertype.name === "BottomLeft") SettingsManager.bottomLeftCorner = text
+                                                    else if (cornertype.name === "BottomRight") SettingsManager.bottomRightCorner = text
                                     }
                                 }
                             }
                         }
                     }
                 }
-
             }
         }
     }

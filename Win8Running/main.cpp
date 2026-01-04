@@ -90,12 +90,35 @@ public:
         endResetModel();
     }
 
-    Q_INVOKABLE void activate(const QString &title)   { run({"--activate", title}); }
-    Q_INVOKABLE void activateOnly(const QString &title){ run({"--activate-only", title}); }
-    Q_INVOKABLE void minimize(const QString &title)   { run({"--minimize", title}); }
-    Q_INVOKABLE void maximize(const QString &title)   { run({"--maximize", title}); }
-    Q_INVOKABLE void unmaximize(const QString &title) { run({"--unmaximize", title}); }
-    Q_INVOKABLE void closeWindow(const QString &title){ run({"--close", title}); }
+    Q_INVOKABLE void activate(int i) {
+        if (i < 0 || i >= windows.size()) return;
+        run({"--activate", windows[i].title});
+    }
+
+    Q_INVOKABLE void activateOnly(int i) {
+        if (i < 0 || i >= windows.size()) return;
+        run({"--activate-only", windows[i].title});
+    }
+
+    Q_INVOKABLE void minimize(int i) {
+        if (i < 0 || i >= windows.size()) return;
+        run({"--minimize", windows[i].title});
+    }
+
+    Q_INVOKABLE void maximize(int i) {
+        if (i < 0 || i >= windows.size()) return;
+        run({"--maximize", windows[i].title});
+    }
+
+    Q_INVOKABLE void unmaximize(int i) {
+        if (i < 0 || i >= windows.size()) return;
+        run({"--unmaximize", windows[i].title});
+    }
+
+    Q_INVOKABLE void close(int i) {
+        if (i < 0 || i >= windows.size()) return;
+        run({"--close", windows[i].title});
+    }
 
 private:
     QList<WindowItem> windows;
@@ -105,26 +128,37 @@ private:
     void load() {
         QSettings ini(iniPath, QSettings::IniFormat);
 
-        for (const QString &group : ini.childGroups()) {
+        QStringList groups = ini.childGroups();
+
+        // 🔹 Sort groups numerically: "1", "2", "10" (not lexicographically)
+        std::sort(groups.begin(), groups.end(),
+                  [](const QString &a, const QString &b) {
+                      return a.toInt() < b.toInt();
+                  });
+
+        for (const QString &group : groups) {
             ini.beginGroup(group);
+
             WindowItem w;
-            w.appId = ini.value("AppID").toString();
-            w.title = ini.value("Title").toString();
-            w.focused = ini.value("Focused").toBool();
+            w.appId     = ini.value("AppID").toString();
+            w.title     = ini.value("Title").toString();
+            w.focused   = ini.value("Focused").toBool();
             w.maximized = ini.value("Maximized").toBool();
             w.minimized = ini.value("Minimized").toBool();
-            w.iconName = ini.value("Icon").toString();
+            w.iconName  = ini.value("Icon").toString();
 
             QFileInfo fi(w.iconName);
             if (fi.isAbsolute() && fi.exists())
-                w.iconPath = "file://" + w.iconName;
+                w.iconPath = QUrl::fromLocalFile(w.iconName).toString();
             else
                 w.iconPath = resolveIcon(w.iconName);
 
             windows.append(w);
+
             ini.endGroup();
         }
     }
+
 
     QString resolveIcon(const QString &name)
     {
@@ -136,7 +170,7 @@ private:
             xdgDataHome + "/icons/hicolor",
             QDir::homePath() + "/.icons",
             "/usr/share/icons/hicolor",
-            "/usr/share/icons/breeze/apps",   // Breeze base
+            "/usr/share/icons/breeze/apps",
             "/usr/share/pixmaps"
         };
 
@@ -146,11 +180,26 @@ private:
             "128x128/apps",
             "64x64/apps",
             "48x48/apps",
-            "64",   // Breeze
-            "48"    // Breeze
+            "64",
+            "48"
         };
 
         for (const QString &base : basePaths) {
+
+            // 🔹 pixmaps: search directly, no size directories
+            if (base == "/usr/share/pixmaps") {
+                QString png = base + "/" + name + ".png";
+                if (QFile::exists(png))
+                    return QUrl::fromLocalFile(png).toString();
+
+                QString svg = base + "/" + name + ".svg";
+                if (QFile::exists(svg))
+                    return QUrl::fromLocalFile(svg).toString();
+
+                continue;
+            }
+
+            // 🔹 icon themes: search with sizes
             for (const QString &size : sizes) {
                 QString path = base + "/" + size + "/" + name;
 
@@ -162,15 +211,11 @@ private:
                 if (QFile::exists(png))
                     return QUrl::fromLocalFile(png).toString();
             }
-
-            // pixmaps (no size dir)
-            QString pixmap = base + "/" + name + ".png";
-            if (QFile::exists(pixmap))
-                return QUrl::fromLocalFile(pixmap).toString();
         }
 
         return {};
     }
+
 
     void run(const QStringList &args) {
         QProcess::startDetached("list-windows", args);
@@ -182,10 +227,33 @@ private:
 class WindowController : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool visible READ isVisible NOTIFY visibleChanged)
+    Q_PROPERTY(bool exclusive READ isExclusive NOTIFY exclusiveChanged)
 
 public:
-    explicit WindowController(QQuickWindow *w, QObject *parent = nullptr)
-    : QObject(parent), window(w) {}
+    explicit WindowController(QQuickWindow *w,
+                              LayerShellQt::Window *layer,
+                              QObject *parent = nullptr)
+    : QObject(parent), window(w), layerShell(layer) {}
+
+    Q_INVOKABLE void toggleExclusive() {
+        if (!window || !layerShell) return;
+
+        exclusive = !exclusive;
+        qDebug() << "toggleExclusive called, new exclusive:" << exclusive;
+
+        if (exclusive) {
+            layerShell->setExclusiveZone(window->width());
+        } else {
+            layerShell->setExclusiveZone(0); // safer than -1
+        }
+
+        // Force layout refresh
+        window->requestUpdate();
+
+        emit exclusiveChanged();
+    }
+    bool isExclusive() const { return exclusive; }
+
 
     Q_INVOKABLE void show() {
         if (!window) return;
@@ -211,9 +279,13 @@ public:
 
 signals:
     void visibleChanged();
+    // void visibleChanged();
+    void exclusiveChanged();
 
 private:
     QQuickWindow *window = nullptr;
+    LayerShellQt::Window *layerShell = nullptr;
+    bool exclusive = false;
 };
 
 /* ---------------- main() ---------------- */
@@ -248,17 +320,19 @@ int main(int argc, char *argv[]) {
     layer->setKeyboardInteractivity(
         LayerShellQt::Window::KeyboardInteractivityOnDemand);
     layer->setAnchors({
+        LayerShellQt::Window::AnchorTop,
         LayerShellQt::Window::AnchorBottom,
         LayerShellQt::Window::AnchorLeft
     });
-    layer->setExclusiveZone(-1);
+    layer->setExclusiveZone(0);
 
     window->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     window->show();
 
     /* ---------------- WindowController ---------------- */
-    auto *controller = new WindowController(window, &app);
+    auto *controller = new WindowController(window, layer, &app);
     engine.rootContext()->setContextProperty("WindowController", controller);
+
 
     /* ---------------- Toggle server ---------------- */
     QDir().mkpath(QFileInfo(socketPath).absolutePath());

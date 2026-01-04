@@ -318,14 +318,14 @@ updated version in /usr/share/docs/labwc/rc.xml.all
     <keybind key="A-S-Tab">
       <action name="PreviousWindow"/>
     </keybind>
-    <keybind key="W-Return">
-      <action name="Execute" command="kitty"/>
-    </keybind>
     <keybind key="A-F3">
       <action name="Execute" command="bemenu-run"/>
     </keybind>
     <keybind key="Super_L" onRelease="yes">
       <action name="Execute" command="Win8Start"/>
+    </keybind>
+    <keybind key="Super_L-w">
+      <action name="Execute" command="Win8Running"/>
     </keybind>
     <keybind key="A-F4">
       <action name="Close"/>

@@ -4,7 +4,7 @@ import QtQuick.Window
 Window {
     id: root
     visible: false
-    width: 80
+    width: 100
     height: 320
     color: "transparent"
 
@@ -20,8 +20,8 @@ Window {
     // ================= Background =================
     Rectangle {
         id: osdBg
-        width: 80
-        height: 320
+        width: parent.width
+        height: parent.height
         color: "#cc000000"   // translucent black
         radius: 0            // Windows 8 sharp edges
         anchors.centerIn: parent
@@ -29,20 +29,22 @@ Window {
         // ================= Track =================
         Rectangle {
             id: track
-            width: 18
-            height: parent.height - 80
+            width: parent.width/4
+            height: parent.height*0.75
             color: "#777777"
             radius: 0
-            anchors.centerIn: parent
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: height/5
 
             // ================= Fill =================
             Rectangle {
                 id: fill
                 width: parent.width
                 anchors.bottom: parent.bottom
-                height: muted ? 0 : parent.height * value / 100
+                height: root.muted ? 0 : parent.height * root.value / 100
                 radius: 0
-                color: mode === "brightness" ? "#ffd600" : "#1e88ff"
+                color: root.mode === "brightness" ? "#ffd600" : "#1e88ff"
 
                 Behavior on height {
                     NumberAnimation {
@@ -55,16 +57,16 @@ Window {
             // ================= Knob =================
             Rectangle {
                 id: knob
-                width: 18
-                height: 18
+                width: parent.width *1.15
+                height: width
                 color: "white"
                 radius: 0
                 anchors.horizontalCenter: parent.horizontalCenter
 
-                y: muted
+                y: root.muted
                 ? parent.height - height
                 : parent.height
-                - (parent.height * value / 100)
+                - (parent.height * root.value / 100)
                 - height / 2
 
                 Behavior on y {
@@ -81,7 +83,7 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 10
-            text: muted ? "Muted" : value
+            text: root.muted ? "Muted" : root.value
             color: "white"
             font.pixelSize: 14
             font.bold: true

@@ -54,10 +54,4 @@ target_compile_options(list-windows PRIVATE
 # ----------------------------
 # Automatically copy compile_commands.json to source dir
 # ----------------------------
-add_custom_command(
-    TARGET list-windows POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_BINARY_DIR}/compile_commands.json
-        ${CMAKE_SOURCE_DIR}/compile_commands.json
-    COMMENT "Copying compile_commands.json to source directory for ccls"
-)
+

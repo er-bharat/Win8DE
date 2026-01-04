@@ -134,7 +134,7 @@ void write_all_windows_to_ini() {
   QSettings settings(path, QSettings::IniFormat);
   settings.clear();
 
-  int index = 0;
+  int index = 1;
   for (auto &[handle, win] : windows) {
     if (win.title.empty() || win.app_id.empty())
       continue;
