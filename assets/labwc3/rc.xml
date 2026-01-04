@@ -324,7 +324,11 @@ updated version in /usr/share/docs/labwc/rc.xml.all
     <keybind key="Super_L" onRelease="yes">
       <action name="Execute" command="Win8Start"/>
     </keybind>
+<<<<<<< HEAD
     <keybind key="Super_L-w">
+=======
+    <keybind key="W-w">
+>>>>>>> 240fa7a (major refinement drive removed unnneded features and code.)
       <action name="Execute" command="Win8Running"/>
     </keybind>
     <keybind key="A-F4">
