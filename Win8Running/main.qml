@@ -4,6 +4,7 @@ import QtQuick.Controls
 import Windows 1.0
 
 ApplicationWindow {
+    id: root
     visible: false
     width: 240
     height: screen.height
@@ -13,18 +14,35 @@ ApplicationWindow {
     WindowModel {
         id: windowModel
     }
-
-    onVisibleChanged: {
-        if (visible) {
-            windowModel.reload();
-            list.currentIndex = windowModel.indexOfFocused();
-
-            if (list.currentIndex >= 0) {
-                list.positionViewAtIndex(list.currentIndex, ListView.Contain);
-            }
+    function focusIndex() {
+        windowModel.reload();
+        list.currentIndex = windowModel.indexOfFocused();
+        
+        if (list.currentIndex >= 0) {
+            list.positionViewAtIndex(list.currentIndex, ListView.Contain);
+            
         }
     }
-
+    
+    onVisibleChanged: {
+        if (visible) {
+            focusIndex();
+        }
+    }
+    
+    // Timer {
+    //     interval: 500
+    //     repeat: root.visible
+    //     running: root.visible
+    //     onTriggered:{
+    //         WindowController.releaseKeyboardMomentarily()
+    //         Qt.callLater(function () {
+    //             focusIndex()
+    //         })
+    //     } 
+    // }
+    
+    
     /* ---------- Close strip ---------- */
     Rectangle {
         id: cornerbtn
@@ -130,6 +148,15 @@ ApplicationWindow {
                 border.width: selected ? 2 : focused ? 1 : 1
                 border.color: selected /*|| focused*/ ? "#6aa9ff" : "#555"
 
+                DropArea {
+                    anchors.fill: parent
+                    
+                    onEntered: {
+                        list.currentIndex = index;
+                        if (!minimized)
+                            windowModel.activate(index);
+                    }
+                }
                 /* ---- App ID ---- */
                 Text {
                     text: appId

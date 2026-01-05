@@ -33,8 +33,6 @@ struct wl_seat *seat = nullptr;
 
 bool dirty = false;
 
-QString socketPath =
-    QDir::homePath() + "/.config/hexlauncher/list-windows.sock";
 
 // ------------------------------------------------------------
 // Window tracking
@@ -348,7 +346,13 @@ static const wl_registry_listener registry_listener = {
 // ------------------------------------------------------------
 int main(int argc, char **argv) {
   QCoreApplication app(argc, argv);
-
+  QCoreApplication::setApplicationName(QFileInfo(argv[0]).baseName());
+  
+  const QString socketPath =
+  QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+  + "/" + QCoreApplication::applicationName()
+  + "/" + QCoreApplication::applicationName() + ".sock";
+  
   // --------------------------------------------------------
   // HELP MESSAGE
   // --------------------------------------------------------
@@ -395,10 +399,15 @@ int main(int argc, char **argv) {
     if (!cmd.isEmpty()) {
       QLocalSocket sock;
       sock.connectToServer(socketPath);
-      if (sock.waitForConnected(100)) {
-        sock.write(cmd.toUtf8());
-        sock.waitForBytesWritten();
+      if (!sock.waitForConnected(500)) {
+        std::cerr << "Failed to connect to socket: "
+        << socketPath.toStdString() << std::endl;
+        return 1;
       }
+      
+      sock.write(cmd.toUtf8());
+      sock.waitForBytesWritten();
+      
       return 0;
     }
   }
@@ -437,17 +446,33 @@ int main(int argc, char **argv) {
   // --------------------------------------------------------
   // Command socket
   // --------------------------------------------------------
-  QFile::remove(socketPath);
-  QLocalServer server;
-  server.listen(socketPath);
-
-  QObject::connect(&server, &QLocalServer::newConnection, [&]() {
-    QLocalSocket *client = server.nextPendingConnection();
-    QObject::connect(client, &QLocalSocket::readyRead, [client]() {
-      handle_command(QString::fromUtf8(client->readAll()).trimmed());
-      client->disconnectFromServer();
+  {
+    QFile::remove(socketPath);
+    
+    QDir dir(QFileInfo(socketPath).absolutePath());
+    if (!dir.exists()) {
+      dir.mkpath(".");
+    }
+    
+    static QLocalServer server;
+    
+    if (!server.listen(socketPath)) {
+      std::cerr << "Failed to listen on socket: "
+      << server.errorString().toStdString() << std::endl;
+      return 1;
+    }
+    
+    QObject::connect(&server, &QLocalServer::newConnection, [&]() {
+      QLocalSocket *client = server.nextPendingConnection();
+      
+      QObject::connect(client, &QLocalSocket::readyRead, [client]() {
+        handle_command(QString::fromUtf8(client->readAll()).trimmed());
+        client->disconnectFromServer();
+        client->deleteLater();
+      });
     });
-  });
+  }
+  
 
   return app.exec();
 }
