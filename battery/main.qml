@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
+import QtMultimedia
 
 ApplicationWindow {
     id: popup
@@ -11,6 +12,12 @@ ApplicationWindow {
     color: "transparent"
     title: "Battery Notification"
     property bool persistent: false
+    
+    SoundEffect {
+        id: alertSound
+        source: "alert.wav" // or a resource path like "qrc:/sounds/alert.wav"
+        volume: 1.0  // 0.0 to 1.0
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -48,11 +55,12 @@ ApplicationWindow {
 
                     Column {
                         anchors.centerIn: parent
-                        // width: parent.width
+                        width: parent.width
                         // height: parent.height
                         spacing: 6
                         Text {
                             id: percent
+                            width: parent.width
                             text: Battery.percentage + "%"
                             color: "white"
                             font.pixelSize: 50
@@ -61,6 +69,7 @@ ApplicationWindow {
                         }
                         Text {
                             id: message
+                            width: parent.width
                             text: ""
                             color: "white"
                             font.pixelSize: 20
@@ -103,6 +112,11 @@ ApplicationWindow {
         popup.persistent = persistent;
         dismissBtn.visible = persistent;
         popup.visible = true;
+        
+        // Play alert sound
+        alertSound.stop();  // Ensure it restarts if already playing
+        alertSound.play();
+        
         if (!persistent) {
             autoHideTimer.restart();
         }

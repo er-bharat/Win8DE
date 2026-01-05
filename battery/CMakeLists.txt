@@ -26,7 +26,7 @@ find_package(LayerShellQt REQUIRED)
 # --------------------------------------------------
 add_executable(battery-daemon
     main.cpp        # ✅ add QML file
-    qml.qrc
+    resources.qrc
 )
 
 target_link_libraries(battery-daemon
@@ -42,9 +42,4 @@ target_compile_features(battery-daemon PRIVATE cxx_std_17)
 # --------------------------------------------------
 # Copy compile_commands.json to project root
 # --------------------------------------------------
-add_custom_target(copy-compile-commands ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_BINARY_DIR}/compile_commands.json
-        ${CMAKE_SOURCE_DIR}/compile_commands.json
-    DEPENDS battery-daemon
-)
+

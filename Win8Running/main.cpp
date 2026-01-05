@@ -12,7 +12,7 @@
 #include <QLocalSocket>
 #include <QFileInfo>
 #include <LayerShellQt/window.h>
-
+#include <QTimer>
 /* ---------------- Window Item ---------------- */
 
 struct WindowItem {
@@ -93,11 +93,13 @@ public:
     Q_INVOKABLE void activate(int i) {
         if (i < 0 || i >= windows.size()) return;
         run({"--activate", windows[i].title});
+        emit requestKeyboardRelease();
     }
 
     Q_INVOKABLE void activateOnly(int i) {
         if (i < 0 || i >= windows.size()) return;
         run({"--activate-only", windows[i].title});
+        emit requestKeyboardRelease();
     }
 
     Q_INVOKABLE void minimize(int i) {
@@ -108,17 +110,28 @@ public:
     Q_INVOKABLE void maximize(int i) {
         if (i < 0 || i >= windows.size()) return;
         run({"--maximize", windows[i].title});
+        emit requestKeyboardRelease();
     }
 
     Q_INVOKABLE void unmaximize(int i) {
         if (i < 0 || i >= windows.size()) return;
         run({"--unmaximize", windows[i].title});
+        emit requestKeyboardRelease();
     }
 
     Q_INVOKABLE void close(int i) {
         if (i < 0 || i >= windows.size()) return;
         run({"--close", windows[i].title});
     }
+    
+    Q_INVOKABLE int indexOfFocused() const {
+        for (int i = 0; i < windows.size(); ++i) {
+            if (windows[i].focused)
+                return i;
+        }
+        return -1;
+    }
+    
 
 private:
     QList<WindowItem> windows;
@@ -127,15 +140,15 @@ private:
 
     void load() {
         QSettings ini(iniPath, QSettings::IniFormat);
-
+         
         QStringList groups = ini.childGroups();
-
+          
         // 🔹 Sort groups numerically: "1", "2", "10" (not lexicographically)
         std::sort(groups.begin(), groups.end(),
                   [](const QString &a, const QString &b) {
                       return a.toInt() < b.toInt();
                   });
-
+                   
         for (const QString &group : groups) {
             ini.beginGroup(group);
 
@@ -220,6 +233,9 @@ private:
     void run(const QStringList &args) {
         QProcess::startDetached("list-windows", args);
     }
+signals:
+    void requestKeyboardRelease();
+    
 };
 
 /* ---------------- Window Controller (NEW) ---------------- */
@@ -254,6 +270,31 @@ public:
     }
     bool isExclusive() const { return exclusive; }
 
+    Q_INVOKABLE void releaseKeyboardMomentarily(int ms = 80)
+    {
+        if (!layerShell || !window)
+            return;
+        
+        // 1️⃣ Make surface unfocusable
+        layerShell->setKeyboardInteractivity(
+            LayerShellQt::Window::KeyboardInteractivityNone);
+        
+        // Ensure the request is sent to the compositor
+        window->requestUpdate();
+        QGuiApplication::processEvents(QEventLoop::AllEvents, 1);
+        
+        // 2️⃣ Restore exclusive focus after a short delay
+        QTimer::singleShot(ms, this, [this]() {
+            if (!layerShell || !window)
+                return;
+            
+            layerShell->setKeyboardInteractivity(
+                LayerShellQt::Window::KeyboardInteractivityExclusive);
+            
+            window->requestUpdate();
+        });
+    }
+    
 
     Q_INVOKABLE void show() {
         if (!window) return;
@@ -318,7 +359,7 @@ int main(int argc, char *argv[]) {
     auto layer = LayerShellQt::Window::get(window);
     layer->setLayer(LayerShellQt::Window::LayerOverlay);
     layer->setKeyboardInteractivity(
-        LayerShellQt::Window::KeyboardInteractivityOnDemand);
+        LayerShellQt::Window::KeyboardInteractivityExclusive);
     layer->setAnchors({
         LayerShellQt::Window::AnchorTop,
         LayerShellQt::Window::AnchorBottom,
@@ -333,7 +374,14 @@ int main(int argc, char *argv[]) {
     auto *controller = new WindowController(window, layer, &app);
     engine.rootContext()->setContextProperty("WindowController", controller);
 
-
+    auto *model = engine.rootObjects().first()
+    ->findChild<WindowModel *>();
+    
+    QObject::connect(model, &WindowModel::requestKeyboardRelease,
+                     controller, [controller]() {
+                         controller->releaseKeyboardMomentarily();
+                     });
+    
     /* ---------------- Toggle server ---------------- */
     QDir().mkpath(QFileInfo(socketPath).absolutePath());
     QFile::remove(socketPath);

@@ -3,6 +3,6 @@
         <file>main.qml</file>
         <file>electric.svg</file>
         <file>electricx.svg</file>
-
+        <file>alert.wav</file>
     </qresource>
 </RCC>

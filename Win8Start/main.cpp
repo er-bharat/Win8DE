@@ -1362,7 +1362,7 @@ int main(int argc, char *argv[]) {
   // --------------------------------------------------------
   // Load QML
   // --------------------------------------------------------
-  engine.load(QUrl(QStringLiteral("qrc:/main2.qml")));
+  engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
   if (engine.rootObjects().isEmpty())
     return -1;
 
