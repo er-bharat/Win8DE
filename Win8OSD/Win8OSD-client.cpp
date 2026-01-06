@@ -5,27 +5,23 @@
 #include <QRegularExpression>
 #include <algorithm>
 
-const QString socketName = "osd_instance_socket";
+static constexpr auto socketName = "osd_instance_socket";
+static constexpr int STEP = 5;
 
-void adjustVolumeAlsa(int deltaPercent)
-{
-    QString change = QString::number(std::abs(deltaPercent)) + "%";
-    change += (deltaPercent > 0 ? "+" : "-");
-    QProcess::execute("amixer", { "sset", "Master", change });
-}
+// ---------------- ALSA helpers ----------------
 
-int getCurrentVolumeAlsa()
+static int currentVolume()
 {
     QProcess proc;
     proc.start("amixer", { "sget", "Master" });
     proc.waitForFinished();
-    QString output = proc.readAllStandardOutput();
+    const QString out = proc.readAllStandardOutput();
     QRegularExpression re(R"(\[(\d+)%\])");
-    QRegularExpressionMatch match = re.match(output);
-    return match.hasMatch() ? match.captured(1).toInt() : 50;
+    auto m = re.match(out);
+    return m.hasMatch() ? m.captured(1).toInt() : 50;
 }
 
-bool getMuteStatusAlsa()
+static bool isMuted()
 {
     QProcess proc;
     proc.start("amixer", { "get", "Master" });
@@ -33,109 +29,99 @@ bool getMuteStatusAlsa()
     return proc.readAllStandardOutput().contains("[off]");
 }
 
-void toggleMute()
+static void changeVolume(int delta)
+{
+    const QString arg =
+        QString::number(std::abs(delta)) + "%" + (delta > 0 ? "+" : "-");
+    QProcess::execute("amixer", { "sset", "Master", arg });
+}
+
+static void toggleMute()
 {
     QProcess::execute("amixer", { "sset", "Master", "toggle" });
 }
 
-void adjustBrightness(int deltaPercent)
+// ---------------- Brightness helpers ----------------
+
+static int brightnessPercent()
 {
-    QProcess getProc, maxProc;
-    getProc.start("brightnessctl", { "get" });
-    getProc.waitForFinished();
-    int current = getProc.readAllStandardOutput().trimmed().toInt();
-
-    maxProc.start("brightnessctl", { "max" });
-    maxProc.waitForFinished();
-    int max = maxProc.readAllStandardOutput().trimmed().toInt();
-
-    if (current <= 0 || max <= 0)
-        return;
-
-    int currentPercent = static_cast<int>((100.0 * current) / max);
-    int newPercent = std::clamp(currentPercent + deltaPercent, 1, 100);
-    QString value = QString::number(newPercent) + "%";
-    QProcess::execute("brightnessctl", { "set", value });
+    QProcess get, max;
+    get.start("brightnessctl", { "get" });
+    get.waitForFinished();
+    max.start("brightnessctl", { "max" });
+    max.waitForFinished();
+    
+    int cur = get.readAllStandardOutput().trimmed().toInt();
+    int m = max.readAllStandardOutput().trimmed().toInt();
+    return (cur > 0 && m > 0) ? int(100.0 * cur / m) : 50;
 }
 
-int getCurrentBrightness()
+static void changeBrightness(int delta)
 {
-    QProcess getProc, maxProc;
-    getProc.start("brightnessctl", { "get" });
-    getProc.waitForFinished();
-    int current = getProc.readAllStandardOutput().trimmed().toInt();
-
-    maxProc.start("brightnessctl", { "max" });
-    maxProc.waitForFinished();
-    int max = maxProc.readAllStandardOutput().trimmed().toInt();
-
-    if (current > 0 && max > 0)
-        return static_cast<int>((100.0 * current) / max);
-    return 50;
+    int cur = brightnessPercent();
+    int next = std::clamp(cur + delta, 1, 100);
+    QProcess::execute("brightnessctl", { "set", QString::number(next) + "%" });
 }
 
-int main(int argc, char* argv[])
+// ---------------- Main ----------------
+
+int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+    QCoreApplication::setApplicationName("win8osd");
+    QCoreApplication::setApplicationVersion("1.0");
+    
     QCommandLineParser parser;
     parser.addHelpOption();
+    parser.addVersionOption();
     parser.addOption({ "volup", "Increase volume" });
     parser.addOption({ "voldown", "Decrease volume" });
     parser.addOption({ "dispup", "Increase brightness" });
     parser.addOption({ "dispdown", "Decrease brightness" });
     parser.addOption({ "mute", "Toggle mute" });
     parser.process(app);
-
+    
     QString mode;
     int value = 50;
-    bool isMuted = getMuteStatusAlsa();
-
+    bool muted = isMuted();
+    
     if (parser.isSet("mute")) {
         toggleMute();
-        isMuted = getMuteStatusAlsa();
-        if (isMuted) {
-            mode = "mute";
-            value = 0;
-        } else {
-            mode = "volume";
-            value = getCurrentVolumeAlsa();
-        }
-    } else if (parser.isSet("volup")) {
-        if (isMuted)
-            toggleMute();
-        adjustVolumeAlsa(5);
+        muted = !muted;
+        mode = muted ? "mute" : "volume";
+        value = muted ? 0 : currentVolume();
+        
+    } else if (parser.isSet("volup") || parser.isSet("voldown")) {
+        if (muted) toggleMute();
+        changeVolume(parser.isSet("volup") ? STEP : -STEP);
+        muted = false;
         mode = "volume";
-        value = getCurrentVolumeAlsa();
-        isMuted = getMuteStatusAlsa();
-    } else if (parser.isSet("voldown")) {
-        if (isMuted)
-            toggleMute();
-        adjustVolumeAlsa(-5);
-        mode = "volume";
-        value = getCurrentVolumeAlsa();
-        isMuted = getMuteStatusAlsa();
-    } else if (parser.isSet("dispup")) {
+        value = currentVolume();
+        
+    } else if (parser.isSet("dispup") || parser.isSet("dispdown")) {
+        changeBrightness(parser.isSet("dispup") ? STEP : -STEP);
         mode = "brightness";
-        adjustBrightness(5);
-        value = getCurrentBrightness();
-    } else if (parser.isSet("dispdown")) {
-        mode = "brightness";
-        adjustBrightness(-5);
-        value = getCurrentBrightness();
+        value = brightnessPercent();
+        
     } else {
-        return 0;
+        parser.showHelp();
     }
-
+    
+    // ---------------- IPC ----------------
+    
     QLocalSocket socket;
     socket.connectToServer(socketName);
-    if (socket.waitForConnected(100)) {
-        QString msg = mode + " " + QString::number(value) + " " + (isMuted ? "1" : "0");
+    
+    if (socket.waitForConnected(50)) {
+        const QString msg =
+        QString("%1 %2 %3\n")
+        .arg(mode)
+        .arg(value)
+        .arg(muted ? 1 : 0);
+        
         socket.write(msg.toUtf8());
-        socket.flush();
-        socket.waitForBytesWritten();
-    } else {
-        qWarning("OSD server is not running.");
+        socket.waitForBytesWritten(50);
     }
-
+    
     return 0;
 }

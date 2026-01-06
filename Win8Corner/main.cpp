@@ -99,10 +99,10 @@ int main(int argc, char *argv[]) {
     if (!QFile::exists(iniFile)) {
         QSettings settings(iniFile, QSettings::IniFormat);
         settings.beginGroup("Corners");
-        settings.setValue("TopLeft", "gnome-terminal");
+        settings.setValue("TopLeft", "Win8Running");
         settings.setValue("TopRight", "firefox");
-        settings.setValue("BottomLeft", "nautilus");
-        settings.setValue("BottomRight", "thunderbird");
+        settings.setValue("BottomLeft", "pcmanfm-qt");
+        settings.setValue("BottomRight", "Win8Start");
         settings.endGroup();
         settings.sync();
     }

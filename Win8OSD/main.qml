@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Window
+import QtMultimedia
 
 Window {
     id: root
@@ -17,6 +18,12 @@ Window {
     property int value: osdValue       // 0–100
     property bool muted: osdMuted
 
+    SoundEffect {
+        id: bell
+        source: "bell.wav"   // or file:///path/to/bell.ogg
+        volume: 1
+    }
+    
     // ================= Background =================
     Rectangle {
         id: osdBg
@@ -89,4 +96,11 @@ Window {
             font.bold: true
         }
     }
+    onValueChanged: {
+        if (mode === "volume") {
+            bell.stop()
+            bell.play()
+        }
+    }
+    
 }
