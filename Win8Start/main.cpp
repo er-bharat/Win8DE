@@ -82,6 +82,7 @@ struct AppInfo {
   QString icon;
   QString desktopFilePath;
   QStringList categories;
+  bool terminal = false;
 };
 
 // ----------------------------
@@ -97,7 +98,8 @@ public:
     LetterRole,
     HeaderVisibleRole,
     DesktopFileRole,
-    CategoriesRole
+    CategoriesRole,
+    TerminalRole
   };
   
   AppModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
@@ -129,6 +131,8 @@ public:
         return app.name.left(1).toUpper() != m_apps[index.row() - 1].name.left(1).toUpper();
       case DesktopFileRole: return app.desktopFilePath;
       case CategoriesRole: return app.categories;
+      case TerminalRole: return app.terminal;
+      
       default: return QVariant();
     }
   }
@@ -141,7 +145,8 @@ public:
       {LetterRole, "letter"},
       {HeaderVisibleRole, "headerVisible"},
       {CategoriesRole, "categories"},
-      {DesktopFileRole, "desktopFilePath"}
+      {DesktopFileRole, "desktopFilePath"},
+      {TerminalRole, "terminal"}
     };
   }
   
@@ -352,6 +357,8 @@ public:
         QStringList categories;   // <-- NEW: store categories
         bool noDisplay = false;
         bool inMainSection = false;
+        bool terminal = false;   // <-- NEW
+        
         
         while (!f.atEnd()) {
           QString line = f.readLine().trimmed();
@@ -378,6 +385,8 @@ public:
             iconName = line.mid(5).trimmed();
           else if (line.startsWith("Categories="))
             categories = line.mid(11).split(';', Qt::SkipEmptyParts); // <-- PARSE CATEGORIES
+            else if (line.startsWith("Terminal="))
+              terminal = (line.mid(9).trimmed().toLower() == "true");
             else if (line.startsWith("NoDisplay=") && line.mid(10).trimmed().toLower() == "true")
               noDisplay = true;
         }
@@ -393,6 +402,7 @@ public:
         app["icon"] = resolveIcon(iconName);
         app["desktopFilePath"] = path;
         app["categories"] = categories;   // <-- STORE CATEGORIES
+        app["terminal"] = terminal;
         
         appList.append(app);
       }
@@ -535,30 +545,31 @@ public:
   // ------------------------------------
   // Launch application
   // ------------------------------------
-  Q_INVOKABLE void launchApp(const QString &command) {
+  Q_INVOKABLE void launchApp(const QString &command, bool terminal) {
     if (command.isEmpty()) {
       qWarning() << "⚠️ launchApp: Empty command.";
       return;
     }
-
+    
     QString cmd = command.trimmed();
     cmd.replace(QRegularExpression("%[uUfFdDnNvVmM]"), "");
-
+    
     // Expand env vars
     QRegularExpression envVarPattern(R"(\$(\w+)|\$\{([^}]+)\})");
     QRegularExpressionMatchIterator it = envVarPattern.globalMatch(cmd);
     while (it.hasNext()) {
-      auto match = it.next();
-      QString var =
-          match.captured(1).isEmpty() ? match.captured(2) : match.captured(1);
-      QString val = QString::fromUtf8(qgetenv(var.toUtf8()));
-      if (!val.isEmpty())
-        cmd.replace(match.captured(0), val);
+        auto match = it.next();
+        QString var = match.captured(1).isEmpty()
+                          ? match.captured(2)
+                          : match.captured(1);
+        QString val = QString::fromUtf8(qgetenv(var.toUtf8()));
+        if (!val.isEmpty())
+            cmd.replace(match.captured(0), val);
     }
 
     QStringList parts = QProcess::splitCommand(cmd);
     if (parts.isEmpty())
-      return;
+        return;
 
     QString program = parts.takeFirst();
     QString programPath = QFile::exists(program)
@@ -566,12 +577,29 @@ public:
                               : QStandardPaths::findExecutable(program);
 
     if (programPath.isEmpty()) {
-      qWarning() << "❌ launchApp: Executable not found:" << program;
-      return;
+        qWarning() << "❌ launchApp: Executable not found:" << program;
+        return;
     }
 
-    QProcess::startDetached(programPath, parts);
-  }
+    // 🟢 TERMINAL HANDLING
+    if (terminal) {
+      QString terminalExe = QStandardPaths::findExecutable("alacritty");
+      
+      if (terminalExe.isEmpty()) {
+        qWarning() << "❌ Alacritty not found";
+        return;
+      }
+      
+      QStringList termArgs;
+      termArgs << "-e" << programPath;
+      termArgs << parts;
+      
+      QProcess::startDetached(terminalExe, termArgs);
+    } else {
+      QProcess::startDetached(programPath, parts);
+    }
+}
+
 
   // ------------------------------------
   // Drag to desktop
@@ -618,6 +646,7 @@ signals:
 private:
   Async m_async;
 
+  
   // ------------------------------------
   // Directory hash for caching
   // ------------------------------------
@@ -743,6 +772,7 @@ struct Tile {
   QString icon;
   QString desktopFile;
   QString command;
+  bool terminal = false;
   double modelX;
   double modelY;
   QString size;
@@ -759,6 +789,7 @@ public:
     IconRole,
     DesktopFileRole,
     CommandRole,
+    TerminalRole,
     ModelXRole,
     ModelYRole,
     SizeRole
@@ -788,6 +819,7 @@ public:
       case IconRole:        return t.icon;
       case DesktopFileRole: return t.desktopFile;
       case CommandRole:     return t.command;
+      case TerminalRole:    return t.terminal;
       case ModelXRole:      return t.modelX;
       case ModelYRole:      return t.modelY;
       case SizeRole:        return t.size;
@@ -803,6 +835,7 @@ public:
       {CommandRole,     "command"},
       {ModelXRole,      "modelX"},
       {ModelYRole,      "modelY"},
+      { TerminalRole,   "terminal"},
       {SizeRole,        "size"}
     };
   }
@@ -864,6 +897,7 @@ public:
     m_async.run(
       [=]() -> Tile {
         Tile t;
+        t.terminal = false;
         t.desktopFile = filePath;
         t.modelX = dropX;
         t.modelY = dropY;
@@ -898,6 +932,8 @@ public:
             t.name = line.mid(5).trimmed();
           else if (line.startsWith("Icon="))
             t.icon = line.mid(5).trimmed();
+          else if (line.startsWith("Terminal="))
+            t.terminal = (line.mid(9).trimmed().toLower() == "true");
           else if (line.startsWith("Exec=")) {
             t.command = line.mid(5).trimmed();
             t.command.replace(
@@ -944,6 +980,8 @@ public:
             t.modelX      = o["modelX"].toDouble();
             t.modelY      = o["modelY"].toDouble();
             t.size        = o["size"].toString("medium");
+            t.terminal    = o.value("terminal").toBool(false);
+            
             tiles.append(t);
           }
           return tiles;
@@ -973,6 +1011,7 @@ public:
             o["modelX"]      = t.modelX;
             o["modelY"]      = t.modelY;
             o["size"]        = t.size;
+            o["terminal"]    = t.terminal;
             arr.append(o);
           }
 
@@ -1451,7 +1490,8 @@ int main(int argc, char *argv[]) {
                          m["command"].toString(),
                          m["icon"].toString(),
                          m["desktopFilePath"].toString(),
-                         m["categories"].toStringList()  
+                         m["categories"].toStringList()  ,
+                         m.value("terminal", false).toBool()
                        });
                        
                      }

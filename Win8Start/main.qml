@@ -598,6 +598,7 @@ ApplicationWindow {
                         required property string icon
                         required property string command
                         required property string size
+                        required property bool terminal
                             
                         //size setup of tiles.
                         readonly property int smallSize:   container.halfGrid - 5
@@ -636,7 +637,7 @@ ApplicationWindow {
                                     
                                 tile.launching = true
                                 container.anyTileLaunching = true
-                                AppLauncher.launchApp(tile.command)
+                                AppLauncher.launchApp(tile.command, tile.terminal)
                         }
                         
                         
@@ -1342,6 +1343,8 @@ ApplicationWindow {
                     required property string icon
                     required property string command
                     required property string desktopFilePath
+                    required property bool terminal
+                    
                     function openActionMenu() {
                         AppLauncher.loadDesktopActions(desktopFilePath, actionModel)
                         actionMenu.popup(appRect)
@@ -1364,7 +1367,7 @@ ApplicationWindow {
                     function launch() {
                         launching = true
                         apptext.opacity = 0
-                        AppLauncher.launchApp(command)
+                        AppLauncher.launchApp(command, terminal)
                         launchAnimAllapp.start()
                     }
                     
@@ -1528,7 +1531,7 @@ ApplicationWindow {
                                     appGridView.launchingIndex = apptilecol.index
                                     apptilecol.launching = true
                                     apptext.opacity = 0
-                                    AppLauncher.launchApp(apptilecol.command)
+                                    AppLauncher.launchApp(apptilecol.command, apptilecol.terminal)
                                     launchAnimAllapp.start()
                                 }
                                 
