@@ -81,6 +81,7 @@ struct AppInfo {
   QString command;
   QString icon;
   QString desktopFilePath;
+  QStringList categories;
 };
 
 // ----------------------------
@@ -95,83 +96,101 @@ public:
     IconRole,
     LetterRole,
     HeaderVisibleRole,
-    DesktopFileRole
+    DesktopFileRole,
+    CategoriesRole
   };
-
+  
   AppModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
-
+  
   void setApps(const QList<AppInfo> &apps) {
     beginResetModel();
-    m_allApps = apps; // store full list
+    m_allApps = apps; // full list
     m_apps = apps;    // visible list
     endResetModel();
   }
-
+  
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     Q_UNUSED(parent);
     return m_apps.count();
   }
-
-  QVariant data(const QModelIndex &index,
-                int role = Qt::DisplayRole) const override {
+  
+  QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
     if (!index.isValid() || index.row() < 0 || index.row() >= m_apps.count())
       return QVariant();
-
+    
     const AppInfo &app = m_apps[index.row()];
     switch (role) {
-    case NameRole:
-      return app.name;
-    case CommandRole:
-      return app.command;
-    case IconRole:
-      return app.icon;
-    case LetterRole:
-      return app.name.left(1).toUpper();
-    case HeaderVisibleRole:
-      if (index.row() == 0)
-        return true;
-      return app.name.left(1).toUpper() !=
-             m_apps[index.row() - 1].name.left(1).toUpper();
-    case DesktopFileRole:
-      return app.desktopFilePath;
-    default:
-      return QVariant();
+      case NameRole: return app.name;
+      case CommandRole: return app.command;
+      case IconRole: return app.icon;
+      case LetterRole: return app.name.left(1).toUpper();
+      case HeaderVisibleRole:
+        if (index.row() == 0) return true;
+        return app.name.left(1).toUpper() != m_apps[index.row() - 1].name.left(1).toUpper();
+      case DesktopFileRole: return app.desktopFilePath;
+      case CategoriesRole: return app.categories;
+      default: return QVariant();
     }
   }
-
+  
   QHash<int, QByteArray> roleNames() const override {
-    return {{NameRole, "name"},
-            {CommandRole, "command"},
-            {IconRole, "icon"},
-            {LetterRole, "letter"},
-            {HeaderVisibleRole, "headerVisible"},
-            {DesktopFileRole, "desktopFilePath"}};
+    return {
+      {NameRole, "name"},
+      {CommandRole, "command"},
+      {IconRole, "icon"},
+      {LetterRole, "letter"},
+      {HeaderVisibleRole, "headerVisible"},
+      {CategoriesRole, "categories"},
+      {DesktopFileRole, "desktopFilePath"}
+    };
   }
-
+  
+  // -------------------------------
+  // Search apps by name
+  // -------------------------------
   Q_INVOKABLE void search(const QString &query) {
-    QString q = query.trimmed().toLower();
-
+    m_currentQuery = query.trimmed();
+    applyFilter();
+  }
+  
+  // -------------------------------
+  // Filter by category
+  // -------------------------------
+  Q_INVOKABLE void setCategoryFilter(const QString &category) {
+    m_selectedCategory = category.trimmed();
+    applyFilter();
+  }
+  
+private:
+  QList<AppInfo> m_apps;       // filtered list
+  QList<AppInfo> m_allApps;    // full list
+  QString m_currentQuery;      // current search query
+  QString m_selectedCategory;  // selected category filter
+  
+  // -------------------------------
+  // Apply search + category filter
+  // -------------------------------
+  void applyFilter() {
     beginResetModel();
-
-    if (q.isEmpty()) {
-      // restore full list
-      m_apps = m_allApps;
-    } else {
-      m_apps.clear();
-      for (const auto &app : m_allApps) {
-        if (app.name.toLower().contains(q)) {
-          m_apps.append(app);
-        }
-      }
+    m_apps.clear();
+    
+    for (const auto &app : m_allApps) {
+      // match search query
+      bool matchesQuery = m_currentQuery.isEmpty() ||
+      app.name.toLower().contains(m_currentQuery.toLower());
+      
+      // match category
+      bool matchesCategory = m_selectedCategory.isEmpty() ||
+      app.categories.contains(m_selectedCategory, Qt::CaseInsensitive);
+      
+      if (matchesQuery && matchesCategory)
+        m_apps.append(app);
     }
-
+    
     endResetModel();
   }
-
-private:
-  QList<AppInfo> m_apps;
-  QList<AppInfo> m_allApps;
 };
+
 
 struct DesktopAction {
     QString id;      // e.g. "NewWindow"
@@ -276,15 +295,15 @@ public:
   // ------------------------------------
   QVariantList listApplicationsSync() {
     QString configDir =
-        QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QDir().mkpath(configDir);
-
+    
     QString cacheFile = configDir + "/apps_cache_v1.json";
     QString hashFile = configDir + "/apps_cache_hash_v1.txt";
-
+    
     // Compute current hash
     QByteArray currentHash = computeAppsHash();
-
+    
     // Load saved hash
     QByteArray savedHash;
     {
@@ -294,51 +313,49 @@ public:
         hf.close();
       }
     }
-
+    
     // If hashes match → use cache
     if (savedHash == currentHash && QFile::exists(cacheFile)) {
       QFile f(cacheFile);
       if (f.open(QIODevice::ReadOnly)) {
         QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
         f.close();
-
+        
         if (doc.isArray()) {
           qDebug() << "⚡ Loaded applications from cache.";
           return doc.array().toVariantList();
         }
       }
     }
-
+    
     // Rescan .desktop files
     qDebug() << "🔍 Scanning application directories...";
-
+    
     QVariantList appList;
+    
     QStringList dirs = {
-        "/usr/share/applications",
-        QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation)};
-
+      "/usr/share/applications",
+      QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation)
+    };
+    
     for (const QString &dirPath : dirs) {
       QDir dir(dirPath);
-      if (!dir.exists())
-        continue;
-
-      QStringList files =
-          dir.entryList(QStringList() << "*.desktop", QDir::Files);
-
+      if (!dir.exists()) continue;
+      
+      QStringList files = dir.entryList(QStringList() << "*.desktop", QDir::Files);
       for (const QString &file : files) {
         QString path = dir.absoluteFilePath(file);
         QFile f(path);
-
-        if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
-          continue;
-
+        if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) continue;
+        
         QString name, exec, iconName;
+        QStringList categories;   // <-- NEW: store categories
         bool noDisplay = false;
         bool inMainSection = false;
-
+        
         while (!f.atEnd()) {
           QString line = f.readLine().trimmed();
-
+          
           if (line.startsWith('[')) {
             if (line == "[Desktop Entry]")
               inMainSection = true;
@@ -348,48 +365,46 @@ public:
               inMainSection = false;
             continue;
           }
-
-          if (!inMainSection)
-            continue;
-
+          
+          if (!inMainSection) continue;
+          
           if (line.startsWith("Name="))
             name = line.mid(5).trimmed();
-
           else if (line.startsWith("Exec=")) {
             exec = line.mid(5).trimmed();
             exec.replace(QRegularExpression("%[UuFfDdNnVvMm]"), "");
           }
-
           else if (line.startsWith("Icon="))
             iconName = line.mid(5).trimmed();
-
-          else if (line.startsWith("NoDisplay=") &&
-                   line.mid(10).trimmed().toLower() == "true")
-            noDisplay = true;
+          else if (line.startsWith("Categories="))
+            categories = line.mid(11).split(';', Qt::SkipEmptyParts); // <-- PARSE CATEGORIES
+            else if (line.startsWith("NoDisplay=") && line.mid(10).trimmed().toLower() == "true")
+              noDisplay = true;
         }
-
+        
         f.close();
-
+        
         if (name.isEmpty() || exec.isEmpty() || noDisplay)
           continue;
-
+        
         QVariantMap app;
         app["name"] = name;
         app["command"] = exec;
         app["icon"] = resolveIcon(iconName);
         app["desktopFilePath"] = path;
-
+        app["categories"] = categories;   // <-- STORE CATEGORIES
+        
         appList.append(app);
       }
     }
-
+    
     // Sort apps alphabetically
     std::sort(appList.begin(), appList.end(),
               [](const QVariant &a, const QVariant &b) {
                 return a.toMap()["name"].toString().toLower() <
-                       b.toMap()["name"].toString().toLower();
+                b.toMap()["name"].toString().toLower();
               });
-
+    
     // Save cache
     {
       QFile f(cacheFile);
@@ -397,12 +412,11 @@ public:
         QJsonArray arr;
         for (const QVariant &v : appList)
           arr.append(QJsonObject::fromVariantMap(v.toMap()));
-
         f.write(QJsonDocument(arr).toJson());
         f.close();
       }
     }
-
+    
     // Save hash
     {
       QFile hf(hashFile);
@@ -411,17 +425,18 @@ public:
         hf.close();
       }
     }
-
+    
     qDebug() << "✅ Applications scanned and cached.";
     return appList;
   }
+  
 
   // ------------------------------------
   // Icon resolver
   // ------------------------------------
   Q_INVOKABLE QString resolveIcon(const QString &name) const {
     if (name.isEmpty())
-      return "qrc:/placeholder.svg";
+      return "qrc:/icons/placeholder.svg";
 
     if (QFile::exists(name))
       return "file://" + name;
@@ -448,7 +463,7 @@ public:
         return "file://" + svgPath;
     }
 
-    return "qrc:/placeholder.svg";
+    return "qrc:/icons/placeholder.svg";
   }
 
   QList<DesktopAction> parseDesktopActions(const QString &desktopFile) {
@@ -1431,10 +1446,14 @@ int main(int argc, char *argv[]) {
                      QList<AppInfo> appInfos;
                      for (const QVariant &v : apps) {
                        QVariantMap m = v.toMap();
-                       appInfos.append({m["name"].toString(),
-                                        m["command"].toString(),
-                                        m["icon"].toString(),
-                                        m["desktopFilePath"].toString()});
+                       appInfos.append({
+                         m["name"].toString(),
+                         m["command"].toString(),
+                         m["icon"].toString(),
+                         m["desktopFilePath"].toString(),
+                         m["categories"].toStringList()  
+                       });
+                       
                      }
                      appModel.setApps(appInfos);
                    });

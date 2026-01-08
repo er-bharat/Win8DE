@@ -13,6 +13,9 @@
 #include <QFileInfo>
 #include <LayerShellQt/window.h>
 #include <QTimer>
+
+#include <QStandardPaths>
+
 /* ---------------- Window Item ---------------- */
 
 struct WindowItem {
@@ -259,6 +262,8 @@ public:
 
         if (exclusive) {
             layerShell->setExclusiveZone(window->width());
+            layerShell->setKeyboardInteractivity(
+                LayerShellQt::Window::KeyboardInteractivityOnDemand);
         } else {
             layerShell->setExclusiveZone(0); // safer than -1
         }
@@ -275,21 +280,23 @@ public:
         if (!layerShell || !window)
             return;
         
-        // 1️⃣ Make surface unfocusable
+        // Temporarily release keyboard
         layerShell->setKeyboardInteractivity(
             LayerShellQt::Window::KeyboardInteractivityNone);
         
-        // Ensure the request is sent to the compositor
         window->requestUpdate();
         QGuiApplication::processEvents(QEventLoop::AllEvents, 1);
         
-        // 2️⃣ Restore exclusive focus after a short delay
+        // Restore based on exclusive mode
         QTimer::singleShot(ms, this, [this]() {
             if (!layerShell || !window)
                 return;
             
             layerShell->setKeyboardInteractivity(
-                LayerShellQt::Window::KeyboardInteractivityExclusive);
+                exclusive
+                ? LayerShellQt::Window::KeyboardInteractivityOnDemand
+                : LayerShellQt::Window::KeyboardInteractivityExclusive
+            );
             
             window->requestUpdate();
         });
@@ -346,7 +353,7 @@ int main(int argc, char *argv[]) {
         sock.flush();
         return 0;  // Existing instance toggled, exit
     }
-
+    
     // Load QML engine
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
@@ -374,6 +381,37 @@ int main(int argc, char *argv[]) {
     auto *controller = new WindowController(window, layer, &app);
     engine.rootContext()->setContextProperty("WindowController", controller);
 
+    // --------------------------------------------------------
+    // Win8Settings path
+    // --------------------------------------------------------
+    const QString settingsPath =
+    QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
+    "/Win8Settings/settings.ini";
+        
+        // --------------------------------------------------------
+        // Helper: load Start wallpaper + colors
+        // --------------------------------------------------------
+        QVariantMap win8Colors;
+        
+        auto loadSettings = [&]() {
+            QSettings s(settingsPath, QSettings::IniFormat);
+            
+            // ---- Colors ----
+            s.beginGroup("Colors");
+            win8Colors["Background"] = s.value("Background", "#000000").toString();
+            win8Colors["Tile"] = s.value("Tile", "#ffffff").toString();
+            win8Colors["TileHighlight"] =
+            s.value("TileHighlight", "#ff0000").toString();
+            s.endGroup();
+        };
+        
+        // Initial load
+        loadSettings();
+        
+        engine.rootContext()->setContextProperty("Win8Colors",
+                                                 QVariant::fromValue(win8Colors));
+        
+        
     auto *model = engine.rootObjects().first()
     ->findChild<WindowModel *>();
     

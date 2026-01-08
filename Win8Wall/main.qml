@@ -8,9 +8,16 @@ Window {
     width: 800
     height: 600
 
-    Image {
+    // Image {
+    //     anchors.fill: parent
+    //     source: wallpaperPath
+    //     fillMode: Image.PreserveAspectCrop
+    // }
+    AnimatedImage {
         anchors.fill: parent
         source: wallpaperPath
         fillMode: Image.PreserveAspectCrop
+        playing: true
+        
     }
 }

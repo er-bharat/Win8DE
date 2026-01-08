@@ -10,10 +10,11 @@
     <file>icons/view-refresh-symbolic.svg</file>
     <file>icons/system-log-out.svg</file>
     <file>icons/power.svg</file>
-    <file>placeholder.svg</file>
+    <file>icons/placeholder.svg</file>
     <file>icons/peoplew.png</file>
-    <file>go-down-skip.svg</file>
-    <file>go-up-skip.svg</file>
+    <file>icons/go-down-skip.svg</file>
+    <file>icons/go-up-skip.svg</file>
+    <file>icons/search.svg</file>
     <file>background.jpg</file>
   </qresource>
 </RCC>

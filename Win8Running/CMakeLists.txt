@@ -19,11 +19,13 @@ find_package(Qt6 REQUIRED COMPONENTS
     Gui
     Qml
     Quick
+    Widgets
     QuickControls2
 )
 
 find_package(LayerShellQt REQUIRED)
 
+# Find Qt packages including Widgets
 
 # ----------------------------
 # Executable
@@ -43,6 +45,7 @@ target_link_libraries(Win8Running
     Qt6::Quick
     Qt6::QuickControls2
     LayerShellQt::Interface
+    Qt6::Widgets
 )
 
 # ----------------------------

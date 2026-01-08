@@ -25,7 +25,7 @@ ApplicationWindow {
         width: parent.width
         height: 100
         acceptedButtons: Qt.RightButton | Qt.LeftButton
-
+        
         onClicked: (mouse)=>{
             WindowController.hide()  //c++ function to hide the mainwindow.
         }
@@ -44,7 +44,7 @@ ApplicationWindow {
     // main start screen
     Item {
         anchors.fill: parent
-
+        
         Text {
             id: start
             text: "Start"
@@ -57,7 +57,7 @@ ApplicationWindow {
             anchors.leftMargin: 120
             anchors.topMargin: 50
         }
-
+        
         // Battery display next to "Start"
         Item {
             id: batteryDisplay
@@ -66,7 +66,7 @@ ApplicationWindow {
             anchors.verticalCenter: userCard.verticalCenter
             anchors.right: userCard.left
             anchors.rightMargin: 40
-
+            
             // Battery fill
             Rectangle {
                 id: batteryFill
@@ -80,7 +80,7 @@ ApplicationWindow {
                 : "white"  // green for normal
                 smooth: true
             }
-
+            
             // Outer battery shape
             Rectangle {
                 id: batteryOutline
@@ -93,7 +93,7 @@ ApplicationWindow {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
             }
-
+            
             // Battery tip (small rounded rectangle)
             Rectangle {
                 width: 6
@@ -103,7 +103,7 @@ ApplicationWindow {
                 anchors.left: batteryOutline.right
                 anchors.verticalCenter: batteryOutline.verticalCenter
             }
-
+            
             // Percent text
             Text {
                 text: battery.percent >= 0 ? battery.percent + "%" : "N/A"
@@ -114,14 +114,14 @@ ApplicationWindow {
                 anchors.left: batteryOutline.right
                 anchors.leftMargin: 12
             }
-
+            
             // Optional: subtle shadow behind battery
             Rectangle {
                 anchors.fill: batteryOutline
                 radius: batteryOutline.radius
                 color: "transparent"
                 border.color: "transparent"
-
+                
             }
         }
         // the user icon at top right hosts power menu and settings.
@@ -136,11 +136,11 @@ ApplicationWindow {
             anchors.margins: 30
             anchors.rightMargin: 120
             anchors.topMargin: 50
-
+            
             Row {
                 spacing: 12
                 anchors.centerIn: parent
-
+                
                 Text {
                     text: AppLauncher.getCurrentUser()
                     color: "white"
@@ -173,31 +173,31 @@ ApplicationWindow {
             // powermenu shutdown power logout etc
             Menu {
                 id: powerMenu
-
+                
                 MenuItem {
                     text: "Shutdown"
                     icon.source: "/icons/system-shutdown-symbolic.svg"
                     onTriggered: powerControl.shutdown()
                 }
-
+                
                 MenuItem {
                     text: "Reboot"
                     icon.source: "/icons/view-refresh-symbolic.svg"
                     onTriggered: powerControl.reboot()
                 }
-
+                
                 MenuItem {
                     text: "Suspend"
                     icon.source: "/icons/system-run.svg"
                     onTriggered: powerControl.suspend()
                 }
-
+                
                 MenuItem {
                     text: "Logout"
                     icon.source: "/icons/system-log-out.svg"
                     onTriggered: powerControl.logout()
                 }
-
+                
                 MenuItem {
                     text: "Settings"
                     icon.source: "/icons/emblem-system-symbolic.svg"
@@ -207,7 +207,7 @@ ApplicationWindow {
                     }
                 }
             }
-
+            
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.RightButton | Qt.LeftButton
@@ -230,24 +230,24 @@ ApplicationWindow {
             anchors.bottom: parent.bottom
             anchors.margins: 30
             anchors.leftMargin: 120
-
+            
             Image {
                 id: iconImg
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "go-down-skip.svg"
+                source: "icons/go-down-skip.svg"
                 sourceSize.width: 50
                 sourceSize.height: 50
                 fillMode: Image.PreserveAspectFit
             }
-
+            
             MouseArea {
                 id: mouseArea
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-
+                
                 Timer {
                     id: refreshTimer
                     interval: 500
@@ -285,7 +285,7 @@ ApplicationWindow {
                 contentWidth: parent.width * 2  //allows 2x width of screen for tiles so that it can have scrollin.
                 contentHeight: parent.height
                 clip: !anyTileLaunching
-
+                
                 focus: true                       // KEYBOARD NAVIGATION
                 activeFocusOnTab: true            // KEYBOARD NAVIGATION
                 property bool anyTileLaunching: false
@@ -293,6 +293,92 @@ ApplicationWindow {
                 property int halfGrid: gridSize / 2
                 property int cols: Math.floor(width / halfGrid)
                 property int focusedIndex: -1
+                
+                Component.onCompleted: {
+                    Qt.callLater(() => {
+                        const tolerance = Math.max(2, container.halfGrid * 0.15)
+                        // ~15% of grid or minimum 2px
+                        
+                        for (let i = 0; i < tileRepeater.count; ++i) {
+                            const t = tileRepeater.itemAt(i)
+                            if (!t) continue
+                                container.snapIfSlightlyOff(t, tolerance)
+                        }
+                    })
+                }
+                
+                
+                function nearestFreeSnap(x, y, tileWidth, tileHeight, excludeIndex) {
+                    const grid = halfGrid
+                    
+                    // snap using TOP-LEFT only
+                    const baseX = Math.round(x / grid) * grid
+                    const baseY = Math.round(y / grid) * grid
+                    
+                    // collect occupied rects
+                    let occupied = []
+                    for (let i = 0; i < tileRepeater.count; ++i) {
+                        if (i === excludeIndex) continue
+                            let t = tileRepeater.itemAt(i)
+                            if (!t) continue
+                                occupied.push({
+                                    x: t.x, y: t.y,
+                                    w: t.width, h: t.height
+                                })
+                    }
+                    
+                    function intersects(px, py) {
+                        for (let o of occupied) {
+                            if (px < o.x + o.w &&
+                                px + tileWidth > o.x &&
+                                py < o.y + o.h &&
+                                py + tileHeight > o.y) {
+                                return true
+                                }
+                        }
+                        return false
+                    }
+                    
+                    // if snapped position is valid → done
+                    if (!intersects(baseX, baseY))
+                        return Qt.point(baseX, baseY)
+                        
+                        // generate nearby candidates (small movement only)
+                        let candidates = []
+                        const maxSteps = 4   // limits how far a tile can move
+                        
+                        for (let dy = -maxSteps; dy <= maxSteps; ++dy) {
+                            for (let dx = -maxSteps; dx <= maxSteps; ++dx) {
+                                if (dx === 0 && dy === 0) continue
+                                    
+                                    let nx = baseX + dx * grid
+                                    let ny = baseY + dy * grid
+                                    
+                                    if (nx < 0 || ny < 0) continue
+                                        if (nx + tileWidth > contentWidth) continue
+                                            
+                                            candidates.push({
+                                                x: nx,
+                                                y: ny,
+                                                dist: Math.abs(dx) + Math.abs(dy) // minimal movement bias
+                                            })
+                            }
+                        }
+                        
+                        // sort by closest movement first
+                        candidates.sort((a, b) => a.dist - b.dist)
+                        
+                        // pick nearest free slot
+                        for (let c of candidates) {
+                            if (!intersects(c.x, c.y))
+                                return Qt.point(c.x, c.y)
+                        }
+                        
+                        // fallback → original snapped position
+                        return Qt.point(baseX, baseY)
+                }
+                
+                
                 // keeps the focused item in view when using keyboard navigation.
                 function ensureVisible(index) {
                     let t = tileRepeater.itemAt(index)
@@ -310,47 +396,47 @@ ApplicationWindow {
                             let currentItem = tileRepeater.itemAt(focusedIndex)
                             if (!currentItem)
                                 return
-
+                                
                                 function distance(a, b) {
                                     return Math.hypot(a.x - b.x, a.y - b.y);
                                 }
-
+                                
                                 function findNext(dx, dy) {
                                     let best = -1;
                                     let bestDist = Infinity;
                                     let fallback = -1;
                                     let fallbackDist = Infinity;
-
+                                    
                                     const cx = currentItem.x + currentItem.width / 2;
                                     const cy = currentItem.y + currentItem.height / 2;
                                     const cLeft = currentItem.x;
                                     const cRight = currentItem.x + currentItem.width;
                                     const cTop = currentItem.y;
                                     const cBottom = currentItem.y + currentItem.height;
-
+                                    
                                     for (let i = 0; i < tileRepeater.count; ++i) {
                                         if (i === focusedIndex)
                                             continue;
-
+                                        
                                         let item = tileRepeater.itemAt(i);
                                         if (!item)
                                             continue;
-
+                                        
                                         const ix = item.x + item.width / 2;
                                         const iy = item.y + item.height / 2;
                                         const iLeft = item.x;
                                         const iRight = item.x + item.width;
                                         const iTop = item.y;
                                         const iBottom = item.y + item.height;
-
+                                        
                                         const vx = ix - cx;
                                         const vy = iy - cy;
-
+                                        
                                         // Direction filter
                                         if ((dx !== 0 && Math.sign(vx) !== dx) ||
                                             (dy !== 0 && Math.sign(vy) !== dy))
                                             continue;
-
+                                            
                                         // Axis-alignment check using edges
                                         let aligned = false;
                                         if (dx !== 0) {
@@ -360,9 +446,9 @@ ApplicationWindow {
                                             // UP/DOWN: check if horizontal spans overlap
                                             aligned = !(cRight < iLeft || cLeft > iRight);
                                         }
-
+                                        
                                         const dist = distance({x: ix, y: iy}, {x: cx, y: cy});
-
+                                        
                                         if (aligned) {
                                             if (dist < bestDist) {
                                                 bestDist = dist;
@@ -410,11 +496,11 @@ ApplicationWindow {
                                     case Qt.Key_Enter:
                                     case Qt.Key_Space:
                                         currentItem.launch()
-
+                                        
                                         event.accepted = true
                                         return
                                 }
-
+                                
                                 if (next !== -1) {
                                     focusedIndex = next
                                     ensureVisible(next)
@@ -428,10 +514,10 @@ ApplicationWindow {
                     acceptedButtons: Qt.NoButton
                     hoverEnabled: false
                     propagateComposedEvents: true
-
+                        
                     onWheel: function(wheel) {
                         let isTouchpad = wheel.pixelDelta.x !== 0 || wheel.pixelDelta.y !== 0
-
+                            
                         // Touchpad vertical top opens allapparea
                         if (isTouchpad && wheel.pixelDelta.y < 0) {
                             allapparea.y = 0
@@ -447,7 +533,7 @@ ApplicationWindow {
                             // Mouse wheel: original behavior
                             delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
                         }
-
+                            
                         if (delta !== 0) {
                             let newX = container.contentX + delta
                             newX = Math.max(0,
@@ -461,29 +547,50 @@ ApplicationWindow {
                 //Recieves desktop files to place on new tiles.
                 DropArea {
                     anchors.fill: parent
+                    
                     onDropped: (drop) => {
-                        if (drop.hasUrls) {
+                        if (!drop.hasUrls)
+                            return
+                            
                             for (let i = 0; i < drop.urls.length; ++i) {
-                                const url = drop.urls[i];
-                                if (url.toString().endsWith(".desktop")) {
-                                    const localPath = url.toString().replace("file://", "");
-                                    tileModel.addTileFromDesktopFile(localPath, drop.x, drop.y);
-                                }
+                                const url = drop.urls[i]
+                                if (!url.toString().endsWith(".desktop"))
+                                    continue
+                                    
+                                    const localPath = url.toString().replace("file://", "")
+                                    
+                                    // default (medium tile)
+                                    const tileW = container.halfGrid * 2 - 5
+                                    const tileH = tileW
+                                    
+                                    // mouse is CENTER of tile → convert to top-left
+                                    const hintX = drop.x - tileW / 2
+                                    const hintY = drop.y - tileH / 2
+                                    
+                                    const p = container.nearestFreeSnap(
+                                        hintX,
+                                        hintY,
+                                        tileW,
+                                        tileH,
+                                        -1
+                                    )
+                                    
+                                    tileModel.addTileFromDesktopFile(localPath, p.x, p.y)
                             }
-                        }
                     }
                 }
-
+                
+                
                 Repeater {
                     id: tileRepeater
                     model: tileModel
-
+                        
                     Rectangle {
                         id: tile
                         z: (launching || dragArea.dragging) ? 200 : 0
-
+                            
                         // --- Size handling ---
-
+                            
                         required property int index
                         required property real modelX
                         required property real modelY
@@ -491,61 +598,69 @@ ApplicationWindow {
                         required property string icon
                         required property string command
                         required property string size
-
+                            
                         //size setup of tiles.
                         readonly property int smallSize:   container.halfGrid - 5
                         readonly property int mediumSize:  container.halfGrid * 2 - 5
                         readonly property int largeWidth:  container.halfGrid * 4 - 5
                         readonly property int largeHeight: container.halfGrid * 2 - 5
                         readonly property int xlargeSize:  container.halfGrid * 4 - 5   // 4x4 tile
-
+                        
                         width:  size === "small"   ? smallSize
                         : size === "medium"  ? mediumSize
                         : size === "large"   ? largeWidth
                         : size === "xlarge"  ? xlargeSize
                         : mediumSize
-
+                            
                         height: size === "small"   ? smallSize
                         : size === "medium"  ? mediumSize
                         : size === "large"   ? largeHeight
                         : size === "xlarge"  ? xlargeSize
                         : mediumSize
-
+                            
                         x: modelX
                         y: modelY
-
+                        
                         property bool hovered: false
-
+                        
                         color: dragArea.dragging || container.focusedIndex === index || hovered ? Win8Colors.TileHighlight : Win8Colors.Tile
                         border.width: 1
                         border.color: container.focusedIndex === index || hovered
-                        ? "white"
+                        ? "#949494"
                         : Qt.rgba(1,1,1,0.2)
-
-
+                            
+                            
                         function launch() {
                             if (tile.launching)
                                 return
-
+                                    
                                 tile.launching = true
                                 container.anyTileLaunching = true
                                 AppLauncher.launchApp(tile.command)
                         }
-
+                        
+                        
                         //-----------------------------------------------------------
                         // LAUNCH ANIMATION PROPERTIES
                         //-----------------------------------------------------------
                         property bool launching: false
-
+                            
                         // fixed center target
                         property real finalX: container.contentX + container.width  / 2 - width  / 2 - 60
                         property real finalY: container.contentY + container.height / 2 - height / 2 -(start.height-allAppsButton.height)
-
+                            
                         // transforms
                         transform: [
                             Rotation {
                                 id: flipRotation
                                 origin.x: tile.width / 2
+                                origin.y: tile.height / 2
+                                axis { x: 0; y: 1; z: 0 }
+                                angle: 0
+                            },
+                            Rotation {
+                                id: flipRotation2
+                                origin.x: tile.width / 3
                                 origin.y: tile.height / 2
                                 axis { x: 0; y: 1; z: 0 }
                                 angle: 0
@@ -558,14 +673,18 @@ ApplicationWindow {
                                 yScale: 1
                             }
                         ]
-
+                            
                         SequentialAnimation {
                             id: launchAnim
                             running: tile.launching
-
+                            
+                            onStarted: {
+                                tile.border.width = 0
+                            }
+                                
                             ParallelAnimation {
                                 id: launchAnim2
-
+                                
                                 // --- flip ---
                                 NumberAnimation {
                                     target: flipRotation
@@ -581,23 +700,23 @@ ApplicationWindow {
                                     duration: 650
                                     easing.type: Easing.InOutQuad
                                 }
-
+                                
                                 // --- zoom ---
                                 NumberAnimation {
                                     target: zoomScale
                                     property: "xScale"
-                                    to: mainwindow.width / tile.width * 1.05
+                                    to: mainwindow.width / tile.width 
                                     duration: 650
                                     easing.type: Easing.InOutQuad
                                 }
                                 NumberAnimation {
                                     target: zoomScale
                                     property: "yScale"
-                                    to: mainwindow.height / tile.height * 1.05
+                                    to: mainwindow.height / tile.height
                                     duration: 650
                                     easing.type: Easing.InOutQuad
                                 }
-
+                                
                                 NumberAnimation {
                                     target: zoomiconScale
                                     property: "xScale"
@@ -612,7 +731,7 @@ ApplicationWindow {
                                     duration: 350
                                     easing.type: Easing.InOutQuad
                                 }
-
+                                
                                 // --- move to center ---
                                 NumberAnimation {
                                     target: tile
@@ -629,39 +748,39 @@ ApplicationWindow {
                                     easing.type: Easing.InOutQuad
                                 }
                             }
-
+                            
                             // ✅ delay AFTER animation
                             PauseAnimation {
                                 duration: 500
                             }
-
+                            
                             ScriptAction {
                                 script: {
                                     // Hide the window
                                     WindowController.hide()
-
+                                    
                                     // Reset tile properties
                                     tile.launching = false
                                     container.anyTileLaunching = false
-
+                                    tile.border.width = 1
+                                    
                                     // Reset tile position to its model position
-                                    tile.x = x
-                                    tile.y = y
-
+                                    tile.x = modelX
+                                    tile.y = modelY
+                                    
                                     // Reset transforms
                                     zoomScale.xScale = 1
                                     zoomScale.yScale = 1
                                     flipRotation.angle = 0
-
+                                    
                                     zoomiconScale.xScale = 1
                                     zoomiconScale.yScale = 1
                                     flipiconRotation.angle = 0
                                 }
                             }
-
+                            
                         }
-
-
+                        
                         //-----------------------------------------------------------
                         // Name
                         //-----------------------------------------------------------
@@ -676,7 +795,7 @@ ApplicationWindow {
                             width: parent.width - 10
                             visible: !tile.launching
                         }
-
+                        
                         //-----------------------------------------------------------
                         // Icon
                         //-----------------------------------------------------------
@@ -707,8 +826,7 @@ ApplicationWindow {
                                 }
                             ]
                         }
-
-
+                        
                         //-----------------------------------------------------------
                         // Dragging & Click
                         //-----------------------------------------------------------
@@ -757,7 +875,7 @@ ApplicationWindow {
                                 }
                             }
                         }
-
+                        
                         //-----------------------------------------------------------
                         // Right-click menu
                         //-----------------------------------------------------------
@@ -770,78 +888,64 @@ ApplicationWindow {
                             MenuSeparator {}
                             MenuItem { text: "Remove";  onTriggered: tileModel.removeTile(tile.index) }
                         }
-
+                        
                         // --- APPEAR ANIMATION ---
                         property bool appeared: false
                         // property bool anyTileLaunching: false
-                        opacity: 0.2
-                        scale: 0.6
+                        opacity: 0.1
+                        scale: 0.95
                         transformOrigin: Item.Left
-
-
+                        
                         ParallelAnimation {
                             id: appearAnim
                             running: false
                             onStarted: container.clip = false
                             // onStopped: container.clip = !anyTileLaunching
-
+                            
                             PropertyAnimation {
                                 target: tile
                                 property: "x"
-                                from: container.width/4; to: tile.modelX
-                                duration: 500
+                                from: tile.modelX+(mainwindow.width/3); to: tile.modelX
+                                duration: 400
                                 easing.type: Easing.OutCubic
                             }
-                            SequentialAnimation {
-                                // 1. move upward (bounce start)
-                                PropertyAnimation {
-                                    target: tile
-                                    property: "y"
-                                    from: tile.modelY
-                                    to: tile.modelY - 10
-                                    duration: 180
-                                    easing.type: Easing.OutCubic
-                                }
-
-                                // 2. fall down past the final position (overshoot)
-                                PropertyAnimation {
-                                    target: tile
-                                    property: "y"
-                                    from: tile.modelY - 10
-                                    to: tile.modelY + 10      // overshoot 30px down
-                                    duration: 130
-                                    easing.type: Easing.InCubic
-                                }
-
-                                // 3. settle back to the final position (real bounce)
-                                PropertyAnimation {
-                                    target: tile
-                                    property: "y"
-                                    from: tile.modelY + 10
-                                    to: tile.modelY
-                                    duration: 180
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-
-
+                            
                             PropertyAnimation {
                                 target: tile
                                 property: "scale"
-                                from: 0.6; to: 1
-                                duration: 700
+                                from: 0.95; to: 1
+                                duration: 400
                                 easing.type: Easing.OutCubic
                             }
-
+                            
                             PropertyAnimation {
                                 target: tile
                                 property: "opacity"
-                                from: 0.2; to: 1
-                                duration: 800
+                                from: 0.1; to: 1
+                                duration: 400
                                 easing.type: Easing.OutCubic
                             }
+                            
+                            SequentialAnimation {
+                                NumberAnimation {
+                                    target: flipRotation2
+                                    property: "angle"
+                                    to: 20
+                                    duration: 300
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    target: flipRotation2
+                                    property: "angle"
+                                    to: 0
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+                            
+                            
                         }
-
+                        
                         Component.onCompleted: {
                             if (!appeared) {
                                 appeared = true
@@ -850,7 +954,7 @@ ApplicationWindow {
                         }
                         Connections {
                             target: WindowController
-
+                            
                             function onVisibleChanged(visible) {
                                 if (visible) {
                                     tile.appeared = false
@@ -858,12 +962,11 @@ ApplicationWindow {
                                 }
                             }
                         }
-
+                        
                     }
                 }
             }
-
-
+            
         }
     }
     // shows all app in fullscreen rectangle.
@@ -873,11 +976,11 @@ ApplicationWindow {
         height: parent.height
         color: Win8Colors.Background
         y: parent.height
-
+        
         Behavior on y {
             NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
         }
-
+        
         Text {
             id: apps
             text: "Apps"
@@ -902,33 +1005,35 @@ ApplicationWindow {
             anchors.bottom: parent.bottom
             anchors.margins: 30
             anchors.leftMargin: 120
-
+            
             Image {
                 id: iconImg2
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "go-up-skip.svg"
+                source: "icons/go-up-skip.svg"
                 sourceSize.width: 50
                 sourceSize.height: 50
                 fillMode: Image.PreserveAspectFit
             }
-
+            
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-
+                
                 onClicked: {
                     onClicked: {
                         allapparea.y=allapparea.height
                         searchField.focus = false
                         appGridView.focus = false
                         container.focus = true
+                        searchField.text = ""
+                        categoryFilter.currentIndex = 0
                     }
                 }
             }
-
+            
         }
         //Searchfield searches for apps.
         Rectangle {
@@ -938,62 +1043,110 @@ ApplicationWindow {
             anchors.leftMargin: 120
             anchors.topMargin: 50
             height: 50
-            width: 500
+            width: 350
             color: Win8Colors.Tile
-
-            TextField {
-                id: searchField
+            
+            Row {
                 anchors.fill: parent
-                anchors.margins: 8
-                placeholderText: "Search apps…"
-                color: "white"
-                background: null
-                placeholderTextColor: "#888888"
-                font.pointSize: 16
-                onTextChanged: {
-                    appModel.search(text)
-                    appGridView.currentIndex = 0   // ⭐ reset selection
+                anchors.leftMargin: 10
+                spacing: 10
+                
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 30
+                    height: 30
+                    source: "icons/search.svg"
+                    sourceSize.width: 30
+                    sourceSize.height: 30
                 }
-
-                Keys.onTabPressed: {
-                    appGridView.forceActiveFocus()
-                }
-                Keys.onPressed: function(event) {
-                    switch (event.key) {
-                        case Qt.Key_Down:
-                            if (appGridView.count > 0) {
-                                appGridView.forceActiveFocus()
-                                appGridView.currentIndex = 0
-                                event.accepted = true
-                            }
-                            break
-                        case Qt.Key_Return:
-                        case Qt.Key_Enter:
-                            if (appGridView.count > 0) {
-                                // Launch the first app (currentIndex = 0)
-                                appGridView.currentIndex = 0
-                                var firstItem = appGridView.currentItem
-                                if (firstItem) {
-                                    firstItem.launch()   // assuming your delegate has a launch() function
+                
+                TextField {
+                    id: searchField
+                    width: 300
+                    height: 50
+                    placeholderText: "Search apps…"
+                    color: "white"
+                    background: null
+                    placeholderTextColor: "#888888"
+                    font.pointSize: 16
+                    onTextChanged: {
+                        appModel.search(text)
+                        appGridView.currentIndex = 0   // ⭐ reset selection
+                        categoryFilter.currentIndex = 0
+                    }
+                    
+                    Keys.onTabPressed: {
+                        appGridView.forceActiveFocus()
+                    }
+                    Keys.onPressed: function(event) {
+                        switch (event.key) {
+                            case Qt.Key_Down:
+                                if (appGridView.count > 0) {
+                                    appGridView.forceActiveFocus()
+                                    appGridView.currentIndex = 0
+                                    event.accepted = true
                                 }
-                                event.accepted = true
-                            }
-                            break
-                        case Qt.Key_A:
-                            // Check for Ctrl modifier
-                            if (event.modifiers & Qt.ControlModifier) {
-                                allapparea.y=allapparea.height
-                                searchField.focus = false
-                                appGridView.focus = false
-                                container.focus = true
-                                event.accepted = true
-                            }
-                            break
+                                break
+                            case Qt.Key_Return:
+                            case Qt.Key_Enter:
+                                if (appGridView.count > 0) {
+                                    // Launch the first app (currentIndex = 0)
+                                    appGridView.currentIndex = 0
+                                    var firstItem = appGridView.currentItem
+                                    if (firstItem) {
+                                        firstItem.launch()   // assuming your delegate has a launch() function
+                                    }
+                                    event.accepted = true
+                                }
+                                break
+                            case Qt.Key_A:
+                                // Check for Ctrl modifier
+                                if (event.modifiers & Qt.ControlModifier) {
+                                    allapparea.y=allapparea.height
+                                    searchField.focus = false
+                                    appGridView.focus = false
+                                    container.focus = true
+                                    event.accepted = true
+                                }
+                                break
+                        }
                     }
                 }
             }
+            
         }
-
+        ComboBox {
+            id: categoryFilter
+            anchors.top: apps.top
+            anchors.left: apps.right
+            anchors.topMargin: 10
+            anchors.leftMargin: 120
+            width: 300
+            height: apps.height
+            font.pixelSize: 40
+            font.weight: Font.Thin
+            model: ["All", "Utility", "Development", "Network", "Office", "AudioVideo", "Game", "System", "Graphics", "KDE", "Gnome"] // populate dynamically if needed
+            currentIndex: 0
+            
+            background: Rectangle {
+                color: "transparent"
+                border.color: "transparent"
+            }
+            
+            Keys.onTabPressed: {
+                appGridView.forceActiveFocus()
+            }
+            
+            onCurrentTextChanged: {
+                if (currentText === "All")
+                    appModel.setCategoryFilter("")
+                    else
+                        appModel.setCategoryFilter(currentText)
+                        appGridView.currentIndex = 0
+                        appGridView.focus = true
+            }
+        }
+        
         Item {
             anchors.top: apps.bottom
             anchors.bottom: allAppsButton2.top
@@ -1003,7 +1156,7 @@ ApplicationWindow {
             anchors.topMargin: 30
             anchors.bottomMargin: 30
             width: parent.width - 120
-
+            
             GridView {
                 id: appGridView
                 anchors.fill: parent
@@ -1017,26 +1170,28 @@ ApplicationWindow {
                 highlightFollowsCurrentItem: true
                 flickableDirection: Flickable.HorizontalFlick
                 currentIndex: 0
-
+                
                 // index of currently launching delegate
                 property int launchingIndex: -1
-
+                
                 ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
-
+                
                 MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.NoButton
                     hoverEnabled: false
                     propagateComposedEvents: true
-
+                    
                     onWheel: function(wheel) {
                         let isTouchpad = wheel.pixelDelta.x !== 0 || wheel.pixelDelta.y !== 0
-
+                        
                         // Touchpad vertical DOWN → go to bottom
                         if (isTouchpad && wheel.pixelDelta.y > 0) {
                             allapparea.y = allapparea.height
+                            searchField.text = ""
+                            categoryFilter.currentIndex = 0
                         }
-
+                            
                         // Horizontal scrolling
                         let delta = 0
                         if (isTouchpad) {
@@ -1046,7 +1201,7 @@ ApplicationWindow {
                             // Mouse wheel: original behavior
                             delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
                         }
-
+                        
                         if (delta !== 0) {
                             let newX = appGridView.contentX + delta
                             newX = Math.max(0,
@@ -1057,33 +1212,32 @@ ApplicationWindow {
                         }
                     }
                 }
-
+                
                 Keys.onPressed: function(event) {
                     let columns = Math.floor(width / cellWidth)
                     if (columns < 1) columns = 1
                         let rows = Math.floor(height / cellHeight)
                         if (rows < 1) rows = 1
-
+                        
                             // Alphanumeric key handling: focus searchField
                             let text = event.text
                             if (text.length === 1 && /[a-zA-Z0-9]/.test(text)) {
-
+                            
                                 // If searchField wasn't focused, this is the first keypress
                                 let firstKey = !searchField.activeFocus
-
+                                
                                 searchField.forceActiveFocus()
-
+                                
                                 if (firstKey) {
                                     searchField.text = ""      // clear once
                                 }
-
+                                
                                 searchField.text += text
                                 searchField.cursorPosition = searchField.text.length
                                 event.accepted = true
                                 return
                             }
-
-
+                            
                             switch (event.key) {
                                 case Qt.Key_Backspace:
                                     // Empty search field
@@ -1091,38 +1245,38 @@ ApplicationWindow {
                                     searchField.cursorPosition = 0
                                     event.accepted = true
                                     break
-
+                                    
                                 case Qt.Key_Down:
                                     // Move down 1 item but never exceed last index
                                     currentIndex = Math.min(currentIndex + 1, count - 1)
                                     event.accepted = true
                                     break
-
+                                    
                                 case Qt.Key_Up:
                                     // Move up 1 item but never go below 0
                                     currentIndex = Math.max(currentIndex - 1, 0)
                                     event.accepted = true
                                     break
-
+                                    
                                 case Qt.Key_Right:
                                     // Move right by “rows” but limit to last item
                                     let rightStep = Math.min(rows, count - 1 - currentIndex)
                                     currentIndex += rightStep
                                     event.accepted = true
                                     break
-
+                                    
                                 case Qt.Key_Left:
                                     // Move left by “rows” but limit to first item
                                     let leftStep = Math.min(rows, currentIndex)
                                     currentIndex -= leftStep
                                     event.accepted = true
                                     break
-
+                                    
                                 case Qt.Key_Tab:
                                     searchField.forceActiveFocus()
                                     event.accepted = true
                                     break
-
+                                    
                                 case Qt.Key_Return:
                                 case Qt.Key_Enter:
                                     launchCurrent()
@@ -1144,7 +1298,7 @@ ApplicationWindow {
                                     appGridView.focus = false
                                     container.focus = true
                                     break
-
+                                    
                                 case Qt.Key_Menu:
                                 case Qt.Key_F10:
                                     if (event.modifiers & Qt.ShiftModifier) {
@@ -1163,25 +1317,25 @@ ApplicationWindow {
                                     break
                             }
                 }
-
+                
                 function launchCurrent() {
                     if (currentIndex < 0 || currentIndex >= count)
                         return
-
+                        
                         appGridView.launchingIndex = currentIndex
-
+                        
                         var item = appGridView.currentItem
                         if (!item) return
-
+                            
                             item.launch()
                 }
-
+                
                 delegate: Column {
                     id: apptilecol
                     width: appGridView.cellWidth - 100
                     spacing: 0
                     clip: false
-
+                    
                     // 🔑 REQUIRED MODEL ROLES (Qt 6)
                     required property int index
                     required property string name
@@ -1192,28 +1346,28 @@ ApplicationWindow {
                         AppLauncher.loadDesktopActions(desktopFilePath, actionModel)
                         actionMenu.popup(appRect)
                     }
-
+                    
                     // opacity logic
                     opacity: appGridView.launchingIndex === -1
                     ? 1
                     : (index === appGridView.launchingIndex ? 1 : 0)
-
+                    
                     Behavior on opacity {
                         NumberAnimation {
                             duration: 200
                             easing.type: Easing.InOutQuad
                         }
                     }
-
+                    
                     property bool launching: false
-
+                    
                     function launch() {
                         launching = true
                         apptext.opacity = 0
                         AppLauncher.launchApp(command)
                         launchAnimAllapp.start()
                     }
-
+                    
                     Rectangle {
                         id: appRect
                         width: parent.width - 10
@@ -1221,14 +1375,14 @@ ApplicationWindow {
                         color: (appGridView.currentIndex === apptilecol.index || hovered)
                         ? "#0078D7"
                         : "transparent"
-
+                        
                         property bool hovered: false
-
+                        
                         Row {
                             anchors.fill: parent
                             anchors.margins: 5
                             spacing: 10
-
+                            
                             // ---------------------------------------------------------
                             // ANIMATED ICON TILE
                             // ---------------------------------------------------------
@@ -1238,7 +1392,7 @@ ApplicationWindow {
                                 height: 40
                                 color: Win8Colors.Tile
                                 transformOrigin: Item.Center
-
+                                
                                 transform: [
                                     Rotation {
                                         id: flipRot
@@ -1255,7 +1409,7 @@ ApplicationWindow {
                                         yScale: 1
                                     }
                                 ]
-
+                                
                                 Image {
                                     anchors.centerIn: parent
                                     id: appIcon
@@ -1265,7 +1419,7 @@ ApplicationWindow {
                                     width: 32
                                     height: 32
                                     fillMode: Image.PreserveAspectFit
-
+                                        
                                     transform: [
                                         Rotation {
                                             id: flipiconRot
@@ -1284,7 +1438,7 @@ ApplicationWindow {
                                     ]
                                 }
                             }
-
+                                
                             Text {
                                 id: apptext
                                 anchors.verticalCenter: parent.verticalCenter
@@ -1306,17 +1460,17 @@ ApplicationWindow {
                                     launchAnimAllapp.start()
                                 }
                             }
-
+                            
                             MenuSeparator { }
                             Repeater {
                                 model: actionModel
-
+                                
                                 MenuItem {
                                     required property string name
                                     required property string command
-
+                                    
                                     text: name
-
+                                    
                                     onTriggered: {
                                         apptilecol.launching = true
                                         // appGridView.launchingIndex = index
@@ -1326,39 +1480,50 @@ ApplicationWindow {
                                 }
                             }
                         }
-
+                        
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            
                             onEntered: appRect.hovered = true
                             onExited: appRect.hovered = false
-                            acceptedButtons: Qt.LeftButton | Qt.RightButton
-
+                            
                             property bool dragStarted: false
-                            property point pressPos
-
-                            onPressed: function(mouse) {
-                                dragStarted = false
-                                pressPos = Qt.point(mouse.x, mouse.y)
-                            }
-
-                            onPositionChanged: function(mouse) {
-                                if (!dragStarted) {
-                                    let dx = mouse.x - pressPos.x
-                                    let dy = mouse.y - pressPos.y
-                                    if (Math.sqrt(dx*dx + dy*dy) > 10) {
-                                        dragStarted = true
-                                        AppLauncher.startSystemDrag(
-                                            apptilecol.desktopFilePath, appIcon)
-                                    }
+                            property point pressPos: Qt.point(0, 0)
+                            
+                            onPressed: (mouse) => {
+                                if (mouse.button === Qt.LeftButton) {
+                                    dragStarted = false
+                                    pressPos = Qt.point(mouse.x, mouse.y)
                                 }
                             }
-
+                            
+                            onPositionChanged: (mouse) => {
+                                // 🔒 DO NOT drag on hover
+                                if (!(mouse.buttons & Qt.LeftButton))
+                                    return
+                                    
+                                    if (dragStarted)
+                                        return
+                                        
+                                        if (Math.hypot(mouse.x - pressPos.x,
+                                            mouse.y - pressPos.y) > 10) {
+                                            dragStarted = true
+                                            
+                                            // 🛡 Defer system drag
+                                            Qt.callLater(() => {
+                                                AppLauncher.startSystemDrag(
+                                                    apptilecol.desktopFilePath,
+                                                    appIcon
+                                                )
+                                            })
+                                            }
+                            }
+                            
                             onReleased: dragStarted = false
-
-                            onClicked: function(mouse) {
-
-                                // LEFT CLICK → normal launch
+                            
+                            onClicked: (mouse) => {
                                 if (mouse.button === Qt.LeftButton) {
                                     appGridView.launchingIndex = apptilecol.index
                                     apptilecol.launching = true
@@ -1366,8 +1531,7 @@ ApplicationWindow {
                                     AppLauncher.launchApp(apptilecol.command)
                                     launchAnimAllapp.start()
                                 }
-
-                                // RIGHT CLICK → open desktop actions menu
+                                
                                 if (mouse.button === Qt.RightButton) {
                                     AppLauncher.loadDesktopActions(
                                         apptilecol.desktopFilePath,
@@ -1376,17 +1540,17 @@ ApplicationWindow {
                                     actionMenu.popup()
                                 }
                             }
-
                         }
+                        
                     }
-
+                    
                     // ------------------------------------------------------------
                     // LAUNCH ANIMATION (full screen)
                     // ------------------------------------------------------------
                     SequentialAnimation {
                         id: launchAnimAllapp
                         running: false
-
+                        
                         onStarted: {
                             var winItem = mainwindow.contentItem
                             var c = allapptile.mapToItem(
@@ -1394,41 +1558,41 @@ ApplicationWindow {
                                 allapptile.width / 2,
                                 allapptile.height / 2
                             )
-
+                            
                             var centerX = winItem.width  / 2
                             var centerY = winItem.height / 2
-
+                            
                             moveXAnim.to = allapptile.x + (centerX - c.x)
                             moveYAnim.to = allapptile.y + (centerY - c.y)
                         }
-
+                        
                         onStopped: {
                             // Hide window
                             WindowController.hide()
-
+                            
                             // Reset all transforms
                             flipRot.angle = 0
                             flipiconRot.angle = 0
-
+                            
                             zoomScal.xScale = 1
                             zoomScal.yScale = 1
                             zoomiconScal.xScale = 1
                             zoomiconScal.yScale = 1
-
+                            
                             // Reset position
                             allapptile.x = 0
                             allapptile.y = 0
-
+                            
                             // Reset opacity and launching state
                             apptilecol.launching = false
                             appGridView.launchingIndex = -1
                             apptext.opacity = 1
-
+                            
                             // close all app section
                             allapparea.y=allapparea.height
                             container.focus = true
                         }
-
+                        
                         ParallelAnimation {
                             // flip
                             NumberAnimation {
@@ -1445,7 +1609,7 @@ ApplicationWindow {
                                 duration: 650
                                 easing.type: Easing.InOutQuad
                             }
-
+                            
                             // scale
                             NumberAnimation {
                                 target: zoomScal
@@ -1461,7 +1625,7 @@ ApplicationWindow {
                                 duration: 650
                                 easing.type: Easing.InOutCubic
                             }
-
+                            
                             NumberAnimation {
                                 target: zoomiconScal
                                 property: "xScale"
@@ -1476,7 +1640,7 @@ ApplicationWindow {
                                 duration: 350
                                 easing.type: Easing.InOutCubic
                             }
-
+                            
                             // move
                             NumberAnimation {
                                 id: moveXAnim
@@ -1493,13 +1657,13 @@ ApplicationWindow {
                                 easing.type: Easing.InOutQuad
                             }
                         }
-
+                        
                         PauseAnimation { duration: 500 }
                     }
                 }
             }
         }
-
+        
         DropArea {
             id: backgroundDropArea
             width: mainwindow.width

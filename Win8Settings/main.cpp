@@ -75,7 +75,7 @@ public:
     Q_INVOKABLE QString openWallpaperFileDialog() {
         return QFileDialog::getOpenFileName(nullptr, "Select Wallpaper",
                                             QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
-                                            "Images (*.png *.jpg *.jpeg *.bmp)");
+                                            "Images (*.png *.jpg *.jpeg *.bmp *.gif)");
     }
 
     Q_INVOKABLE QString openWallpaperFolderDialog(const QString &startFolder = "") {
@@ -90,7 +90,7 @@ public:
         if (folderPath.isEmpty()) return files;
 
         QDir dir(folderPath);
-        QStringList nameFilters = {"*.png", "*.jpg", "*.jpeg", "*.bmp"};
+        QStringList nameFilters = {"*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif"};
         files = dir.entryList(nameFilters, QDir::Files | QDir::NoSymLinks);
         for (int i = 0; i < files.size(); ++i) files[i] = dir.absoluteFilePath(files[i]);
         return files;

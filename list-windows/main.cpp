@@ -16,6 +16,11 @@
 #include <iostream>
 #include <map>
 
+#include <QProcess>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+
 #include <wayland-client.h>
 
 extern "C" {
@@ -119,6 +124,45 @@ QString find_icon_for_app(const std::string &app_id) {
 
   return shortName;
 }
+
+// ------------------------------------------------------------
+// Hyprland helpers
+// ------------------------------------------------------------
+static bool is_hyprland() {
+  return qEnvironmentVariableIsSet("HYPRLAND_INSTANCE_SIGNATURE");
+}
+
+static QString hyprland_find_address_by_title(const QString &title) {
+  QProcess proc;
+  proc.start("hyprctl", { "-j", "clients" });
+  proc.waitForFinished();
+  
+  QJsonDocument doc =
+  QJsonDocument::fromJson(proc.readAllStandardOutput());
+  if (!doc.isArray())
+    return {};
+  
+  for (const auto &v : doc.array()) {
+    QJsonObject o = v.toObject();
+    if (o["title"].toString() == title) {
+      return o["address"].toString();
+    }
+  }
+  return {};
+}
+
+static bool hyprland_focus_window(const QString &title) {
+  QString addr = hyprland_find_address_by_title(title);
+  if (addr.isEmpty())
+    return false;
+  
+  QProcess::execute(
+    "hyprctl",
+    { "dispatch", "focuswindow", "address:" + addr }
+  );
+  return true;
+}
+
 
 // ------------------------------------------------------------
 // INI writer
@@ -228,10 +272,14 @@ void handle_command(const QString &cmd) {
 
   // Execute action
   switch (it->second) {
-  case Action::Activate:
-    if (seat)
-      zwlr_foreign_toplevel_handle_v1_activate(targetHandle, seat);
+    case Action::Activate:
+      if (is_hyprland() && hyprland_focus_window(title)) {
+        return;
+      }
+      if (seat)
+        zwlr_foreign_toplevel_handle_v1_activate(targetHandle, seat);
     break;
+    
   case Action::Minimize:
     zwlr_foreign_toplevel_handle_v1_set_minimized(targetHandle);
     break;
@@ -245,9 +293,12 @@ void handle_command(const QString &cmd) {
     zwlr_foreign_toplevel_handle_v1_close(targetHandle);
     break;
   case Action::ActivateOnly:
+    if (is_hyprland() && hyprland_focus_window(title)) {
+      return;
+    }
     activate_only(title);
-    return; // already flushed
-
+    return;
+    
   }
 
   wl_display_flush(display);
@@ -428,6 +479,10 @@ int main(int argc, char **argv) {
   zwlr_foreign_toplevel_manager_v1_add_listener(toplevel_manager,
                                                 &manager_listener, nullptr);
   wl_display_roundtrip(display);
+  
+  // FORCE initial write on first launch
+  write_all_windows_to_ini();
+  dirty = false;
 
   // --------------------------------------------------------
   // Wayland FD → Qt
