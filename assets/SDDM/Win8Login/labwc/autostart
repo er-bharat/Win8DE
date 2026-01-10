@@ -1,0 +1,8 @@
+# Example autostart file for a labwc LXQt session
+# Applications started here won't be closed by `lxqt-leave --logout` and settings can be lost
+# Preferred place for starting wayland-only applications
+
+# Set background color or image (below the desktop):
+#swaybg -i /home/bharat/.config/hypr/wallpaper/n5tTVYg.jpeg  >/dev/null 2>&1 &
+
+

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+This file contains all supported Labwc v0.8.3 config elements & attributes with
+default values. Some LXQt specific settings have been added. You may have a
+updated version in /usr/share/docs/labwc/rc.xml.all
+-->
+<labwc_config>
+  <core>
+    <decoration>server</decoration>
+    <gap>0</gap>
+    <adaptiveSync>no</adaptiveSync>
+    <allowTearing>no</allowTearing>
+    <autoEnableOutputs>yes</autoEnableOutputs>
+    <reuseOutputMode>no</reuseOutputMode>
+    <xwaylandPersistence>yes</xwaylandPersistence>
+  </core>
+  
+  <libinput>
+    <device category="default">
+      <naturalScroll>no</naturalScroll>
+      <leftHanded/>
+      <pointerSpeed>1</pointerSpeed>
+      <accelProfile/>
+      <tap>yes</tap>
+      <tapButtonMap/>
+      <tapAndDrag/>
+      <dragLock/>
+      <middleEmulation/>
+      <disableWhileTyping/>
+      <clickMethod/>
+      <sendEventsMode/>
+      <calibrationMatrix/>
+      <scrollFactor>0.8</scrollFactor>
+    </device>
+  
+    <device category="SYNA3602:00 0911:5288 Touchpad">
+      <naturalScroll>yes</naturalScroll>
+      <leftHanded/>
+      <pointerSpeed>0</pointerSpeed>
+      <!--       <accelProfile/> -->
+      <tap>yes</tap>
+      <tapButtonMap/>
+      <tapAndDrag/>
+      <dragLock/>
+      <middleEmulation/>
+      <disableWhileTyping/>
+      <clickMethod/>
+      <sendEventsMode/>
+      <calibrationMatrix/>
+      <scrollFactor>1.0</scrollFactor>
+    </device>
+  </libinput>
+  
+</labwc_config>

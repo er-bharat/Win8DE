@@ -649,7 +649,7 @@ ApplicationWindow {
                         }
                            
                         ColorDialog {
-                            id: colorDialog
+                            id: dialog
                             title: "Choose Tile Color"
                             
                             onAccepted: {
@@ -905,6 +905,19 @@ ApplicationWindow {
                             }
                         }
                         
+                        function recalculateTilePosition() {
+                            var snappedX = Math.round(tile.x / container.halfGrid) * container.halfGrid
+                            var snappedY = Math.round(tile.y / container.halfGrid) * container.halfGrid
+                            
+                            snappedX = Math.max(0, Math.min(snappedX, container.contentWidth - tile.width))
+                            snappedY = Math.max(0, snappedY)
+                            
+                            tile.x = snappedX
+                            tile.y = snappedY
+                            
+                            tileModel.updateTilePosition(tile.index, tile.x, tile.y)
+                        }
+                        
                         //-----------------------------------------------------------
                         // Right-click menu
                         //-----------------------------------------------------------
@@ -921,7 +934,7 @@ ApplicationWindow {
                             MenuItem {
                                 text: "Color"
                                 onTriggered: {
-                                    colorDialog.open()
+                                    dialog.open()
                                     WindowController.hide()
                                 }
                             }
@@ -1002,6 +1015,11 @@ ApplicationWindow {
                                 }
                             }
                             
+                            ScriptAction {
+                                script: {
+                                    recalculateTilePosition()
+                                }
+                            }
                             
                         }
                         
@@ -1009,6 +1027,7 @@ ApplicationWindow {
                             if (!appeared) {
                                 appeared = true
                                 appearAnim.start()
+                                
                             }
                         }
                         Connections {
