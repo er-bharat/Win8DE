@@ -3,13 +3,10 @@
     <file>main.qml</file>
     <file>icons/user.svg</file>
     <file>icons/settings.svg</file>
-    <file>icons/power.svg</file>
-    <file>icons/emblem-system-symbolic.svg</file>
-    <file>icons/system-run.svg</file>
-    <file>icons/system-shutdown-symbolic.svg</file>
-    <file>icons/view-refresh-symbolic.svg</file>
-    <file>icons/system-log-out.svg</file>
-    <file>icons/power.svg</file>
+    <file>icons/logout.svg</file>
+    <file>icons/shutdown.svg</file>
+    <file>icons/reboot.svg</file>
+    <file>icons/suspend.svg</file>
     <file>icons/placeholder.svg</file>
     <file>icons/peoplew.png</file>
     <file>icons/go-down-skip.svg</file>

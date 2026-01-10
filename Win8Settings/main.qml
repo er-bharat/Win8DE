@@ -253,7 +253,11 @@ ApplicationWindow {
 
                                     required property string modelData
 
-                                    Text { text: colortype.modelData; width: 120 }
+                                    Text { 
+                                        text: colortype.modelData
+                                        width: 120 
+                                        
+                                    }
 
                                     Rectangle {
                                         id: preview
@@ -278,6 +282,10 @@ ApplicationWindow {
                                                 SettingsManager.setColor(colortype.modelData, selectedColor)
                                             }
                                         }
+                                    }
+                                    
+                                    Text {
+                                        text: dialog.selectedColor
                                     }
                                 }
                             }

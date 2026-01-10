@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 
 pragma ComponentBehavior: Bound
 
@@ -17,6 +18,10 @@ ApplicationWindow {
         anchors.fill: parent
         source: startWallpaper // choose from Win8Settings
         fillMode: Image.PreserveAspectCrop
+    }
+    
+    Keys.onTabPressed: {
+        container.forceActiveFocus()
     }
 
     // area at bottom to hide the start screen on click
@@ -125,12 +130,10 @@ ApplicationWindow {
             }
         }
         // the user icon at top right hosts power menu and settings.
-        Rectangle {
+        Item {
             id: userCard
             width: 150
             height: 50
-            color: "transparent"
-            radius: 12
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.margins: 30
@@ -151,7 +154,8 @@ ApplicationWindow {
                 Rectangle {
                     width: 48
                     height: 48
-                    color: "transparent"
+                    color: Win8Colors.Tile
+
                     //backup user icon
                     Image {
                         id: userIcon
@@ -176,31 +180,31 @@ ApplicationWindow {
                 
                 MenuItem {
                     text: "Shutdown"
-                    icon.source: "/icons/system-shutdown-symbolic.svg"
+                    icon.source: "/icons/shutdown.svg"
                     onTriggered: powerControl.shutdown()
                 }
                 
                 MenuItem {
                     text: "Reboot"
-                    icon.source: "/icons/view-refresh-symbolic.svg"
+                    icon.source: "/icons/reboot.svg"
                     onTriggered: powerControl.reboot()
                 }
                 
                 MenuItem {
                     text: "Suspend"
-                    icon.source: "/icons/system-run.svg"
+                    icon.source: "/icons/suspend.svg"
                     onTriggered: powerControl.suspend()
                 }
                 
                 MenuItem {
                     text: "Logout"
-                    icon.source: "/icons/system-log-out.svg"
+                    icon.source: "/icons/logout.svg"
                     onTriggered: powerControl.logout()
                 }
                 
                 MenuItem {
                     text: "Settings"
-                    icon.source: "/icons/emblem-system-symbolic.svg"
+                    icon.source: "/icons/settings.svg"
                     onTriggered: {
                         Launcher.launch("Win8Settings")
                         WindowController.hide()
@@ -599,6 +603,7 @@ ApplicationWindow {
                         required property string command
                         required property string size
                         required property bool terminal
+                        required property string tileColor
                             
                         //size setup of tiles.
                         readonly property int smallSize:   container.halfGrid - 5
@@ -624,12 +629,35 @@ ApplicationWindow {
                         
                         property bool hovered: false
                         
-                        color: dragArea.dragging || container.focusedIndex === index || hovered ? Win8Colors.TileHighlight : Win8Colors.Tile
+                        readonly property color effectiveColor:
+                        tileColor && tileColor.length > 0
+                        ? tileColor
+                        : Win8Colors.Tile
+                        
+                        
+                        color: dragArea.dragging || container.focusedIndex === index || hovered
+                        ? Qt.lighter(effectiveColor, 1.3)
+                        : effectiveColor
+                        
                         border.width: 1
                         border.color: container.focusedIndex === index || hovered
                         ? "#949494"
                         : Qt.rgba(1,1,1,0.2)
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 180 }
+                        }
+                           
+                        ColorDialog {
+                            id: colorDialog
+                            title: "Choose Tile Color"
                             
+                            onAccepted: {
+                                tileModel.setTileColor(tile.index, selectedColor)
+                                WindowController.show()
+                            }
+                        }
+                        
                             
                         function launch() {
                             if (tile.launching)
@@ -882,19 +910,39 @@ ApplicationWindow {
                         //-----------------------------------------------------------
                         Menu {
                             id: contextMenu
+                            
                             MenuItem { text: "Small";   onTriggered: tileModel.resizeTile(tile.index, "small") }
                             MenuItem { text: "Medium";  onTriggered: tileModel.resizeTile(tile.index, "medium") }
                             MenuItem { text: "Large";   onTriggered: tileModel.resizeTile(tile.index, "large") }
                             MenuItem { text: "XLarge";  onTriggered: tileModel.resizeTile(tile.index, "xlarge") }
+                            
                             MenuSeparator {}
-                            MenuItem { text: "Remove";  onTriggered: tileModel.removeTile(tile.index) }
+                            
+                            MenuItem {
+                                text: "Color"
+                                onTriggered: {
+                                    colorDialog.open()
+                                    WindowController.hide()
+                                }
+                            }
+                            
+                            MenuItem {
+                                text: "Reset Color"
+                                enabled: tileColor && tileColor.length > 0
+                                onTriggered: tileModel.resetTileColor(tile.index)
+                            }
+                            
+                            MenuSeparator {}
+                            
+                            MenuItem { text: "Remove"; onTriggered: tileModel.removeTile(tile.index) }
                         }
+                        
                         
                         // --- APPEAR ANIMATION ---
                         property bool appeared: false
                         // property bool anyTileLaunching: false
                         opacity: 0.1
-                        scale: 0.95
+                        scale: 1
                         transformOrigin: Item.Left
                         
                         ParallelAnimation {
@@ -911,13 +959,23 @@ ApplicationWindow {
                                 easing.type: Easing.OutCubic
                             }
                             
-                            PropertyAnimation {
-                                target: tile
-                                property: "scale"
-                                from: 0.95; to: 1
-                                duration: 400
-                                easing.type: Easing.OutCubic
+                            SequentialAnimation {
+                                PropertyAnimation {
+                                    target: tile
+                                    property: "scale"
+                                    from: 1; to: 0.97
+                                    duration: 350
+                                    easing.type: Easing.OutCubic
+                                }
+                                PropertyAnimation {
+                                    target: tile
+                                    property: "scale"
+                                    from: 0.97; to: 1
+                                    duration: 150
+                                    easing.type: Easing.OutCubic
+                                }
                             }
+                            
                             
                             PropertyAnimation {
                                 target: tile
@@ -931,7 +989,7 @@ ApplicationWindow {
                                 NumberAnimation {
                                     target: flipRotation2
                                     property: "angle"
-                                    to: 20
+                                    to: 10
                                     duration: 300
                                     easing.type: Easing.InOutQuad
                                 }

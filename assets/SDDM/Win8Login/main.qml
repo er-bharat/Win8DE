@@ -68,7 +68,7 @@ Rectangle {
     Rectangle {
         id: passwordUi
         anchors.fill : parent
-        color: "teal"
+        color: config.bg2color
         opacity: 1
 
         Rectangle {
@@ -375,7 +375,7 @@ Rectangle {
         id: showPassAnim
 
         PauseAnimation {
-            duration: 500   // delay in ms
+            duration: 2500   // delay in ms
         }
 
         ParallelAnimation {

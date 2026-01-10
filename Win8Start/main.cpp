@@ -776,6 +776,7 @@ struct Tile {
   double modelX;
   double modelY;
   QString size;
+  QString color;
 };
 
 Q_DECLARE_METATYPE(Tile)
@@ -792,7 +793,8 @@ public:
     TerminalRole,
     ModelXRole,
     ModelYRole,
-    SizeRole
+    SizeRole,
+    ColorRole 
   };
 
   TileModel(QObject *parent = nullptr)
@@ -823,6 +825,7 @@ public:
       case ModelXRole:      return t.modelX;
       case ModelYRole:      return t.modelY;
       case SizeRole:        return t.size;
+      case ColorRole:       return t.color;
       default:              return {};
     }
   }
@@ -835,8 +838,9 @@ public:
       {CommandRole,     "command"},
       {ModelXRole,      "modelX"},
       {ModelYRole,      "modelY"},
-      { TerminalRole,   "terminal"},
-      {SizeRole,        "size"}
+      {TerminalRole,   "terminal"},
+      {SizeRole,        "size"},
+      {ColorRole,       "tileColor"}
     };
   }
 
@@ -956,6 +960,37 @@ public:
       }
     );
     }
+    
+    Q_INVOKABLE void setTileColor(int index, const QString &color) {
+      if (index < 0 || index >= m_tiles.count())
+        return;
+      
+      m_tiles[index].color = color;
+      
+      emit dataChanged(
+        this->index(index),
+                       this->index(index),
+                       { ColorRole }
+      );
+      
+      saveAsync();
+    }
+    
+    Q_INVOKABLE void resetTileColor(int index) {
+      if (index < 0 || index >= m_tiles.count())
+        return;
+      
+      m_tiles[index].color.clear(); // "" = default
+      
+      emit dataChanged(
+        this->index(index),
+                       this->index(index),
+                       { ColorRole }
+      );
+      
+      saveAsync();
+    }
+    
 
     // -------------------------------------------------
     // Async load / save
@@ -981,6 +1016,8 @@ public:
             t.modelY      = o["modelY"].toDouble();
             t.size        = o["size"].toString("medium");
             t.terminal    = o.value("terminal").toBool(false);
+            t.color       = o.value("color").toString("");
+            
             
             tiles.append(t);
           }
@@ -1012,6 +1049,8 @@ public:
             o["modelY"]      = t.modelY;
             o["size"]        = t.size;
             o["terminal"]    = t.terminal;
+            o["color"]       = t.color;
+            
             arr.append(o);
           }
 
