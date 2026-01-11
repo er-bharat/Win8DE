@@ -87,10 +87,14 @@ Window {
             id: box1
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
-            anchors.topMargin: height
-            width: root.height* 0.5
+            anchors.topMargin: height/3
+            width: root.height* 0.7
             height: width*0.5
-            color: "skyblue"
+            color: Win8Colors.background
+            
+            MouseArea {
+                anchors.fill: parent
+            }
 
             Row {
                 anchors.centerIn: parent
@@ -113,85 +117,98 @@ Window {
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
+                    
                     TextField {
                         id: usernameField
-                        width:box1.height *0.9
+                        width: box1.height * 0.9
+                        height: 40
                         placeholderText: root.username
                         font.pixelSize: 22
                         font.weight: Font.Black
                         color: "red"
-                        focus: false
+                        
                         onTextChanged: root.username = text
-
-                        onActiveFocusChanged: if (activeFocus) {
-                            vkeyboard.currentField = usernameField
-                        }
+                        onActiveFocusChanged: if (activeFocus)
+                        vkeyboard.currentField = usernameField
                     }
-                    TextField {
-                        id: passwordField
-                        width: box1.height *0.9
-                        placeholderText: "Password"
-                        echoMode: TextInput.Password
-                        font.pixelSize: 22
-                        font.weight: Font.Black
-                        color: "red"
-                        focus: false
-                        Keys.onPressed: (event) => {
-                            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                                lockManager.authenticate(root.username, root.password)
-                                event.accepted = true
+                    
+                    /* Password + Unlock icon inline */
+                    Row {
+                        width: usernameField.width
+                        height: passwordField.height
+                        
+                        TextField {
+                            id: passwordField
+                            width: parent.width - unlockBtn.width
+                            height: 40
+                            placeholderText: "Password"
+                            echoMode: TextInput.Password
+                            font.pixelSize: 22
+                            font.weight: Font.Black
+                            color: "red"
+                            
+                            Keys.onPressed: (event) => {
+                                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                    lockManager.authenticate(root.username, root.password)
+                                    event.accepted = true
+                                }
                             }
-                        }
-
-                        onTextChanged: root.password = text
-
-                        onActiveFocusChanged: if (activeFocus) {
+                            
+                            onTextChanged: root.password = text
+                            onActiveFocusChanged: if (activeFocus)
                             vkeyboard.currentField = passwordField
                         }
-                    }
-                    Row {
-                        spacing: parent.width-(logi.width+vkey.width)
+                        
                         Rectangle {
-                            id: logi
-                            width: 100
-                            height: 50
-                            z: -1
-                            Text {
-
+                            id: unlockBtn
+                            width: passwordField.height
+                            height: passwordField.height
+                            color: Win8Colors.tile
+                            
+                            
+                            Image {
                                 anchors.centerIn: parent
-                                text: "Unlock"
-                                color: "red"
-                                font.family: "Orbitron"
-                                font.pixelSize: 22
-                                font.weight: Font.Black
+                                source: "unlock.svg"
+                                width: parent.width * 0.6
+                                height: parent.height * 0.6
+                                fillMode: Image.PreserveAspectFit
+                                sourceSize.width: width
+                                sourceSize.height: height
                             }
-
+                            
                             MouseArea {
                                 anchors.fill: parent
-                                hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: lockManager.authenticate(root.username, root.password)
                             }
                         }
+                    }
+                    
+                    /* vkey button BELOW password field */
+                    Row {
+                        width: usernameField.width
+                        height: 40
+                        spacing: 10
+                        
+                        Item { width: 1; height: 1 } // left spacer
+                        
                         Rectangle {
                             id: vkey
-                            width: 50
-                            height: 50
-                            z: -1
+                            width: 40
+                            height: 40
                             color: "transparent"
-
+                            
                             Image {
-                                id: icon
                                 source: "vkey.svg"
                                 anchors.fill: parent
-                                sourceSize: Qt.size(parent.height, parent.height)
-                                fillMode: Image.PreserveAspectFit   // recommended for SVG
+                                sourceSize.width: width
+                                sourceSize.height: height
+                                fillMode: Image.PreserveAspectFit
                                 smooth: true
                             }
-
+                            
                             MouseArea {
                                 anchors.fill: parent
-                                hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     if (vkeyboard.y >= vkeyshell.height - 5)
@@ -203,6 +220,7 @@ Window {
                         }
                     }
                 }
+                
             }
         }
     }
@@ -286,14 +304,14 @@ Window {
         target: lockTop
         property: "y"
         to: -root.height
-        duration: box1.height *0.9
+        duration: 200
     }
     PropertyAnimation {
         id: slideDown
         target: lockTop
         property: "y"
         to: 0
-        duration: box1.height *0.9
+        duration: 200
     }
 
     SequentialAnimation {

@@ -108,10 +108,11 @@ Rectangle {
             // anchors.centerIn: parent
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
-            anchors.topMargin: height
-            width: passwordUi.height* 0.5
+            anchors.topMargin: height/3
+            width: passwordUi.height* 0.7
             height: width*0.5
-            color: "skyblue"
+            color: config.bg2color
+            opacity: 0
 
             Row {
                 anchors.centerIn: parent
@@ -135,135 +136,127 @@ Rectangle {
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
+                    
                     TextField {
                         id: name
-                        width:box1.height *0.9
+                        width: box1.height * 0.9
+                        height: 40
                         text: userModel.lastUser
                         placeholderText: userModel.lastUser
                         font.pixelSize: 22
-                        // font.family: "Orbitron"
                         font.weight: Font.Black
                         color: "red"
-                        focus: false
-                        onActiveFocusChanged: if (activeFocus) {
-                            vkeyboard.currentField = name
-                            // vkeyboard.hide()
-                        }
+                        
+                        onActiveFocusChanged: if (activeFocus)
+                        vkeyboard.currentField = name
                     }
-                    TextField {
-                        id: password
-                        width: box1.height *0.9
-                        placeholderText: "Password"
-                        echoMode: TextInput.Password
-                        font.pixelSize: 22
-                        // font.family: "Orbitron"
-                        font.weight: Font.Black
-                        color: "red"
-                        // background: null
-                        focus: false
-                        Keys.onPressed: {
-                            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                                sddm.login(name.text, password.text, sessionIndex);
-                                event.accepted = true;
+                    
+                    /* Password + Login inline */
+                    Row {
+                        width: name.width
+                        height: password.height
+                        
+                        TextField {
+                            id: password
+                            width: parent.width - loginBtn.width
+                            height: 40
+                            placeholderText: "Password"
+                            echoMode: TextInput.Password
+                            font.pixelSize: 22
+                            font.weight: Font.Black
+                            color: "red"
+                            
+                            Keys.onPressed: (event) => {
+                                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                    sddm.login(name.text, password.text, sessionIndex)
+                                    event.accepted = true
+                                }
+                            }
+                            
+                            onActiveFocusChanged: if (activeFocus)
+                            vkeyboard.currentField = password
+                        }
+                        
+                        Rectangle {
+                            id: loginBtn
+                            width: password.height
+                            height: password.height
+                            color: "violet"
+                            KeyNavigation.backtab: name
+                            
+                            Image {
+                                anchors.centerIn: parent
+                                source: "unlock.svg"   // tool icon
+                                width: parent.width * 0.6
+                                height: parent.height * 0.6
+                                fillMode: Image.PreserveAspectFit
+                                sourceSize.width: width
+                                sourceSize.height: height
+                            }
+                            
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: sddm.login(name.text, password.text, sessionIndex)
                             }
                         }
-                        onActiveFocusChanged: if (activeFocus) {
-                            vkeyboard.currentField = password
-                            // vkeyboard.hide()
-                        }
-
-                        onTextChanged: root.password = text
                     }
-                    //DE chooser
+                    
+                    /* DE chooser */
                     Item {
                         id: sessionInput
-                        width: box1.height *0.9
+                        width: box1.height * 0.9
                         height: password.height
-
-
+                        z: 100
                         Rectangle {
                             anchors.fill: parent
-                            border.width: 3
+                            border.width: 0
                             border.color: "#FF00FFFF"
                             color: "#1b1f2a"
                         }
-
+                        
                         ComboBox {
                             id: session
                             anchors.fill: parent
                             anchors.margins: 5
-                            width: parent.width
-                            height: password.height
                             font.pixelSize: 22
                             color: "white"
                             arrowIcon: "angle-down.png"
                             model: sessionModel
                             index: sessionModel.lastIndex
                             KeyNavigation.backtab: password
-                            KeyNavigation.tab: logi
                         }
-
                     }
+                    
                     Text {
                         id: errorMessage
-
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: textConstants.prompt
                         font.pixelSize: 10
                     }
+                    
+                    /* vkey button BELOW password */
                     Row {
-                        spacing: parent.width-(logi.width+vkey.width)
-                        z: -1
-                        Rectangle {
-                            id: logi
-                            width: 100
-                            height: 50
-                            KeyNavigation.backtab: name
-                            Text {
-
-                                anchors.centerIn: parent
-                                text: "Login"
-                                color: "red"
-                                font.family: "Orbitron"
-                                font.pixelSize: 22
-                                font.weight: Font.Black
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: sddm.login(name.text, password.text, sessionIndex)
-                            }
-                        }
+                        width: name.width
+                        height: 40
+                        
+                        Item { width: 1; height: 1 }
+                        
                         Rectangle {
                             id: vkey
-                            width: 50
-                            height: 50
-                            z: -1
+                            width: 40
+                            height: 40
                             color: "transparent"
-                            // Text {
-                            //
-                            //     anchors.centerIn: parent
-                            //     text: "vkey"
-                            //     color: "red"
-                            //     font.family: "Orbitron"
-                            //     font.pixelSize: 22
-                            //     font.weight: Font.Black
-                            // }
+                            
                             Image {
-                                id: icon
                                 source: "vkey.svg"
                                 anchors.fill: parent
-                                sourceSize: Qt.size(parent.height, parent.height)
-                                fillMode: Image.PreserveAspectFit   // recommended for SVG
+                                fillMode: Image.PreserveAspectFit
                                 smooth: true
                             }
-
-
+                            
                             MouseArea {
                                 anchors.fill: parent
-                                hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     if (vkeyboard.y >= vkeyshell.height - 5)
@@ -374,18 +367,15 @@ Rectangle {
     SequentialAnimation {
         id: showPassAnim
 
-        PauseAnimation {
-            duration: 2500   // delay in ms
-        }
 
         ParallelAnimation {
             id: showPass
             PropertyAnimation {
                 id: showPass1
-                target: passwordUi
+                target: box1
                 property: "opacity"
                 to: 1
-                duration: 1000
+                duration: 300
             }
             PropertyAnimation {
                 id: showPass2

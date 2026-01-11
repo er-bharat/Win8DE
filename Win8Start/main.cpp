@@ -1085,8 +1085,18 @@ public:
 
     void saveAsync() const {
       QList<Tile> tiles = m_tiles;
+      
+      // 🔽 SORT: lowest modelX first, then lowest modelY
+      std::sort(tiles.begin(), tiles.end(),
+                [](const Tile &a, const Tile &b) {
+                  if (!qFuzzyCompare(a.modelX, b.modelX))
+                    return a.modelX < b.modelX;
+                  return a.modelY < b.modelY;
+                }
+      );
+      
       Async *async = new Async(const_cast<TileModel *>(this));
-
+      
       async->run(
         [tiles, this]() -> bool {
           QJsonArray arr;
@@ -1101,22 +1111,21 @@ public:
             o["size"]        = t.size;
             o["terminal"]    = t.terminal;
             o["color"]       = t.color;
-            
             arr.append(o);
           }
-
+          
           QFile file(jsonPath());
           QDir().mkpath(QFileInfo(file).absolutePath());
           if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
             return false;
-
+          
           file.write(QJsonDocument(arr).toJson(QJsonDocument::Indented));
-          file.close();
           return true;
         },
         [](bool) {}
       );
     }
+    
 
 private:
   QList<Tile> m_tiles;
