@@ -1561,8 +1561,9 @@ ApplicationWindow {
                                     
                                     onTriggered: {
                                         apptilecol.launching = true
-                                        // appGridView.launchingIndex = index
-                                        AppLauncher.launchApp(command)
+                                        appGridView.launchingIndex = index
+                                        AppLauncher.launchApp(command, terminal)
+                                        apptext.opacity = 0
                                         launchAnimAllapp.start()
                                     }
                                 }
