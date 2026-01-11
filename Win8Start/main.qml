@@ -179,18 +179,6 @@ ApplicationWindow {
                 id: powerMenu
                 
                 MenuItem {
-                    text: "Shutdown"
-                    icon.source: "/icons/shutdown.svg"
-                    onTriggered: powerControl.shutdown()
-                }
-                
-                MenuItem {
-                    text: "Reboot"
-                    icon.source: "/icons/reboot.svg"
-                    onTriggered: powerControl.reboot()
-                }
-                
-                MenuItem {
                     text: "Suspend"
                     icon.source: "/icons/suspend.svg"
                     onTriggered: powerControl.suspend()
@@ -201,6 +189,20 @@ ApplicationWindow {
                     icon.source: "/icons/logout.svg"
                     onTriggered: powerControl.logout()
                 }
+                
+                MenuItem {
+                    text: "Reboot"
+                    icon.source: "/icons/reboot.svg"
+                    onTriggered: powerControl.reboot()
+                }
+                
+                MenuItem {
+                    text: "Shutdown"
+                    icon.source: "/icons/shutdown.svg"
+                    onTriggered: powerControl.shutdown()
+                }
+                
+                MenuSeparator {}
                 
                 MenuItem {
                     text: "Settings"
@@ -392,6 +394,8 @@ ApplicationWindow {
                             else if (t.x + t.width > contentX + width)
                                 contentX = t.x + t.width - width
                 }
+                
+                
                 Keys.onPressed: (event) => {
                     if (tileRepeater.count === 0)
                         return
@@ -654,6 +658,9 @@ ApplicationWindow {
                             
                             onAccepted: {
                                 tileModel.setTileColor(tile.index, selectedColor)
+                                WindowController.show()
+                            }
+                            onRejected: {
                                 WindowController.show()
                             }
                         }
@@ -1266,6 +1273,7 @@ ApplicationWindow {
                         // Touchpad vertical DOWN → go to bottom
                         if (isTouchpad && wheel.pixelDelta.y > 0) {
                             allapparea.y = allapparea.height
+                            container.focus = true
                             searchField.text = ""
                             categoryFilter.currentIndex = 0
                         }
@@ -1452,7 +1460,7 @@ ApplicationWindow {
                         id: appRect
                         width: parent.width - 10
                         height: 50
-                        color: (appGridView.currentIndex === apptilecol.index || hovered)
+                        color: appGridView.currentIndex === apptilecol.index
                         ? "#0078D7"
                         : "transparent"
                         
@@ -1566,8 +1574,9 @@ ApplicationWindow {
                             hoverEnabled: true
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
                             
-                            onEntered: appRect.hovered = true
-                            onExited: appRect.hovered = false
+                            onEntered: {
+                                appGridView.currentIndex = apptilecol.index
+                            }
                             
                             property bool dragStarted: false
                             property point pressPos: Qt.point(0, 0)

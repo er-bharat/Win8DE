@@ -29,7 +29,8 @@ Window {
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
-
+        cursorShape: Qt.PointingHandCursor
+        
         onEntered: {
             triggered = false   // Reset when cursor enters
             hovered = true

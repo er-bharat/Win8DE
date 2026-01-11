@@ -172,6 +172,33 @@ private:
   QString m_currentQuery;      // current search query
   QString m_selectedCategory;  // selected category filter
   
+  // scores search relevance
+  static int matchScore(const QString &name, const QString &query) {
+    if (query.isEmpty())
+      return 1000; // neutral score
+      
+      QString n = name.toLower();
+    QString q = query.toLower();
+    
+    // Best: starts with query
+    if (n.startsWith(q))
+      return 0;
+    
+    // Next: any word starts with query
+    const QStringList words = n.split(QRegularExpression("\\s+"));
+    for (const QString &w : words) {
+      if (w.startsWith(q))
+        return 1;
+    }
+    
+    // Next: contains query anywhere
+    if (n.contains(q))
+      return 2;
+    
+    // No match
+    return 100;
+  }
+  
   // -------------------------------
   // Apply search + category filter
   // -------------------------------
@@ -179,21 +206,45 @@ private:
     beginResetModel();
     m_apps.clear();
     
+    struct ScoredApp {
+      AppInfo app;
+      int score;
+    };
+    
+    QList<ScoredApp> scored;
+    
     for (const auto &app : m_allApps) {
-      // match search query
-      bool matchesQuery = m_currentQuery.isEmpty() ||
-      app.name.toLower().contains(m_currentQuery.toLower());
-      
-      // match category
-      bool matchesCategory = m_selectedCategory.isEmpty() ||
+      // category filter
+      bool matchesCategory =
+      m_selectedCategory.isEmpty() ||
       app.categories.contains(m_selectedCategory, Qt::CaseInsensitive);
       
-      if (matchesQuery && matchesCategory)
-        m_apps.append(app);
+      if (!matchesCategory)
+        continue;
+      
+      int score = matchScore(app.name, m_currentQuery);
+      
+      // reject non-matching search results
+      if (!m_currentQuery.isEmpty() && score >= 100)
+        continue;
+      
+      scored.append({ app, score });
     }
+    
+    // Sort by relevance score, then alphabetically
+    std::sort(scored.begin(), scored.end(),
+              [](const ScoredApp &a, const ScoredApp &b) {
+                if (a.score != b.score)
+                  return a.score < b.score;
+                return a.app.name.toLower() < b.app.name.toLower();
+              });
+    
+    for (const auto &s : scored)
+      m_apps.append(s.app);
     
     endResetModel();
   }
+  
 };
 
 
