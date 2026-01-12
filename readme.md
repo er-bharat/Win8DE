@@ -6,6 +6,7 @@ cant install it on the newer hardware.
             This is for you it is a shell for wayland window managers like Labwc hyprland etc. It gives a
 wallpaper utility, a lock screen, a start menu, an OSD for volume and brightness a settins app for wall.
 it dosent provide charms menu because i always thought its useless.
+[Win8De.webm](https://github.com/user-attachments/assets/8b0269a7-01d3-404d-b637-948cd9f767c7)
 
 ## Screenshots
 
