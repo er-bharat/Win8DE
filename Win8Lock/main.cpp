@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
   win8Settings.endGroup();
 
   engine.rootContext()->setContextProperty("Win8Colors",
-                                           QVariant::fromValue(Win8Colors));
+     QVariant::fromValue(Win8Colors));
 
   // ----- Lockscreen wallpaper ONLY -----
   QString lockscreenWallpaper;
@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
   }
 
   engine.rootContext()->setContextProperty("wallpaperPath",
-                                           lockscreenWallpaper);
+     lockscreenWallpaper);
 
   // ----- Load QML -----
   QUrl qmlUrl = customPath.isEmpty() ? QUrl(qmlFile) : QUrl(customPath);
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
   layerWindow->setAnchors(
       {LayerShellQt::Window::AnchorTop, LayerShellQt::Window::AnchorBottom,
        LayerShellQt::Window::AnchorLeft, LayerShellQt::Window::AnchorRight});
-  layerWindow->setExclusiveZone(0);
+  layerWindow->setExclusiveZone(-1);
 
   window->setFlags(Qt::Window | Qt::FramelessWindowHint |
                    Qt::WindowStaysOnTopHint);

@@ -13,13 +13,14 @@ set(CMAKE_AUTORCC ON)
 # Add executable
 qt_add_executable(Win8Corner
     main.cpp
+    resources.qrc
 )
 
-# Add QML resources
-qt6_add_resources(Win8Corner "qml_resources"
-    PREFIX "/"
-    FILES main1.qml main2.qml main3.qml main4.qml
-)
+# # Add QML resources
+# qt6_add_resources(Win8Corner "qml_resources"
+#     PREFIX "/"
+#     FILES main1.qml main2.qml main3.qml main4.qml
+# )
 
 # Link libraries
 target_link_libraries(Win8Corner

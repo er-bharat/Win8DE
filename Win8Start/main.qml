@@ -608,6 +608,8 @@ ApplicationWindow {
                         required property string size
                         required property bool terminal
                         required property string tileColor
+                        required property string tileQml
+                        
                             
                         //size setup of tiles.
                         readonly property int smallSize:   container.halfGrid - 5
@@ -685,6 +687,39 @@ ApplicationWindow {
                         property real finalX: container.contentX + container.width  / 2 - width  / 2 - 60
                         property real finalY: container.contentY + container.height / 2 - height / 2 -(start.height-allAppsButton.height)
                             
+                        
+                        Loader {
+                            id: externalTile
+                            anchors.fill: parent
+                            asynchronous: true
+                            z: 1
+                            clip: true
+                            
+                            visible: !tile.launching
+                            
+                            // Use file:/// prefix for absolute filesystem paths
+                            source: tileQml && tileQml.length > 0 ? "file:///" + tileQml : ""
+                            
+                            // Debug logs for status changes
+                            onStatusChanged: {
+                                if (status === Loader.Ready) {
+                                    console.log("✅ Tile loaded successfully:", tileQml)
+                                } else if (status === Loader.Error) {
+                                    console.error("❌ Tile QML ERROR:", tileQml, "-", errorString())
+                                }
+                            }
+                            
+                            // Bind the loaded item's context to the tile
+                            onLoaded: {
+                                if (!item) return
+                                    // Provide the tile QML with references it might need
+                                    item.tileIndex = index
+                                    item.tileModel = tileModel
+                                    item.launcher = Launcher
+                            }
+                        }
+                        
+                        
                         // transforms
                         transform: [
                             Rotation {
@@ -1031,12 +1066,20 @@ ApplicationWindow {
                         }
                         
                         Component.onCompleted: {
+                            // ---- auto-bind external tile QML if missing ----
+                            if ((!tileQml || tileQml.length === 0) && name && name.length > 0) {
+                                // Don't log here; C++ already prints only if found
+                                tileModel.setTileQml(index, name)
+                            }
+                            
+                            // ---- existing appear animation ----
                             if (!appeared) {
                                 appeared = true
                                 appearAnim.start()
-                                
                             }
                         }
+                        
+                        
                         Connections {
                             target: WindowController
                             

@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-
+        <file>start.png</file>
     </qresource>
 </RCC>

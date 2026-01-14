@@ -54,7 +54,7 @@ ApplicationWindow {
         anchors.topMargin: -height/2
         radius: width/2
         z: 10
-        color: "red"
+        color: WindowController.exclusive ? "purple" : "red"
 
         MouseArea {
             anchors.fill: parent
@@ -136,7 +136,11 @@ ApplicationWindow {
             
             ListView {
                 id: list
-                anchors.fill: parent
+                // anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: startBtn.top
                 anchors.margins: 20
                 model: windowModel
                 spacing: 12
@@ -267,6 +271,29 @@ ApplicationWindow {
                     }
                 }
             }
+            Rectangle {
+                id: startBtn
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.margins: 20
+                width: list.width
+                height: width * 9 / 16
+                
+                Image {
+                    anchors.fill: parent
+                    source: "start.png"
+                    fillMode: Image.PreserveAspectCrop
+                }
+                
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        Launcher.launchDetached("Win8Start")
+                        WindowController.hide()
+                    }
+                }
+            }
+            
         }
     }
     

@@ -828,6 +828,7 @@ struct Tile {
   double modelY;
   QString size;
   QString color;
+  QString qmlPath;   // external tile UI (optional)
 };
 
 Q_DECLARE_METATYPE(Tile)
@@ -845,7 +846,9 @@ public:
     ModelXRole,
     ModelYRole,
     SizeRole,
-    ColorRole 
+    ColorRole,
+    QmlPathRole
+    
   };
 
   TileModel(QObject *parent = nullptr)
@@ -877,6 +880,7 @@ public:
       case ModelYRole:      return t.modelY;
       case SizeRole:        return t.size;
       case ColorRole:       return t.color;
+      case QmlPathRole:     return t.qmlPath;
       default:              return {};
     }
   }
@@ -889,9 +893,10 @@ public:
       {CommandRole,     "command"},
       {ModelXRole,      "modelX"},
       {ModelYRole,      "modelY"},
-      {TerminalRole,   "terminal"},
+      {TerminalRole,    "terminal"},
       {SizeRole,        "size"},
-      {ColorRole,       "tileColor"}
+      {ColorRole,       "tileColor"},
+      { QmlPathRole,    "tileQml" }
     };
   }
 
@@ -1042,6 +1047,42 @@ public:
       saveAsync();
     }
     
+    QString tileRoot() const {
+      return QStandardPaths::writableLocation(
+        QStandardPaths::AppConfigLocation
+      ) + "/tiles";
+    }
+    Q_INVOKABLE void setTileQml(int index, const QString &path) {
+      if (index < 0 || index >= m_tiles.count())
+        return;
+      
+      QString resolvedPath = path;
+      
+      // Allow name-based lookup (weather → tiles/weather/tile.qml)
+      if (!path.contains('/') && !path.endsWith(".qml")) {
+        resolvedPath = tileRoot() + "/" + path + "/tile.qml";
+      }
+      // Allow relative qml path
+      else if (QDir::isRelativePath(path)) {
+        resolvedPath = tileRoot() + "/" + path;
+      }
+      
+      // Only set and log if the file exists
+      if (QFile::exists(resolvedPath)) {
+        m_tiles[index].qmlPath = resolvedPath;
+        
+        qDebug() << "✅ Tile QML FOUND:" << resolvedPath;
+        
+        emit dataChanged(
+          this->index(index),
+                         this->index(index),
+                         { QmlPathRole }
+        );
+        
+        saveAsync();
+      }
+    }
+    
 
     // -------------------------------------------------
     // Async load / save
@@ -1068,7 +1109,7 @@ public:
             t.size        = o["size"].toString("medium");
             t.terminal    = o.value("terminal").toBool(false);
             t.color       = o.value("color").toString("");
-            
+            t.qmlPath = o.value("qmlPath").toString("");
             
             tiles.append(t);
           }
@@ -1111,6 +1152,7 @@ public:
             o["size"]        = t.size;
             o["terminal"]    = t.terminal;
             o["color"]       = t.color;
+            o["qmlPath"]     = t.qmlPath;
             arr.append(o);
           }
           

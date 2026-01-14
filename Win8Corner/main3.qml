@@ -11,6 +11,20 @@ Window {
     property string cornerCommand: ""  // Set from C++
     property bool triggered: false
     property bool hovered: false
+    
+    Rectangle {
+        id: startBtn
+        width: parent.width
+        height: width * 9 / 16
+        
+        Image {
+            anchors.fill: parent
+            source: "start.png"
+            fillMode: Image.PreserveAspectCrop
+        }
+        
+    }
+    
 
     // Smooth size animation
     Behavior on width {
@@ -35,7 +49,7 @@ Window {
             triggered = false   // Reset when cursor enters
             hovered = true
             root.width = 200
-            root.height = 100
+            root.height = 113
         }
 
         onClicked: {

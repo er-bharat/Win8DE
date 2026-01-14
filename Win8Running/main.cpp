@@ -16,6 +16,32 @@
 
 #include <QStandardPaths>
 
+/* ---------------- Program Launcher ---------------- */
+
+class Launcher : public QObject {
+    Q_OBJECT
+public:
+    explicit Launcher(QObject *parent = nullptr) : QObject(parent) {}
+    
+    Q_INVOKABLE bool launch(const QString &program,
+                            const QStringList &arguments = {}) {
+        return QProcess::startDetached(program, arguments);
+    }
+    
+    Q_INVOKABLE bool launchDetached(const QString &commandLine) {
+        // Allows: "alacritty -e htop"
+        return QProcess::startDetached(commandLine);
+    }
+    
+    Q_INVOKABLE bool launchInShell(const QString &command) {
+        return QProcess::startDetached(
+            "/bin/sh",
+            {"-c", command}
+        );
+    }
+};
+
+
 /* ---------------- Window Item ---------------- */
 
 struct WindowItem {
@@ -380,6 +406,11 @@ int main(int argc, char *argv[]) {
     /* ---------------- WindowController ---------------- */
     auto *controller = new WindowController(window, layer, &app);
     engine.rootContext()->setContextProperty("WindowController", controller);
+    
+    /* ------------------- launcher --------------------- */
+    auto *launcher = new Launcher(&app);
+    engine.rootContext()->setContextProperty("Launcher", launcher);
+    
 
     // --------------------------------------------------------
     // Win8Settings path
