@@ -691,6 +691,7 @@ ApplicationWindow {
                         Loader {
                             id: externalTile
                             anchors.fill: parent
+                            anchors.margins: 1
                             asynchronous: true
                             z: 1
                             clip: true
@@ -722,14 +723,6 @@ ApplicationWindow {
                                 }
                             }
                             
-//                             onLoaded: {
-//                                 if (!item)
-//                                     return
-//                                     
-//                                     item.tileIndex = index
-//                                     item.tileModel = tileModel
-//                                     item.launcher  = Launcher
-//                             }
                         }
                         
                         
