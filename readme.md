@@ -10,6 +10,7 @@ it dosent provide charms menu because i always thought its useless.
 
 ## Screenshots
 
+![startmedc](https://github.com/user-attachments/assets/8fe8a124-665c-4f49-8c5e-f47f1453546b)
 
 <img width="1920" height="1080" alt="start" src="https://github.com/user-attachments/assets/2dd5a13d-bda3-40ef-9a3e-b093bd3907df" />
 <img width="1920" height="1080" alt="allapp" src="https://github.com/user-attachments/assets/77e450a7-e43e-43dd-9a3f-789c0eb6e52b" />
