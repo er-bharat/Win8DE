@@ -609,7 +609,7 @@ ApplicationWindow {
                         required property bool terminal
                         required property string tileColor
                         required property string tileQml
-                        
+                        required property bool qmlEnabled
                             
                         //size setup of tiles.
                         readonly property int smallSize:   container.halfGrid - 5
@@ -695,28 +695,41 @@ ApplicationWindow {
                             z: 1
                             clip: true
                             
-                            visible: !tile.launching
+                            // Only exist when:
+                            // 1) Start UI is visible
+                            // 2) Tile is not launching
+                            // 3) Live tile is enabled
+                            // 4) QML path exists
+                            active: WindowController.visible
+                            && !tile.launching
+                            && qmlEnabled
+                            && tileQml
+                            && tileQml.length > 0
+                            
+                            visible: active
                             
                             // Use file:/// prefix for absolute filesystem paths
-                            source: tileQml && tileQml.length > 0 ? "file:///" + tileQml : ""
+                            source: active ? ("file:///" + tileQml) : ""
                             
-                            // Debug logs for status changes
                             onStatusChanged: {
                                 if (status === Loader.Ready) {
                                     console.log("✅ Tile loaded successfully:", tileQml)
                                 } else if (status === Loader.Error) {
                                     console.error("❌ Tile QML ERROR:", tileQml, "-", errorString())
+                                    
+                                    // Optional safety: auto-disable broken live tile
+                                    // tileModel.setTileQmlEnabled(index, false)
                                 }
                             }
                             
-                            // Bind the loaded item's context to the tile
-                            onLoaded: {
-                                if (!item) return
-                                    // Provide the tile QML with references it might need
-                                    item.tileIndex = index
-                                    item.tileModel = tileModel
-                                    item.launcher = Launcher
-                            }
+//                             onLoaded: {
+//                                 if (!item)
+//                                     return
+//                                     
+//                                     item.tileIndex = index
+//                                     item.tileModel = tileModel
+//                                     item.launcher  = Launcher
+//                             }
                         }
                         
                         
@@ -864,6 +877,7 @@ ApplicationWindow {
                             font.pointSize: tile.size === "small" ? 1 : 12
                             wrapMode: Text.Wrap
                             width: parent.width - 10
+                            z: 2
                             visible: !tile.launching
                         }
                         
@@ -898,6 +912,21 @@ ApplicationWindow {
                             ]
                         }
                         
+                        Image {
+                            id: tileicon2
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            width: 25
+                            height: 25
+                            fillMode: Image.PreserveAspectFit
+                            source: AppLauncher.resolveIcon(tile.icon)
+                            sourceSize.width: 25
+                            sourceSize.height: 25
+                            z:2
+                            visible: !tile.launching
+                            && tile.qmlEnabled
+                            
+                        }
                         //-----------------------------------------------------------
                         // Dragging & Click
                         //-----------------------------------------------------------
@@ -986,6 +1015,13 @@ ApplicationWindow {
                                 enabled: tileColor && tileColor.length > 0
                                 onTriggered: tileModel.resetTileColor(tile.index)
                             }
+                            MenuSeparator {}
+                            
+                            MenuItem {
+                                text: qmlEnabled ? "Disable Live Tile" : "Enable Live Tile"
+                                onTriggered: tileModel.setTileQmlEnabled(tile.index, !qmlEnabled)
+                            }
+                            
                             
                             MenuSeparator {}
                             
@@ -1066,18 +1102,18 @@ ApplicationWindow {
                         }
                         
                         Component.onCompleted: {
-                            // ---- auto-bind external tile QML if missing ----
-                            if ((!tileQml || tileQml.length === 0) && name && name.length > 0) {
-                                // Don't log here; C++ already prints only if found
+                            if (tileQml && tileQml.length > 0) {
+                                tileModel.setTileQml(index, tileQml)
+                            } else if (name && name.length > 0) {
                                 tileModel.setTileQml(index, name)
                             }
                             
-                            // ---- existing appear animation ----
                             if (!appeared) {
                                 appeared = true
                                 appearAnim.start()
                             }
                         }
+                        
                         
                         
                         Connections {

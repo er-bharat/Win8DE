@@ -829,6 +829,8 @@ struct Tile {
   QString size;
   QString color;
   QString qmlPath;   // external tile UI (optional)
+  bool qmlEnabled = false;
+  int qmlGeneration = 0;
 };
 
 Q_DECLARE_METATYPE(Tile)
@@ -847,7 +849,9 @@ public:
     ModelYRole,
     SizeRole,
     ColorRole,
-    QmlPathRole
+    QmlPathRole,
+    QmlEnabledRole,
+    QmlGenerationRole
     
   };
 
@@ -872,31 +876,37 @@ public:
     const Tile &t = m_tiles[index.row()];
     switch (role) {
       case NameRole:        return t.name;
-      case IconRole:        return t.icon;
-      case DesktopFileRole: return t.desktopFile;
-      case CommandRole:     return t.command;
-      case TerminalRole:    return t.terminal;
-      case ModelXRole:      return t.modelX;
-      case ModelYRole:      return t.modelY;
-      case SizeRole:        return t.size;
-      case ColorRole:       return t.color;
-      case QmlPathRole:     return t.qmlPath;
-      default:              return {};
+      case IconRole:          return t.icon;
+      case DesktopFileRole:   return t.desktopFile;
+      case CommandRole:       return t.command;
+      case TerminalRole:      return t.terminal;
+      case ModelXRole:        return t.modelX;
+      case ModelYRole:        return t.modelY;
+      case SizeRole:          return t.size;
+      case ColorRole:         return t.color;
+      case QmlPathRole:       return t.qmlPath;
+      case QmlEnabledRole:    return t.qmlEnabled;
+      case QmlGenerationRole: return t.qmlGeneration;
+      default:                return {};
     }
   }
 
   QHash<int, QByteArray> roleNames() const override {
     return {
-      {NameRole,        "name"},
-      {IconRole,        "icon"},
-      {DesktopFileRole, "desktopFile"},
-      {CommandRole,     "command"},
-      {ModelXRole,      "modelX"},
-      {ModelYRole,      "modelY"},
-      {TerminalRole,    "terminal"},
-      {SizeRole,        "size"},
-      {ColorRole,       "tileColor"},
-      { QmlPathRole,    "tileQml" }
+      {NameRole,          "name"},
+      {IconRole,          "icon"},
+      {DesktopFileRole,   "desktopFile"},
+      {CommandRole,       "command"},
+      {ModelXRole,        "modelX"},
+      {ModelYRole,        "modelY"},
+      {TerminalRole,      "terminal"},
+      {SizeRole,          "size"},
+      {ColorRole,         "tileColor"},
+      {QmlPathRole,       "tileQml" },
+      {QmlEnabledRole,    "qmlEnabled"},
+      {QmlGenerationRole, "qmlGeneration"}
+      
+      
     };
   }
 
@@ -1052,36 +1062,120 @@ public:
         QStandardPaths::AppConfigLocation
       ) + "/tiles";
     }
-    Q_INVOKABLE void setTileQml(int index, const QString &path) {
-      if (index < 0 || index >= m_tiles.count())
-        return;
-      
-      QString resolvedPath = path;
-      
-      // Allow name-based lookup (weather → tiles/weather/tile.qml)
-      if (!path.contains('/') && !path.endsWith(".qml")) {
-        resolvedPath = tileRoot() + "/" + path + "/tile.qml";
-      }
-      // Allow relative qml path
-      else if (QDir::isRelativePath(path)) {
-        resolvedPath = tileRoot() + "/" + path;
-      }
-      
-      // Only set and log if the file exists
-      if (QFile::exists(resolvedPath)) {
-        m_tiles[index].qmlPath = resolvedPath;
-        
-        qDebug() << "✅ Tile QML FOUND:" << resolvedPath;
-        
-        emit dataChanged(
-          this->index(index),
-                         this->index(index),
-                         { QmlPathRole }
-        );
-        
-        saveAsync();
-      }
-    }
+    
+    // Add this member to TileModel
+    QSet<QString> m_logicRan; // Add this to your TileModel private members
+     
+     Q_INVOKABLE void setTileQml(int index, const QString &path)
+     {
+       if (index < 0 || index >= m_tiles.count())
+         return;
+       
+       QString qmlPath = path;
+       
+       // ---- Resolve tile.qml path ----
+       if (path.endsWith(".qml") && QFile::exists(path)) {
+         qmlPath = path; // absolute path
+       } else if (!path.contains('/')) {
+         qmlPath = tileRoot() + "/" + path + "/tile.qml";
+       } else if (QDir::isRelativePath(path)) {
+         qmlPath = tileRoot() + "/" + path;
+       }
+       
+       QFileInfo qmlInfo(qmlPath);
+       QDir tileDir = qmlInfo.dir();
+       
+       if (!qmlInfo.exists())
+         return;
+       
+       // ---- Assign QML path (only if changed) ----
+       if (m_tiles[index].qmlPath != qmlPath) {
+         m_tiles[index].qmlPath = qmlPath;
+         emit dataChanged(this->index(index), this->index(index), { QmlPathRole });
+         qDebug() << "🧩 Tile QML loaded:" << m_tiles[index].name;
+       }
+       
+       if (!m_tiles[index].qmlEnabled)
+         return;
+       
+       // ---- Run logic.py once ----
+       QString logicPath = tileDir.filePath("logic.py");
+       if (QFile::exists(logicPath) && !m_logicRan.contains(logicPath)) {
+         m_logicRan.insert(logicPath);
+         
+         qDebug() << "⚡ logic.py running for tile:" << m_tiles[index].name;
+         
+         QProcess *p = new QProcess(this);
+         p->setProgram("python3");
+         p->setArguments({ logicPath });
+         p->setWorkingDirectory(tileDir.absolutePath());
+         
+         connect(p, &QProcess::finished, this, [p](int, QProcess::ExitStatus) {
+           p->deleteLater();
+         });
+         
+         connect(p, &QProcess::errorOccurred, this, [p](QProcess::ProcessError) {
+           p->deleteLater();
+         });
+         
+         p->start();
+       }
+     }
+     
+     Q_INVOKABLE void setTileQmlEnabled(int index, bool enabled)
+     {
+       if (index < 0 || index >= m_tiles.count())
+         return;
+       
+       if (m_tiles[index].qmlEnabled == enabled)
+         return;
+       
+       m_tiles[index].qmlEnabled = enabled;
+       emit dataChanged(this->index(index), this->index(index), { QmlEnabledRole });
+       saveAsync();
+       
+       if (enabled && !m_tiles[index].qmlPath.isEmpty()) {
+         QString qmlPath = m_tiles[index].qmlPath;
+         QFileInfo qmlInfo(qmlPath);
+         QDir tileDir = qmlInfo.dir();
+         QString logicPath = tileDir.filePath("logic.py");
+         
+         if (QFile::exists(logicPath) && !m_logicRan.contains(logicPath)) {
+           m_logicRan.insert(logicPath);
+           qDebug() << "⚡ logic.py running for tile:" << m_tiles[index].name;
+           
+           QProcess *p = new QProcess(this);
+           p->setProgram("python3");
+           p->setArguments({ logicPath });
+           p->setWorkingDirectory(tileDir.absolutePath());
+           
+           connect(p, &QProcess::finished, this, [p](int, QProcess::ExitStatus) {
+             p->deleteLater();
+           });
+           
+           connect(p, &QProcess::errorOccurred, this, [p](QProcess::ProcessError) {
+             p->deleteLater();
+           });
+           
+           p->start();
+         }
+       }
+     }
+     
+     Q_INVOKABLE void toggleTileQml(int index)
+     {
+       setTileQmlEnabled(index, !m_tiles[index].qmlEnabled);
+     }
+     
+     Q_INVOKABLE void reloadTileQml(int index)
+     {
+       if (index < 0 || index >= m_tiles.count())
+         return;
+       
+       m_tiles[index].qmlGeneration++;
+       emit dataChanged(this->index(index), this->index(index), { QmlGenerationRole });
+     }
+     
     
 
     // -------------------------------------------------
@@ -1110,7 +1204,7 @@ public:
             t.terminal    = o.value("terminal").toBool(false);
             t.color       = o.value("color").toString("");
             t.qmlPath = o.value("qmlPath").toString("");
-            
+            t.qmlEnabled = o.value("qmlEnabled").toBool(false);
             tiles.append(t);
           }
           return tiles;
@@ -1153,6 +1247,7 @@ public:
             o["terminal"]    = t.terminal;
             o["color"]       = t.color;
             o["qmlPath"]     = t.qmlPath;
+            o["qmlEnabled"]  = t.qmlEnabled;
             arr.append(o);
           }
           
@@ -1643,12 +1738,13 @@ int main(int argc, char *argv[]) {
 
   QObject::connect(&windowController, &WindowController::visibleChanged,
                    [&](bool visible) {
-                       if (!visible) {
-                           qDebug() << "Start menu hidden → refreshing apps";
-                           launcher.refreshApplications();
-
-                       }
+                     if (visible) {
+                       qDebug() << "🔄 Start shown → reloading live tiles";
+                       for (int i = 0; i < tileModel.rowCount(); ++i)
+                         tileModel.reloadTileQml(i);
+                     }
                    });
+  
 
 
   return app.exec();
