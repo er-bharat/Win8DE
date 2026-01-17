@@ -1092,10 +1092,12 @@ ApplicationWindow {
                                     easing.type: Easing.InOutQuad
                                 }
                             }
-                            
+                            onStopped: {
+                                recalculateTilePosition()
+                            }
                             ScriptAction {
                                 script: {
-                                    recalculateTilePosition()
+                                    // recalculateTilePosition()
                                 }
                             }
                             

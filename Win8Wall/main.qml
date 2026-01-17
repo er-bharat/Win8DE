@@ -1,6 +1,7 @@
 // main.qml
 import QtQuick
 import QtQuick.Window
+import QtQuick.Effects
 
 Window {
     id: root
@@ -21,16 +22,58 @@ Window {
         playing: true
         
     }
+    
+    MultiEffect {
+        id: wallBlur
+        anchors.fill: parent
+        source: wallImg
+        blurEnabled : true
+        blur: 2
+        blurMax : 50
+        autoPaddingEnabled : false
+        
+        Behavior on blur {
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.Linear
+            }
+        }
+    }
+    
+    Timer {
+        id: waitTimer
+        interval: 500
+        repeat: false
+        running: false
+        onTriggered: {
+            wallImg.playing = true
+            wallBlur.blur = 0
+        }
+    }
+    
+    Timer {
+        id: waitTimer2
+        interval: 500
+        repeat: false
+        running: false
+        onTriggered: {
+            wallImg.playing = false
+            wallBlur.blur = 2
+        }
+    }
+    
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
         
         onEntered: {
-            wallImg.playing = true
+            waitTimer.start()
+            waitTimer2.stop()
         }
         
         onExited: {
-            wallImg.playing = false
+            waitTimer2.start()
+            waitTimer.stop()
         }
     }
 }
