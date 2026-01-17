@@ -38,6 +38,8 @@ Item {
 			width: parent.width
 			height: parent.height * 2
 			fillMode: Image.PreserveAspectCrop
+			y:parent.height
+			cache: true
 		}
 	}
 	
@@ -54,6 +56,8 @@ Item {
 			width: parent.width
 			height: parent.height * 2
 			fillMode: Image.PreserveAspectCrop
+			y:0
+			cache: true
 		}
 	}
 	
@@ -82,6 +86,7 @@ Item {
 			currentImage.source = nextImage.source
 			currentTile.y = 0
 			nextTile.y = height
+			nextImage.y = height
 			currentIndex = (currentIndex + 1) % imageModel.count
 		}
 	}
@@ -89,41 +94,47 @@ Item {
 	ParallelAnimation {
 		id: imageslide
 		
-		NumberAnimation {
-			target: nextImage
-			property: "y"
-			from: 0
-			to: -height/2
-			duration: 1700
-			easing.type: Easing.InOutQuad
+		SequentialAnimation {
+			NumberAnimation {
+				target: nextImage
+				property: "y"
+				from: 0
+				to: -height/2
+				duration: 1700
+				easing.type: Easing.InOutQuad
+			}
+			
+			NumberAnimation {
+				target: nextImage
+				property: "y"
+				from: -height/2
+				to: 0
+				duration: 1700
+				easing.type: Easing.InOutQuad
+			}
 		}
 		
-		NumberAnimation {
-			target: nextImage
-			property: "y"
-			from: -height/2
-			to: 0
-			duration: 1700
-			easing.type: Easing.InOutQuad
+		SequentialAnimation {
+			
+			NumberAnimation {
+				target: currentImage
+				property: "y"
+				from: 0
+				to: -height/2
+				duration: 1700
+				easing.type: Easing.InOutQuad
+			}
+			NumberAnimation {
+				target: currentImage
+				property: "y"
+				from: -height/2
+				to: 0
+				duration: 1700
+				easing.type: Easing.InOutQuad
+			}
+		}
 		}
 		
-		NumberAnimation {
-			target: currentImage
-			property: "y"
-			from: 0
-			to: -height/2
-			duration: 1700
-			easing.type: Easing.InOutQuad
-		}
-		NumberAnimation {
-			target: currentImage
-			property: "y"
-			from: -height/2
-			to: 0
-			duration: 1700
-			easing.type: Easing.InOutQuad
-		}
-	}
 	
 	Timer {
 		interval: 4000

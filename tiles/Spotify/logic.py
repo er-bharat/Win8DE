@@ -4,7 +4,7 @@ import requests
 import time
 
 THUMBNAIL_FILE = "art.jpg"  # Updated filename
-UPDATE_INTERVAL = 2  # seconds between checks
+UPDATE_INTERVAL = 10  # seconds between checks
 
 def get_current_art_url():
     """Get the current track's art URL using playerctl."""
