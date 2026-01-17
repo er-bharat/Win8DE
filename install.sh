@@ -6,7 +6,7 @@ BIN_SRC="$ROOT_DIR/build/bin"
 BIN_DST="/usr/bin"
 
 ASSET_SRC="$ROOT_DIR/assets/labwc3"
-CONFIG_DST="$HOME/.config/labwc3"
+CONFIG_DST="/usr/share/labwc3"
 
 SDDM_SRC="$ROOT_DIR/assets/SDDM/Win8Login"
 SDDM_DST="/usr/share/sddm/themes/Win8Login"
@@ -81,8 +81,9 @@ if [ ! -d "$ASSET_SRC" ]; then
     exit 1
 fi
 
-mkdir -p "$CONFIG_DST"
-cp -a "$ASSET_SRC/." "$CONFIG_DST/"
+sudo mkdir -p "$CONFIG_DST"
+sudo cp -a "$ASSET_SRC/." "$CONFIG_DST/"
+
 
 # ------------------------------------------------------------
 # Install SDDM theme
