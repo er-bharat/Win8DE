@@ -292,6 +292,13 @@ ApplicationWindow {
                 contentHeight: parent.height
                 clip: !anyTileLaunching
                 
+                Behavior on contentX {
+                    NumberAnimation {
+                        duration: 100
+                        easing.type: Easing.Linear
+                    }
+                }
+                
                 focus: true                       // KEYBOARD NAVIGATION
                 activeFocusOnTab: true            // KEYBOARD NAVIGATION
                 property bool anyTileLaunching: false
@@ -536,7 +543,7 @@ ApplicationWindow {
                         let delta = 0
                         if (isTouchpad) {
                             // Touchpad: horizontal ONLY
-                            delta = -wheel.pixelDelta.x
+                            delta = -wheel.pixelDelta.x * 10
                         } else {
                             // Mouse wheel: original behavior
                             delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
@@ -1322,11 +1329,18 @@ ApplicationWindow {
                 cellHeight: 80
                 focus: false
                 flow: GridView.TopToBottom
-                boundsBehavior: Flickable.StopAtBounds
+                // boundsBehavior: Flickable.StopAtBounds
                 keyNavigationEnabled: true
                 highlightFollowsCurrentItem: true
                 flickableDirection: Flickable.HorizontalFlick
                 currentIndex: 0
+                
+                Behavior on contentX {
+                    NumberAnimation {
+                        duration: 100
+                        easing.type: Easing.Linear
+                    }
+                }
                 
                 // index of currently launching delegate
                 property int launchingIndex: -1
@@ -1354,7 +1368,7 @@ ApplicationWindow {
                         let delta = 0
                         if (isTouchpad) {
                             // Touchpad: horizontal ONLY
-                            delta = -wheel.pixelDelta.x
+                            delta = -wheel.pixelDelta.x *10
                         } else {
                             // Mouse wheel: original behavior
                             delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
@@ -1532,11 +1546,15 @@ ApplicationWindow {
                         id: appRect
                         width: parent.width - 10
                         height: 50
-                        color: appGridView.currentIndex === apptilecol.index
-                        ? "#0078D7"
-                        : "transparent"
-                        
-                        property bool hovered: false
+                        clip: apptilecol.launching ? false : true
+                        color: appGridView.currentIndex === apptilecol.index ? "#0078D7" : "transparent"
+                        // Behavior on color {
+                        //     NumberAnimation {
+                        //         duration: 100
+                        //         easing.type: Easing.Linear
+                        //     }
+                        // }
+                        // property bool hovered: false
                         
                         Row {
                             anchors.fill: parent
