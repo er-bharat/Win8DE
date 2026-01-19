@@ -9,10 +9,7 @@ Window {
     // visible: true
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-    Keys.onPressed: function(event) {
-        console.log("Key pressed:", event.key);
-        event.accepted = true;
-    }
+    
     property string username: systemUsername
     property string password: ""
 
