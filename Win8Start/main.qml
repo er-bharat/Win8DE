@@ -12,6 +12,9 @@ ApplicationWindow {
     height: screen.height
     title: "Linux Start Menu Clone"
     color: "#180052"  // background color in case no wallpaper
+    
+    property bool mobile: width < height
+    
     // start wallpaper
     Image {
         id: background
@@ -20,9 +23,6 @@ ApplicationWindow {
         fillMode: Image.PreserveAspectCrop
     }
     
-    Keys.onTabPressed: {
-        container.forceActiveFocus()
-    }
 
     // area at bottom to hide the start screen on click
     MouseArea {
@@ -54,20 +54,20 @@ ApplicationWindow {
             id: start
             text: "Start"
             color: "white"
-            font.pixelSize: 60
+            font.pixelSize: mainwindow.mobile ? 30 : 60
             font.weight: Font.Thin
             anchors.left: parent.left
             anchors.top: parent.top
-            anchors.margins: 30
-            anchors.leftMargin: 120
-            anchors.topMargin: 50
+            anchors.margins: mainwindow.mobile ? 0 : 30
+            anchors.leftMargin: mainwindow.mobile ? 10 : 120
+            anchors.topMargin: mainwindow.mobile ? 5 : 50
         }
         
         // Battery display next to "Start"
         Item {
             id: batteryDisplay
-            width: 120
-            height: 40
+            width: mainwindow.mobile ? 100 : 120
+            height:mainwindow.mobile ? 20 : 40
             anchors.verticalCenter: userCard.verticalCenter
             anchors.right: userCard.left
             anchors.rightMargin: 40
@@ -89,12 +89,12 @@ ApplicationWindow {
             // Outer battery shape
             Rectangle {
                 id: batteryOutline
-                width: 50
-                height: 30
+                width:mainwindow.mobile ? 30 : 50
+                height:mainwindow.mobile ? 15 : 30
                 radius: 0
                 color: "transparent"
                 border.color: "white"
-                border.width: 4
+                border.width: mainwindow.mobile ? 1: 4
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -113,7 +113,7 @@ ApplicationWindow {
             Text {
                 text: battery.percent >= 0 ? battery.percent + "%" : "N/A"
                 color: "#FFFFFF"
-                font.pixelSize: 30
+                font.pixelSize: mainwindow.mobile ? 20: 30
                 font.weight: Font.Thin
                 anchors.verticalCenter: batteryOutline.verticalCenter
                 anchors.left: batteryOutline.right
@@ -136,9 +136,9 @@ ApplicationWindow {
             height: 50
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: 30
-            anchors.rightMargin: 120
-            anchors.topMargin: 50
+            anchors.margins: mainwindow.mobile ? 0 : 30
+            anchors.rightMargin: mainwindow.mobile ? 10 : 120
+            anchors.topMargin: mainwindow.mobile ? 5 : 50
             
             Row {
                 spacing: 12
@@ -147,7 +147,7 @@ ApplicationWindow {
                 Text {
                     text: AppLauncher.getCurrentUser()
                     color: "white"
-                    font.pixelSize: 40
+                    font.pixelSize: 30
                     font.weight: Font.Thin
                     verticalAlignment: Text.AlignVCenter
                 }
@@ -280,17 +280,20 @@ ApplicationWindow {
             anchors.bottom: allAppsButton.top
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.leftMargin: 120
+            anchors.leftMargin: mainwindow.mobile ? 20 : 120
             anchors.topMargin: 30
             anchors.bottomMargin: 30
             width: parent.width-120
+            clip: !container.tileLaunching
             Flickable {
                 id: container
                 width: parent.width
                 height: parent.height
-                contentWidth: parent.width * 2  //allows 2x width of screen for tiles so that it can have scrollin.
-                contentHeight: parent.height
-                clip: !anyTileLaunching
+                contentWidth: mainwindow.mobile ? parent.width : parent.width * 2  //allows 2x width of screen for tiles so that it can have scrollin.
+                contentHeight: mainwindow.mobile ? parent.height*2 : parent.height
+                // clip: true
+                
+                property bool tileLaunching: false
                 
                 Behavior on contentX {
                     NumberAnimation {
@@ -689,10 +692,14 @@ ApplicationWindow {
                         // LAUNCH ANIMATION PROPERTIES
                         //-----------------------------------------------------------
                         property bool launching: false
+                        
+                        onLaunchingChanged: {
+                            container.tileLaunching = true
+                        }
                             
                         // fixed center target
-                        property real finalX: container.contentX + container.width  / 2 - width  / 2 - 60
-                        property real finalY: container.contentY + container.height / 2 - height / 2 -(start.height-allAppsButton.height)
+                        property real finalX: container.contentX + container.width  / 2 - width  / 2 - (mainwindow.mobile ? 9 : 60)
+                        property real finalY: container.contentY + container.height / 2 - height / 2 -(mainwindow.mobile ? start.height-allAppsButton.height-23 : start.height-allAppsButton.height)
                             
                         
                         Loader {
@@ -846,6 +853,7 @@ ApplicationWindow {
                                     // Reset tile properties
                                     tile.launching = false
                                     container.anyTileLaunching = false
+                                    container.tileLaunching = false
                                     tile.border.width = 1
                                     
                                     // Reset tile position to its model position
@@ -1039,7 +1047,7 @@ ApplicationWindow {
                         ParallelAnimation {
                             id: appearAnim
                             running: false
-                            onStarted: container.clip = false
+                            // onStarted: container.clip = !container.tileLaunching
                             // onStopped: container.clip = !anyTileLaunching
                             
                             PropertyAnimation {
