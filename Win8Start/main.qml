@@ -647,12 +647,27 @@ ApplicationWindow {
                         ? tileColor
                         : Win8Colors.Tile
                         
-                        
-                        color: dragArea.dragging || container.focusedIndex === index || hovered
+                        property color baseColor: dragArea.dragging
+                        || container.focusedIndex === index
+                        || hovered
                         ? Qt.lighter(effectiveColor, 1.3)
                         : effectiveColor
                         
-                        border.width: 1
+                        gradient: Gradient {
+                            orientation: Gradient.Horizontal
+                            
+                            GradientStop {
+                                position: 0.0
+                                color: Qt.darker(baseColor, 1.4)   // slightly darker on the left
+                            }
+                            
+                            GradientStop {
+                                position: 1.0
+                                color: Qt.lighter(baseColor, 0.0) // slightly lighter on the right
+                            }
+                        }
+                        
+                        border.width: container.focusedIndex === index || hovered ? 1 : 0
                         border.color: container.focusedIndex === index || hovered
                         ? "#949494"
                         : Qt.rgba(1,1,1,0.2)
