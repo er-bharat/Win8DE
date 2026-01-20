@@ -861,7 +861,6 @@ ApplicationWindow {
                                     // Reset tile properties
                                     tile.launching = false
                                     container.anyTileLaunching = false
-                                    tile.border.width = 1
                                     
                                     // Reset tile position to its model position
                                     tile.x = modelX
