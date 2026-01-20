@@ -283,7 +283,7 @@ ApplicationWindow {
             anchors.leftMargin: 120
             anchors.topMargin: 30
             anchors.bottomMargin: 30
-            width: parent.width-120
+            width: parent.width-anchors.leftMargin
             Flickable {
                 id: container
                 width: parent.width
@@ -706,8 +706,8 @@ ApplicationWindow {
                         property bool launching: false
                             
                         // fixed center target
-                        property real finalX: container.contentX + container.width  / 2 - width  / 2 - 60
-                        property real finalY: container.contentY + container.height / 2 - height / 2 -(start.height-allAppsButton.height)
+                        property real finalX: (container.contentX + container.width  / 2 - width  / 2) - tilearea.anchors.leftMargin/2
+                        property real finalY: (container.contentY + container.height / 2 - height / 2) - start.anchors.topMargin/2 
                             
                         
                         Loader {
@@ -956,7 +956,7 @@ ApplicationWindow {
                             property bool dragging: false
                             onEntered: {
                                 tile.hovered = true
-                                container.focusedIndex = index
+                                container.focusedIndex = tile.index
                             }
                             onExited: {
                                 tile.hovered = false
