@@ -6,10 +6,10 @@ Item {
 	anchors.fill: parent
 	
 	property var cities: [
-		{ name: "London", apiKey: "fe3e3304d71137b54df68ac1b0713b2c" },
-		{ name: "Delhi", apiKey: "fe3e3304d71137b54df68ac1b0713b2c" },
-		{ name: "Tokyo", apiKey: "fe3e3304d71137b54df68ac1b0713b2c" },
-		{ name: "Madhubani", apiKey: "fe3e3304d71137b54df68ac1b0713b2c" }
+		{ name: "London", apiKey: "api key" },
+		{ name: "Delhi", apiKey: "api key" },
+		{ name: "Tokyo", apiKey: "api key" },
+		{ name: "Madhubani", apiKey: "api key" }
 	]
 	
 	property int currentIndex: 0
