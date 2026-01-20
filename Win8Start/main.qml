@@ -956,6 +956,7 @@ ApplicationWindow {
                             property bool dragging: false
                             onEntered: {
                                 tile.hovered = true
+                                container.focusedIndex = index
                             }
                             onExited: {
                                 tile.hovered = false
