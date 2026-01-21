@@ -349,7 +349,14 @@ Window {
             target: vkeyboard        // another target
             property: "opacity"
             to: 0
-            duration: 500
+            duration: 50
+        }
+        
+        PropertyAnimation {
+            target: box1        // another target
+            property: "opacity"
+            to: 0
+            duration: 250
         }
 
         onFinished: {
