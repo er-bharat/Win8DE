@@ -1560,6 +1560,8 @@ static void writePreferredOutput(const QString &output)
 // main()
 // ----------------------------
 int main(int argc, char *argv[]) {
+  
+  qputenv("QML_XHR_ALLOW_FILE_READ", QByteArray("1"));
   // --------------------------------------------------------
   // Single-instance lock + activation
   // --------------------------------------------------------

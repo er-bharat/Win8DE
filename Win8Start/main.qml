@@ -950,7 +950,8 @@ ApplicationWindow {
                             hoverEnabled: true
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
                             cursorShape: dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor
-                            drag.target: tile
+                            drag.target: dragging ? tile : null
+                            
 
                             property bool dragging: false
                             onEntered: {
@@ -960,12 +961,37 @@ ApplicationWindow {
                             onExited: {
                                 tile.hovered = false
                             }
+                            
+                            Timer {
+                                id: dragTimer
+                                interval: 300
+                                repeat: false
+                                onTriggered: {
+                                    if (!container.moving)
+                                        dragArea.dragging = true
+                                }
+                            }
+                            
+                            Timer {
+                                id: rightClickSim
+                                interval: 600
+                                repeat: false
+                                onTriggered: {
+                                    if (!container.moving && tile.launching !== true && !dragArea.drag.active) {
+                                        dragArea.dragging = false
+                                        contextMenu.open()
+                                    }
+                                }
+                            }
+                            
 
                             onPressed: function(mouse) {
-                                if (mouse.button === Qt.LeftButton)
-                                    dragging = true
-
+                                if (mouse.button === Qt.LeftButton && !container.moving && tile.launching === false) {
+                                    dragTimer.start()
+                                    rightClickSim.start()
+                                }
                             }
+                            
 
                             onReleased: {
                                 dragging = false
@@ -982,13 +1008,31 @@ ApplicationWindow {
                                 tileModel.updateTilePosition(tile.index, tile.x, tile.y)
                             }
 
-                            onClicked: function(mouse){
+                            onClicked: function(mouse) {
                                 if (mouse.button === Qt.LeftButton) {
-                                    tile.launch()
+                                    // block left-click if long-press / drag path happened
+                                    if (!rightClickSim.running)
+                                        return
+                                        
+                                        tile.launch()
                                 } else if (mouse.button === Qt.RightButton) {
+                                    // ALWAYS allow real right-click
                                     contextMenu.open()
                                 }
                             }
+                            
+                            Connections {
+                                target: container
+                                function onMovingChanged() {
+                                    if (container.moving) {
+                                        rightClickSim.stop()
+                                        dragTimer.stop()
+                                        contextMenu.close()
+                                        dragArea.dragging = false
+                                    }
+                                }
+                            }
+                            
                         }
                         
                         function recalculateTilePosition() {
@@ -1109,6 +1153,7 @@ ApplicationWindow {
                             }
                             onStopped: {
                                 recalculateTilePosition()
+                                dragArea.dragging = false
                             }
                             ScriptAction {
                                 script: {

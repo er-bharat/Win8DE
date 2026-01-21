@@ -491,12 +491,24 @@ int main(int argc, char **argv) {
   QSocketNotifier wlNotifier(wl_fd, QSocketNotifier::Read, &app);
 
   QObject::connect(&wlNotifier, &QSocketNotifier::activated, [&]() {
-    wl_display_dispatch(display);
+    // First: dispatch anything already queued
+    if (wl_display_dispatch_pending(display) < 0) {
+      app.quit();
+      return;
+    }
+    
+    // Then: read & dispatch new events
+    if (wl_display_dispatch(display) < 0) {
+      app.quit();
+      return;
+    }
+    
     if (dirty) {
       write_all_windows_to_ini();
       dirty = false;
     }
   });
+  
 
   // --------------------------------------------------------
   // Command socket
