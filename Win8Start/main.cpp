@@ -1535,6 +1535,27 @@ private:
   }
 };
 
+static QString monitorConfigPath()
+{
+  return QStandardPaths::writableLocation(
+    QStandardPaths::ConfigLocation
+  ) + "/Win8Start/monitor.ini";
+}
+
+static QString readPreferredOutput()
+{
+  QSettings s(monitorConfigPath(), QSettings::IniFormat);
+  return s.value("StartMenu/Output").toString().trimmed();
+}
+
+static void writePreferredOutput(const QString &output)
+{
+  QSettings s(monitorConfigPath(), QSettings::IniFormat);
+  s.setValue("StartMenu/Output", output);
+  s.sync();
+}
+
+
 // ----------------------------
 // main()
 // ----------------------------
@@ -1666,12 +1687,49 @@ int main(int argc, char *argv[]) {
   // --------------------------------------------------------
   auto layerWindow = LayerShellQt::Window::get(window);
   layerWindow->setLayer(LayerShellQt::Window::LayerOverlay);
+  
+  QList<QScreen*> screens = QGuiApplication::screens();
+  QString preferredOutput = readPreferredOutput();
+  
+  QScreen *chosenScreen = nullptr;
+  
+  // 1️⃣ Try config value
+  if (!preferredOutput.isEmpty()) {
+    for (QScreen *s : screens) {
+      if (s->name() == preferredOutput) {
+        chosenScreen = s;
+        break;
+      }
+    }
+  }
+  
+  // 2️⃣ Fallback → first available screen
+  if (!chosenScreen && !screens.isEmpty()) {
+    chosenScreen = screens.first();
+    writePreferredOutput(chosenScreen->name());
+    qDebug() << "🖥 Monitor config missing → saved default:"
+    << chosenScreen->name();
+  }
+  
+  // 3️⃣ Bind LayerShell to chosen output
+  if (chosenScreen) {
+    window->setScreen(chosenScreen);
+    
+    qDebug() << "🖥 Start menu bound to:" << chosenScreen->name();
+  }
+  
+  // Rest stays the same
   layerWindow->setKeyboardInteractivity(
-      LayerShellQt::Window::KeyboardInteractivityExclusive);
-  layerWindow->setAnchors(
-      {LayerShellQt::Window::AnchorBottom, LayerShellQt::Window::AnchorLeft});
+    LayerShellQt::Window::KeyboardInteractivityExclusive);
+  
+  layerWindow->setAnchors({
+    LayerShellQt::Window::AnchorBottom,
+    LayerShellQt::Window::AnchorLeft
+  });
+  
   layerWindow->setExclusiveZone(-1);
   layerWindow->setMargins({0, 0, 0, 0});
+  
 
   window->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
   window->showFullScreen();
