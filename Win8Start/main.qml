@@ -479,6 +479,25 @@ ApplicationWindow {
                                     return best !== -1 ? best : fallback;
                                 }
                                 let next = -1
+                                
+                                // Alphanumeric key handling: focus searchField
+                                let text = event.text
+                                if (text.length === 1 && /[a-zA-Z0-9]/.test(text)) {
+                                    
+                                    // If searchField wasn't focused, this is the first keypress
+                                    let firstKey = !searchField.activeFocus
+                                    
+                                    searchField.forceActiveFocus()
+                                    allapparea.y=0
+                                    if (firstKey) {
+                                        searchField.text = ""      // clear once
+                                    }
+                                    
+                                    searchField.text += text
+                                    searchField.cursorPosition = searchField.text.length
+                                    event.accepted = true
+                                    return
+                                }
 
                                 switch (event.key) {
                                     case Qt.Key_Left:
@@ -1309,7 +1328,7 @@ ApplicationWindow {
                             case Qt.Key_Down:
                                 if (appGridView.count > 0) {
                                     appGridView.forceActiveFocus()
-                                    appGridView.currentIndex = 0
+                                    appGridView.currentIndex = 1
                                     event.accepted = true
                                 }
                                 break

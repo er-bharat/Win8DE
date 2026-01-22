@@ -78,12 +78,15 @@ public:
 // ----------------------------
 struct AppInfo {
   QString name;
+  QString genericName;
+  QStringList keywords;
   QString command;
   QString icon;
   QString desktopFilePath;
   QStringList categories;
   bool terminal = false;
 };
+
 
 // ----------------------------
 // AppModel class
@@ -93,6 +96,8 @@ class AppModel : public QAbstractListModel {
 public:
   enum Roles {
     NameRole = Qt::UserRole + 1,
+    GenericNameRole,
+    KeywordsRole,
     CommandRole,
     IconRole,
     LetterRole,
@@ -132,6 +137,8 @@ public:
       case DesktopFileRole: return app.desktopFilePath;
       case CategoriesRole: return app.categories;
       case TerminalRole: return app.terminal;
+      case GenericNameRole: return app.genericName;
+      case KeywordsRole:    return app.keywords;
       
       default: return QVariant();
     }
@@ -140,6 +147,8 @@ public:
   QHash<int, QByteArray> roleNames() const override {
     return {
       {NameRole, "name"},
+      {GenericNameRole, "genericName"},
+      {KeywordsRole, "keywords"},
       {CommandRole, "command"},
       {IconRole, "icon"},
       {LetterRole, "letter"},
@@ -173,31 +182,46 @@ private:
   QString m_selectedCategory;  // selected category filter
   
   // scores search relevance
-  static int matchScore(const QString &name, const QString &query) {
+  static int matchScore(const AppInfo &app, const QString &query)
+  {
     if (query.isEmpty())
-      return 1000; // neutral score
-      
-      QString n = name.toLower();
+      return 1000;
+    
     QString q = query.toLower();
     
-    // Best: starts with query
-    if (n.startsWith(q))
-      return 0;
+    auto scoreText = [&](const QString &text) {
+      if (text.isEmpty())
+        return 100;
+      
+      QString n = text.toLower();
+      
+      // Best: starts with query
+      if (n.startsWith(q))
+        return 0;
+      
+      // Next: any word starts with query
+      const QStringList words = n.split(QRegularExpression("\\s+"));
+      for (const QString &w : words) {
+        if (w.startsWith(q))
+          return 1;
+      }
+      
+      // Next: contains query
+      if (n.contains(q))
+        return 2;
+      
+      return 100;
+    };
     
-    // Next: any word starts with query
-    const QStringList words = n.split(QRegularExpression("\\s+"));
-    for (const QString &w : words) {
-      if (w.startsWith(q))
-        return 1;
-    }
-    
-    // Next: contains query anywhere
-    if (n.contains(q))
-      return 2;
-    
-    // No match
-    return 100;
+    // 🔴 relevance order
+    int best = scoreText(app.name);                 // highest priority
+    best = qMin(best, scoreText(app.genericName) + 10); // slightly weaker
+    for (const QString &kw : app.keywords)
+      best = qMin(best, scoreText(kw) + 20);        // weakest
+      
+      return best;
   }
+  
   
   // -------------------------------
   // Apply search + category filter
@@ -222,7 +246,7 @@ private:
       if (!matchesCategory)
         continue;
       
-      int score = matchScore(app.name, m_currentQuery);
+      int score = matchScore(app, m_currentQuery);
       
       // reject non-matching search results
       if (!m_currentQuery.isEmpty() && score >= 100)
@@ -404,11 +428,12 @@ public:
         QFile f(path);
         if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) continue;
         
-        QString name, exec, iconName;
-        QStringList categories;   // <-- NEW: store categories
+        QString name, genericName, exec, iconName;
+        QStringList categories;
+        QStringList keywords;
         bool noDisplay = false;
         bool inMainSection = false;
-        bool terminal = false;   // <-- NEW
+        bool terminal = false;
         
         
         while (!f.atEnd()) {
@@ -440,6 +465,11 @@ public:
               terminal = (line.mid(9).trimmed().toLower() == "true");
             else if (line.startsWith("NoDisplay=") && line.mid(10).trimmed().toLower() == "true")
               noDisplay = true;
+          else if (line.startsWith("GenericName="))
+            genericName = line.mid(12).trimmed();
+          else if (line.startsWith("Keywords="))
+            keywords = line.mid(9).split(';', Qt::SkipEmptyParts);
+          
         }
         
         f.close();
@@ -449,11 +479,14 @@ public:
         
         QVariantMap app;
         app["name"] = name;
+        app["genericName"] = genericName;
+        app["keywords"] = keywords;
         app["command"] = exec;
         app["icon"] = resolveIcon(iconName);
         app["desktopFilePath"] = path;
-        app["categories"] = categories;   // <-- STORE CATEGORIES
+        app["categories"] = categories;
         app["terminal"] = terminal;
+        
         
         appList.append(app);
       }
@@ -1783,6 +1816,8 @@ int main(int argc, char *argv[]) {
                        QVariantMap m = v.toMap();
                        appInfos.append({
                          m["name"].toString(),
+                         m["genericName"].toString(), 
+                         m["keywords"].toStringList(),
                          m["command"].toString(),
                          m["icon"].toString(),
                          m["desktopFilePath"].toString(),
