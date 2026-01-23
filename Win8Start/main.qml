@@ -324,71 +324,84 @@ ApplicationWindow {
                 function nearestFreeSnap(x, y, tileWidth, tileHeight, excludeIndex) {
                     const grid = halfGrid
                     
-                    // snap using TOP-LEFT only
-                    const baseX = Math.round(x / grid) * grid
-                    const baseY = Math.round(y / grid) * grid
+                    // Tile size in grid units
+                    const tileCols = Math.ceil(tileWidth / grid)
+                    const tileRows = Math.ceil(tileHeight / grid)
                     
-                    // collect occupied rects
-                    let occupied = []
+                    // Snap requested position to grid
+                    const baseCol = Math.round(x / grid)
+                    const baseRow = Math.round(y / grid)
+                    
+                    // Build occupancy map from existing items
+                    const colsCount = Math.floor(contentWidth / grid)
+                    const rowsCount = Math.floor(contentHeight / grid)
+                    const occupied = Array.from({ length: rowsCount }, () => Array(colsCount).fill(false))
+                    
                     for (let i = 0; i < tileRepeater.count; ++i) {
                         if (i === excludeIndex) continue
-                            let t = tileRepeater.itemAt(i)
+                            const t = tileRepeater.itemAt(i)
                             if (!t) continue
-                                occupied.push({
-                                    x: t.x, y: t.y,
-                                    w: t.width, h: t.height
-                                })
+                                if (t.launching || (t.dragArea && t.dragArea.dragging)) continue
+                                    
+                                    const tCol = Math.round(t.x / grid)
+                                    const tRow = Math.round(t.y / grid)
+                                    const tCols = Math.ceil(t.width / grid)
+                                    const tRows = Math.ceil(t.height / grid)
+                                    
+                                    for (let r = tRow; r < tRow + tRows && r < rowsCount; ++r) {
+                                        for (let c = tCol; c < tCol + tCols && c < colsCount; ++c) {
+                                            occupied[r][c] = true
+                                        }
+                                    }
                     }
                     
-                    function intersects(px, py) {
-                        for (let o of occupied) {
-                            if (px < o.x + o.w &&
-                                px + tileWidth > o.x &&
-                                py < o.y + o.h &&
-                                py + tileHeight > o.y) {
-                                return true
+                    // Check if a tile fits at a specific grid cell
+                    function fitsAt(col, row) {
+                        if (col < 0 || row < 0) return false
+                            if (col + tileCols > colsCount) return false
+                                if (row + tileRows > rowsCount) return false
+                                    
+                                    for (let r = row; r < row + tileRows; ++r) {
+                                        for (let c = col; c < col + tileCols; ++c) {
+                                            if (occupied[r][c]) return false
+                                        }
+                                    }
+                                    return true
+                    }
+                    
+                    // If base position fits, accept immediately
+                    if (fitsAt(baseCol, baseRow)) {
+                        return Qt.point(baseCol * grid, baseRow * grid)
+                    }
+                    
+                    // Otherwise, search nearby positions
+                    const maxSteps = 4
+                    let candidates = []
+                    
+                    for (let dr = -maxSteps; dr <= maxSteps; ++dr) {
+                        for (let dc = -maxSteps; dc <= maxSteps; ++dc) {
+                            if (dr === 0 && dc === 0) continue
+                                const nc = baseCol + dc
+                                const nr = baseRow + dr
+                                if (fitsAt(nc, nr)) {
+                                    candidates.push({
+                                        col: nc,
+                                        row: nr,
+                                        dist: Math.abs(dc) + Math.abs(dr)
+                                    })
                                 }
                         }
-                        return false
                     }
                     
-                    // if snapped position is valid → done
-                    if (!intersects(baseX, baseY))
-                        return Qt.point(baseX, baseY)
-                        
-                        // generate nearby candidates (small movement only)
-                        let candidates = []
-                        const maxSteps = 4   // limits how far a tile can move
-                        
-                        for (let dy = -maxSteps; dy <= maxSteps; ++dy) {
-                            for (let dx = -maxSteps; dx <= maxSteps; ++dx) {
-                                if (dx === 0 && dy === 0) continue
-                                    
-                                    let nx = baseX + dx * grid
-                                    let ny = baseY + dy * grid
-                                    
-                                    if (nx < 0 || ny < 0) continue
-                                        if (nx + tileWidth > contentWidth) continue
-                                            
-                                            candidates.push({
-                                                x: nx,
-                                                y: ny,
-                                                dist: Math.abs(dx) + Math.abs(dy) // minimal movement bias
-                                            })
-                            }
-                        }
-                        
-                        // sort by closest movement first
-                        candidates.sort((a, b) => a.dist - b.dist)
-                        
-                        // pick nearest free slot
-                        for (let c of candidates) {
-                            if (!intersects(c.x, c.y))
-                                return Qt.point(c.x, c.y)
-                        }
-                        
-                        // fallback → original snapped position
-                        return Qt.point(baseX, baseY)
+                    candidates.sort((a, b) => a.dist - b.dist)
+                    
+                    if (candidates.length > 0) {
+                        const c = candidates[0]
+                        return Qt.point(c.col * grid, c.row * grid)
+                    }
+                    
+                    // ✅ No free space available
+                    return null
                 }
                 
                 
@@ -582,38 +595,79 @@ ApplicationWindow {
                 DropArea {
                     anchors.fill: parent
                     
+                    onPositionChanged: function(mouse) {
+                        // Only update ghost if mouse is over DropArea
+                        updateDropGhost(mouse.x, mouse.y)
+                    }
+                    
+                    onEntered: {
+                        snapGhost.visible = true
+                    }
+                    
+                    onExited: {
+                        snapGhost.visible = false
+                    }
+                    
+                    function updateDropGhost(mouseX, mouseY) {
+                        const tileW = container.halfGrid * 2 - 5   // default medium tile
+                        const tileH = tileW
+                        
+                        // mouse center → top-left
+                        const hintX = mouseX - tileW / 2
+                        const hintY = mouseY - tileH / 2
+                        
+                        const p = container.nearestFreeSnap(hintX, hintY, tileW, tileH, -1)
+                        
+                        if (p) {
+                            snapGhost.visible = true
+                            snapGhost.x = p.x
+                            snapGhost.y = p.y
+                            snapGhost.width = tileW
+                            snapGhost.height = tileH
+                        } else {
+                            snapGhost.visible = false
+                        }
+                    }
+                    
                     onDropped: (drop) => {
-                        if (!drop.hasUrls)
-                            return
+                        snapGhost.visible = false
+                        
+                        if (!drop.hasUrls) return
                             
                             for (let i = 0; i < drop.urls.length; ++i) {
                                 const url = drop.urls[i]
-                                if (!url.toString().endsWith(".desktop"))
-                                    continue
+                                if (!url.toString().endsWith(".desktop")) continue
                                     
                                     const localPath = url.toString().replace("file://", "")
-                                    
-                                    // default (medium tile)
                                     const tileW = container.halfGrid * 2 - 5
                                     const tileH = tileW
                                     
-                                    // mouse is CENTER of tile → convert to top-left
                                     const hintX = drop.x - tileW / 2
                                     const hintY = drop.y - tileH / 2
                                     
-                                    const p = container.nearestFreeSnap(
-                                        hintX,
-                                        hintY,
-                                        tileW,
-                                        tileH,
-                                        -1
-                                    )
-                                    
-                                    tileModel.addTileFromDesktopFile(localPath, p.x, p.y)
+                                    const p = container.nearestFreeSnap(hintX, hintY, tileW, tileH, -1)
+                                    if (p) {
+                                        tileModel.addTileFromDesktopFile(localPath, p.x, p.y)
+                                    }
                             }
                     }
                 }
                 
+                
+                Rectangle {
+                    id: snapGhost
+                    visible: false
+                    z: 150
+                    
+                    color: Qt.rgba(1, 1, 1, 0.12)
+                    border.color: "#ffffff"
+                    border.width: 1
+                    // border.style: Qt.DashLine
+                    radius: 2
+                    
+                    Behavior on x { NumberAnimation { duration: 60 } }
+                    Behavior on y { NumberAnimation { duration: 60 } }
+                }
                 
                 Repeater {
                     id: tileRepeater
@@ -716,6 +770,21 @@ ApplicationWindow {
                                 tile.launching = true
                                 container.anyTileLaunching = true
                                 AppLauncher.launchApp(tile.command, tile.terminal)
+                        }
+                        
+                        function updateSnapGhost() {
+                            const p = container.nearestFreeSnap(
+                                tile.x,
+                                tile.y,
+                                tile.width,
+                                tile.height,
+                                tile.index
+                            )
+                            
+                            snapGhost.x = p.x
+                            snapGhost.y = p.y
+                            snapGhost.width = tile.width
+                            snapGhost.height = tile.height
                         }
                         
                         
@@ -986,10 +1055,14 @@ ApplicationWindow {
                                 interval: 300
                                 repeat: false
                                 onTriggered: {
-                                    if (!container.moving)
+                                    if (!container.moving && tile.launching !== true) {
                                         dragArea.dragging = true
+                                        snapGhost.visible = true
+                                        updateSnapGhost()
+                                    }
                                 }
                             }
+                            
                             
                             Timer {
                                 id: rightClickSim
@@ -1005,40 +1078,52 @@ ApplicationWindow {
                             
 
                             onPressed: function(mouse) {
-                                if (mouse.button === Qt.LeftButton && !container.moving && tile.launching === false) {
+                                if (mouse.button === Qt.LeftButton && !container.moving && !tile.launching) {
                                     dragTimer.start()
                                     rightClickSim.start()
                                 }
                             }
                             
-
-                            onReleased: {
-                                dragging = false
-
-                                var snappedX = Math.round(tile.x / container.halfGrid) * container.halfGrid
-                                var snappedY = Math.round(tile.y / container.halfGrid) * container.halfGrid
-
-                                snappedX = Math.max(0, Math.min(snappedX, container.contentWidth - tile.width))
-                                snappedY = Math.max(0, snappedY)
-
-                                tile.x = snappedX
-                                tile.y = snappedY
-
-                                tileModel.updateTilePosition(tile.index, tile.x, tile.y)
+                            onPositionChanged: {
+                                if (dragging) {
+                                    updateSnapGhost()
+                                }
                             }
+                            
+                            onReleased: {
+                                if (dragging) {
+                                    tile.x = snapGhost.x
+                                    tile.y = Math.max(
+                                        0,
+                                        Math.min(snapGhost.y, container.contentHeight - tile.height)
+                                    )
+                                    
+                                    tileModel.updateTilePosition(tile.index, tile.x, tile.y)
+                                }
+                                
+                                snapGhost.visible = false
+                                snapGhost.x = tile.x
+                                snapGhost.y = tile.y
+                                dragging = false
+                            }
+                            
+                            
 
                             onClicked: function(mouse) {
                                 if (mouse.button === Qt.LeftButton) {
+                                    
                                     // block left-click if long-press / drag path happened
-                                    if (!rightClickSim.running)
+                                    if (!rightClickSim.running) {
                                         return
-                                        
-                                        tile.launch()
+                                    }
+                                    
+                                    tile.launch()
+                                    
                                 } else if (mouse.button === Qt.RightButton) {
-                                    // ALWAYS allow real right-click
                                     contextMenu.open()
                                 }
                             }
+                            
                             
                             Connections {
                                 target: container
@@ -1048,6 +1133,7 @@ ApplicationWindow {
                                         dragTimer.stop()
                                         contextMenu.close()
                                         dragArea.dragging = false
+                                        snapGhost.visible = false
                                     }
                                 }
                             }
