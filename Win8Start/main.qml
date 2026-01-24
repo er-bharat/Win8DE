@@ -1058,35 +1058,26 @@ ApplicationWindow {
                                     if (!container.moving && tile.launching !== true) {
                                         dragArea.dragging = true
                                         snapGhost.visible = true
-                                        updateSnapGhost()
+                                        tile.updateSnapGhost()
                                     }
                                 }
                             }
                             
                             
-                            Timer {
-                                id: rightClickSim
-                                interval: 600
-                                repeat: false
-                                onTriggered: {
-                                    if (!container.moving && tile.launching !== true && !dragArea.drag.active) {
-                                        dragArea.dragging = false
-                                        contextMenu.open()
-                                    }
-                                }
+                            onPressAndHold: {
+                                contextMenu.open()
                             }
                             
 
                             onPressed: function(mouse) {
                                 if (mouse.button === Qt.LeftButton && !container.moving && !tile.launching) {
                                     dragTimer.start()
-                                    rightClickSim.start()
                                 }
                             }
                             
                             onPositionChanged: {
                                 if (dragging) {
-                                    updateSnapGhost()
+                                    tile.updateSnapGhost()
                                 }
                             }
                             
@@ -1112,10 +1103,6 @@ ApplicationWindow {
                             onClicked: function(mouse) {
                                 if (mouse.button === Qt.LeftButton) {
                                     
-                                    // block left-click if long-press / drag path happened
-                                    if (!rightClickSim.running) {
-                                        return
-                                    }
                                     
                                     tile.launch()
                                     
@@ -1129,7 +1116,6 @@ ApplicationWindow {
                                 target: container
                                 function onMovingChanged() {
                                     if (container.moving) {
-                                        rightClickSim.stop()
                                         dragTimer.stop()
                                         contextMenu.close()
                                         dragArea.dragging = false
@@ -1828,6 +1814,7 @@ ApplicationWindow {
                         }
                         
                         MouseArea {
+                            id: appdragarea
                             anchors.fill: parent
                             hoverEnabled: true
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -1837,57 +1824,91 @@ ApplicationWindow {
                             }
                             
                             property bool dragStarted: false
+                            property bool dragAllowed: false
                             property point pressPos: Qt.point(0, 0)
+                            
+                            Timer {
+                                id: dragTimerapp
+                                interval: 300
+                                repeat: false
+                                onTriggered: {
+                                    appdragarea.dragAllowed = true
+                                }
+                            }
                             
                             onPressed: (mouse) => {
                                 if (mouse.button === Qt.LeftButton) {
                                     dragStarted = false
+                                    dragAllowed = false
                                     pressPos = Qt.point(mouse.x, mouse.y)
+                                    dragTimerapp.start()
                                 }
                             }
                             
+                            onPressAndHold: {
+                                // simulate right-click via same code path
+                                AppLauncher.loadDesktopActions(
+                                    apptilecol.desktopFilePath,
+                                    actionModel
+                                )
+                                actionMenu.popup()
+                            }
+                            
                             onPositionChanged: (mouse) => {
-                                // 🔒 DO NOT drag on hover
                                 if (!(mouse.buttons & Qt.LeftButton))
                                     return
+                                    
+                                    // cancel if user moves too much before hold completes
+                                    if (!dragAllowed) {
+                                        if (Math.hypot(mouse.x - pressPos.x,
+                                            mouse.y - pressPos.y) > 8) {
+                                            dragTimerapp.stop()
+                                            }
+                                            return
+                                    }
                                     
                                     if (dragStarted)
                                         return
                                         
-                                        if (Math.hypot(mouse.x - pressPos.x,
-                                            mouse.y - pressPos.y) > 10) {
-                                            dragStarted = true
-                                            
-                                            // 🛡 Defer system drag
-                                            Qt.callLater(() => {
-                                                AppLauncher.startSystemDrag(
-                                                    apptilecol.desktopFilePath,
-                                                    appIcon
-                                                )
-                                            })
-                                            }
+                                        dragStarted = true
+                                        
+                                        Qt.callLater(() => {
+                                            AppLauncher.startSystemDrag(
+                                                apptilecol.desktopFilePath,
+                                                appIcon
+                                            )
+                                        })
                             }
                             
-                            onReleased: dragStarted = false
+                            onReleased: {
+                                dragTimerapp.stop()
+                                dragStarted = false
+                                appdragarea.dragAllowed = false
+                            }
                             
                             onClicked: (mouse) => {
-                                if (mouse.button === Qt.LeftButton) {
-                                    appGridView.launchingIndex = apptilecol.index
-                                    apptilecol.launching = true
-                                    apptext.opacity = 0
-                                    AppLauncher.launchApp(apptilecol.command, apptilecol.terminal)
-                                    launchAnimAllapp.start()
-                                }
-                                
-                                if (mouse.button === Qt.RightButton) {
-                                    AppLauncher.loadDesktopActions(
-                                        apptilecol.desktopFilePath,
-                                        actionModel
-                                    )
-                                    actionMenu.popup()
-                                }
+                                // block click if drag happened
+                                if (dragStarted)
+                                    return
+                                    
+                                    if (mouse.button === Qt.LeftButton) {
+                                        appGridView.launchingIndex = apptilecol.index
+                                        apptilecol.launching = true
+                                        apptext.opacity = 0
+                                        AppLauncher.launchApp(apptilecol.command, apptilecol.terminal)
+                                        launchAnimAllapp.start()
+                                    }
+                                    
+                                    if (mouse.button === Qt.RightButton) {
+                                        AppLauncher.loadDesktopActions(
+                                            apptilecol.desktopFilePath,
+                                            actionModel
+                                        )
+                                        actionMenu.popup()
+                                    }
                             }
                         }
+                        
                         
                     }
                     
