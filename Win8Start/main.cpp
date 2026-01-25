@@ -1060,6 +1060,43 @@ public:
     );
     }
     
+    // Inside TileModel class
+    
+    Q_INVOKABLE void addTileFromAppModel(
+      const QVariantMap &app,   // pass AppModel item as a map
+      double dropX,
+      double dropY)
+    {
+      if (app.isEmpty())
+        return;
+      
+      // Use Async to avoid blocking
+      m_async.run([=]() -> Tile {
+        Tile t;
+        t.name        = app.value("name").toString();
+        t.icon        = app.value("icon").toString();
+        t.desktopFile = app.value("desktopFilePath").toString();
+        t.command     = app.value("command").toString();
+        t.terminal    = app.contains("terminal") ? app.value("terminal").toBool() : false;
+        t.modelX      = dropX;
+        t.modelY      = dropY;
+        t.size        = "medium"; // default size
+        t.color       = "";
+        t.qmlPath     = "";
+        t.qmlEnabled  = false;
+        return t;
+      },
+      [this](Tile t) {
+        beginInsertRows(QModelIndex(), m_tiles.count(), m_tiles.count());
+        m_tiles.append(t);
+        endInsertRows();
+        saveAsync();
+        qDebug() << "✅ Added tile from AppModel:" << t.name;
+      });
+      
+    }
+    
+    
     Q_INVOKABLE void setTileColor(int index, const QString &color) {
       if (index < 0 || index >= m_tiles.count())
         return;
@@ -1575,6 +1612,19 @@ static QString monitorConfigPath()
   ) + "/Win8Start/monitor.ini";
 }
 
+// --------------------------------------------------------
+// QML / SceneGraph cache cleanup (RAM saver)
+// --------------------------------------------------------
+static void clearQmlCaches(QQuickWindow *window)
+{
+  if (!window)
+    return;
+  
+  // Releases GPU textures, image cache, scene graph resources
+  window->releaseResources();
+}
+
+
 static QString readPreferredOutput()
 {
   QSettings s(monitorConfigPath(), QSettings::IniFormat);
@@ -1837,6 +1887,9 @@ int main(int argc, char *argv[]) {
                        qDebug() << "🔄 Start shown → reloading live tiles";
                        for (int i = 0; i < tileModel.rowCount(); ++i)
                          tileModel.reloadTileQml(i);
+                     } else {
+                       qDebug() << "🧹 Start hidden → releasing QML resources";
+                       clearQmlCaches(window);
                      }
                    });
   

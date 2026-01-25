@@ -320,6 +320,52 @@ ApplicationWindow {
                     })
                 }
                 
+                // Returns the next free position for a new tile (row-first, top-to-bottom, left-to-right)
+                function nextFreeTilePosition(tileW, tileH) {
+                    const grid = halfGrid
+                    const cols = Math.floor(contentWidth / grid)
+                    const rows = Math.floor(contentHeight / grid)
+                    
+                    // Build occupancy map
+                    const occupied = Array.from({ length: rows }, () => Array(cols).fill(false))
+                    
+                    for (let i = 0; i < tileRepeater.count; ++i) {
+                        const t = tileRepeater.itemAt(i)
+                        if (!t) continue
+                            if (t.launching || (t.dragArea && t.dragArea.dragging)) continue
+                                
+                                const c = Math.round(t.x / grid)
+                                const r = Math.round(t.y / grid)
+                                const tileCols = Math.ceil(t.width / grid)
+                                const tileRows = Math.ceil(t.height / grid)
+                                
+                                for (let rr = r; rr < r + tileRows && rr < rows; ++rr) {
+                                    for (let cc = c; cc < c + tileCols && cc < cols; ++cc) {
+                                        occupied[rr][cc] = true
+                                    }
+                                }
+                    }
+                    
+                    const tileCols = Math.ceil(tileW / grid)
+                    const tileRows = Math.ceil(tileH / grid)
+                    
+                    // Iterate columns first, then rows (fill Y first, then X)
+                    for (let c = 0; c <= cols - tileCols; ++c) {
+                        for (let r = 0; r <= rows - tileRows; ++r) {
+                            let free = true
+                            for (let rr = 0; rr < tileRows && free; ++rr) {
+                                for (let cc = 0; cc < tileCols && free; ++cc) {
+                                    if (occupied[r + rr][c + cc]) free = false
+                                }
+                            }
+                            if (free) return Qt.point(c * grid, r * grid)
+                        }
+                    }
+                    
+                    // No space available
+                    return null
+                }
+                
                 
                 function nearestFreeSnap(x, y, tileWidth, tileHeight, excludeIndex) {
                     const grid = halfGrid
@@ -995,6 +1041,7 @@ ApplicationWindow {
                             source: AppLauncher.resolveIcon(tile.icon)
                             sourceSize.width: 256
                             sourceSize.height: 256
+                            asynchronous: true
                             // transforms
                             transform: [
                                 Rotation {
@@ -1500,6 +1547,16 @@ ApplicationWindow {
                 
                 ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
                 
+                function iconName(fullPathOrName) {
+                    if (fullPathOrName.startsWith("file://")) {
+                        // Extract filename without extension
+                        var parts = fullPathOrName.split("/")
+                        var fileName = parts[parts.length-1]
+                        return fileName.split(".")[0]  // remove extension like .png
+                    }
+                    return fullPathOrName
+                }
+                
                 MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.NoButton
@@ -1747,6 +1804,7 @@ ApplicationWindow {
                                     source: apptilecol.icon
                                     sourceSize.width: 256
                                     sourceSize.height: 256
+                                    asynchronous: true
                                     width: 32
                                     height: 32
                                     fillMode: Image.PreserveAspectFit
@@ -1779,6 +1837,8 @@ ApplicationWindow {
                                 elide: Text.ElideRight
                             }
                         }
+                        
+                        
                         Menu {
                             id: actionMenu
                             MenuItem {
@@ -1791,6 +1851,32 @@ ApplicationWindow {
                                     launchAnimAllapp.start()
                                 }
                             }
+                            
+                            MenuItem {
+                                text: "Add to Start"
+                                onTriggered: {
+                                    var appData = {
+                                        "name": apptilecol.name,
+                                        "icon": appGridView.iconName(apptilecol.icon),
+                                        "command": apptilecol.command,
+                                        "desktopFilePath": apptilecol.desktopFilePath,
+                                        "terminal": apptilecol.terminal
+                                    }
+                                    
+                                    // Determine default tile size in pixels
+                                    var tileW = container.halfGrid * 2 - 5    // medium tile width
+                                    var tileH = tileW                          // medium tile height
+                                    var pos = container.nextFreeTilePosition(tileW, tileH)
+                                    
+                                    if (pos) {
+                                        tileModel.addTileFromAppModel(appData, pos.x, pos.y)
+                                    } else {
+                                        console.warn("No free space available for new tile!")
+                                    }
+                                    
+                                }
+                            }
+                            
                             
                             MenuSeparator { }
                             Repeater {
