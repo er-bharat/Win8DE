@@ -42,6 +42,14 @@
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QVariantMap>
+
+#include "windowwatcher.h"
+#include "wlr-foreign-toplevel-management-unstable-v1-client-protocol.h"
+extern "C" {
+  extern const struct wl_interface zwlr_foreign_toplevel_manager_v1_interface;
+  extern const struct wl_interface zwlr_foreign_toplevel_handle_v1_interface;
+}
+
 // ----------------------------
 // Simple Async helper
 // ----------------------------
@@ -1375,8 +1383,6 @@ public:
 // ----------------------------
 // Battery (unchanged)
 // ----------------------------
-
-
 class Battery : public QObject {
   Q_OBJECT
   Q_PROPERTY(int percent READ percent NOTIFY percentChanged)
@@ -1680,6 +1686,14 @@ int main(int argc, char *argv[]) {
   // --------------------------------------------------------
   Battery battery;
   engine.rootContext()->setContextProperty("battery", &battery);
+  
+  // --------------------------------------------------------
+  // WindowWatcher (Wayland new window notifier)
+  // --------------------------------------------------------
+  WindowWatcher windowWatcher;
+  engine.rootContext()->setContextProperty("windowWatcher", &windowWatcher);
+  windowWatcher.start();
+  
 
   // --------------------------------------------------------
   // Win8Settings path

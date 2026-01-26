@@ -5,7 +5,7 @@ import QtQuick.Dialogs
 pragma ComponentBehavior: Bound
 
 ApplicationWindow {
-
+    
     id: mainwindow
     visible: false
     width: screen.width
@@ -23,7 +23,7 @@ ApplicationWindow {
     Keys.onTabPressed: {
         container.forceActiveFocus()
     }
-
+    
     // area at bottom to hide the start screen on click
     MouseArea {
         anchors.bottom: parent.bottom
@@ -35,7 +35,7 @@ ApplicationWindow {
             WindowController.hide()  //c++ function to hide the mainwindow.
         }
     }
-
+    
     // hide when reach to bottom with holding a desktop file to be put somewhere like desktop or editor.
     DropArea {
         anchors.bottom: parent.bottom
@@ -155,7 +155,7 @@ ApplicationWindow {
                     width: 48
                     height: 48
                     color: Win8Colors.Tile
-
+                    
                     //backup user icon
                     Image {
                         id: userIcon
@@ -510,7 +510,7 @@ ApplicationWindow {
                                         if ((dx !== 0 && Math.sign(vx) !== dx) ||
                                             (dy !== 0 && Math.sign(vy) !== dy))
                                             continue;
-                                            
+                                        
                                         // Axis-alignment check using edges
                                         let aligned = false;
                                         if (dx !== 0) {
@@ -557,7 +557,7 @@ ApplicationWindow {
                                     event.accepted = true
                                     return
                                 }
-
+                                
                                 switch (event.key) {
                                     case Qt.Key_Left:
                                         next = findNext(-1, 0)
@@ -607,10 +607,10 @@ ApplicationWindow {
                     acceptedButtons: Qt.NoButton
                     hoverEnabled: false
                     propagateComposedEvents: true
-                        
+                    
                     onWheel: function(wheel) {
                         let isTouchpad = wheel.pixelDelta.x !== 0 || wheel.pixelDelta.y !== 0
-                            
+                        
                         // Touchpad vertical top opens allapparea
                         if (isTouchpad && wheel.pixelDelta.y < 0) {
                             allapparea.y = 0
@@ -626,7 +626,7 @@ ApplicationWindow {
                             // Mouse wheel: original behavior
                             delta = -(wheel.angleDelta.y + wheel.angleDelta.x)
                         }
-                            
+                        
                         if (delta !== 0) {
                             let newX = container.contentX + delta
                             newX = Math.max(0,
@@ -718,13 +718,13 @@ ApplicationWindow {
                 Repeater {
                     id: tileRepeater
                     model: tileModel
-                        
+                    
                     Rectangle {
                         id: tile
                         z: (launching || dragArea.dragging) ? 200 : 0
-                            
+                        
                         // --- Size handling ---
-                            
+                        
                         required property int index
                         required property real modelX
                         required property real modelY
@@ -736,26 +736,28 @@ ApplicationWindow {
                         required property string tileColor
                         required property string tileQml
                         required property bool qmlEnabled
-                            
+                        
+                        property int tileGap: 5
+                        
                         //size setup of tiles.
-                        readonly property int smallSize:   container.halfGrid - 5
-                        readonly property int mediumSize:  container.halfGrid * 2 - 5
-                        readonly property int largeWidth:  container.halfGrid * 4 - 5
-                        readonly property int largeHeight: container.halfGrid * 2 - 5
-                        readonly property int xlargeSize:  container.halfGrid * 4 - 5   // 4x4 tile
+                        readonly property int smallSize:   container.halfGrid - tileGap
+                        readonly property int mediumSize:  container.halfGrid * 2 - tileGap
+                        readonly property int largeWidth:  container.halfGrid * 4 - tileGap
+                        readonly property int largeHeight: container.halfGrid * 2 - tileGap
+                        readonly property int xlargeSize:  container.halfGrid * 4 - tileGap   // 4x4 tile
                         
                         width:  size === "small"   ? smallSize
                         : size === "medium"  ? mediumSize
                         : size === "large"   ? largeWidth
                         : size === "xlarge"  ? xlargeSize
                         : mediumSize
-                            
+                        
                         height: size === "small"   ? smallSize
                         : size === "medium"  ? mediumSize
                         : size === "large"   ? largeHeight
                         : size === "xlarge"  ? xlargeSize
                         : mediumSize
-                            
+                        
                         x: modelX
                         y: modelY
                         
@@ -794,7 +796,7 @@ ApplicationWindow {
                         Behavior on color {
                             ColorAnimation { duration: 180 }
                         }
-                           
+                        
                         ColorDialog {
                             id: dialog
                             title: "Choose Tile Color"
@@ -808,11 +810,11 @@ ApplicationWindow {
                             }
                         }
                         
-                            
+                        
                         function launch() {
                             if (tile.launching)
                                 return
-                                    
+                                
                                 tile.launching = true
                                 container.anyTileLaunching = true
                                 AppLauncher.launchApp(tile.command, tile.terminal)
@@ -838,11 +840,11 @@ ApplicationWindow {
                         // LAUNCH ANIMATION PROPERTIES
                         //-----------------------------------------------------------
                         property bool launching: false
-                            
+                        
                         // fixed center target
                         property real finalX: (container.contentX + container.width  / 2 - width  / 2) - tilearea.anchors.leftMargin/2
-                        property real finalY: (container.contentY + container.height / 2 - height / 2) - start.anchors.topMargin/2 
-                            
+                        property real finalY: (container.contentY + container.height / 2 - height / 2) - (start.height-allAppsButton.height)
+                        
                         
                         Loader {
                             id: externalTile
@@ -906,74 +908,122 @@ ApplicationWindow {
                                 yScale: 1
                             }
                         ]
-                            
+                        
+                        property bool windowAppeared: false
+                        property bool animationFinished: false
+                        
+                        
                         SequentialAnimation {
                             id: launchAnim
                             running: tile.launching
                             
+                            // --- Reset state when animation starts ---
                             onStarted: {
                                 tile.border.width = 0
+                                animationFinished = false
+                                windowAppeared = false
                             }
-                                
+                            
+                            SequentialAnimation {
+                                ParallelAnimation {
+                                    NumberAnimation { 
+                                        target: zoomScale
+                                        property: "xScale"
+                                        to: 0.9
+                                        duration: 100
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                    
+                                    NumberAnimation { 
+                                        target: zoomScale
+                                        property: "yScale"
+                                        to: 0.9
+                                        duration: 100
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+                                ParallelAnimation {
+                                    NumberAnimation { 
+                                        target: zoomScale
+                                        property: "xScale"
+                                        to: 1
+                                        duration: 100
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                    
+                                    NumberAnimation { 
+                                        target: zoomScale
+                                        property: "yScale"
+                                        to: 1
+                                        duration: 100
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+                            }
+                            
+                            // --- Parallel animations: flip, zoom, and move ---
                             ParallelAnimation {
-                                id: launchAnim2
                                 
-                                // --- flip ---
-                                NumberAnimation {
+                                // --- Flip Animations ---
+                                NumberAnimation { 
                                     target: flipRotation
                                     property: "angle"
                                     to: 180
-                                    duration: 650
+                                    duration: 400
                                     easing.type: Easing.InOutQuad
                                 }
-                                NumberAnimation {
+                                
+                                NumberAnimation { 
                                     target: flipiconRotation
                                     property: "angle"
                                     to: 180
-                                    duration: 650
+                                    duration: 400
                                     easing.type: Easing.InOutQuad
                                 }
                                 
-                                // --- zoom ---
-                                NumberAnimation {
+                                // --- Zoom Animations ---
+                                NumberAnimation { 
                                     target: zoomScale
                                     property: "xScale"
-                                    to: mainwindow.width / tile.width 
-                                    duration: 650
+                                    to: mainwindow.width / tile.width
+                                    duration: 400
                                     easing.type: Easing.InOutQuad
                                 }
-                                NumberAnimation {
+                                
+                                NumberAnimation { 
                                     target: zoomScale
                                     property: "yScale"
                                     to: mainwindow.height / tile.height
-                                    duration: 650
+                                    duration: 400
                                     easing.type: Easing.InOutQuad
                                 }
                                 
-                                NumberAnimation {
+                                NumberAnimation { 
                                     target: zoomiconScale
                                     property: "xScale"
-                                    to: (mainwindow.height / tile.height) / (mainwindow.width / tile.width)/2
-                                    duration: 350
-                                    easing.type: Easing.InOutQuad
-                                }
-                                NumberAnimation {
-                                    target: zoomiconScale
-                                    property: "yScale"
-                                    to: 1/2
+                                    to: (mainwindow.height / tile.height) / (mainwindow.width / tile.width) / 2
                                     duration: 350
                                     easing.type: Easing.InOutQuad
                                 }
                                 
-                                // --- move to center ---
-                                NumberAnimation {
+                                NumberAnimation { 
+                                    target: zoomiconScale
+                                    property: "yScale"
+                                    to: 1 / 2
+                                    duration: 350
+                                    easing.type: Easing.InOutQuad
+                                }
+                                
+                                // --- Move to center ---
+                                NumberAnimation { 
                                     target: tile
                                     property: "x"
                                     to: tile.finalX
                                     duration: 400
                                     easing.type: Easing.InOutQuad
                                 }
-                                NumberAnimation {
+                                
+                                NumberAnimation { 
                                     target: tile
                                     property: "y"
                                     to: tile.finalY
@@ -982,36 +1032,57 @@ ApplicationWindow {
                                 }
                             }
                             
-                            // ✅ delay AFTER animation
                             PauseAnimation {
-                                duration: 500
+                                duration: 200
                             }
                             
-                            ScriptAction {
-                                script: {
-                                    // Hide the window
-                                    WindowController.hide()
-                                    
-                                    // Reset tile properties
-                                    tile.launching = false
-                                    container.anyTileLaunching = false
-                                    
-                                    // Reset tile position to its model position
-                                    tile.x = modelX
-                                    tile.y = modelY
-                                    
-                                    // Reset transforms
-                                    zoomScale.xScale = 1
-                                    zoomScale.yScale = 1
-                                    flipRotation.angle = 0
-                                    
-                                    zoomiconScale.xScale = 1
-                                    zoomiconScale.yScale = 1
-                                    flipiconRotation.angle = 0
-                                }
+                            // --- Animation finished handler ---
+                            onFinished: {
+                                animationFinished = true
+                                if (windowAppeared) finishLaunch()
                             }
                             
                         }
+                        
+                        
+                        Connections {
+                            target: windowWatcher
+                            function onWindowAdded(title) {
+                                if (animationFinished) {
+                                    // Animation already finished: handle immediately
+                                    finishLaunch()
+                                } else {
+                                    // Animation still running: mark window appeared, will finish in onStopped
+                                    windowAppeared = true
+                                }
+                            }
+                        }
+                        
+                        function finishLaunch() {
+                            WindowController.hide()
+                            
+                            tile.launching = false
+                            container.anyTileLaunching = false
+                            
+                            // Reset tile to model
+                            tile.x = modelX
+                            tile.y = modelY
+                            
+                            // Reset transforms
+                            zoomScale.xScale = 1
+                            zoomScale.yScale = 1
+                            flipRotation.angle = 0
+                            
+                            zoomiconScale.xScale = 1
+                            zoomiconScale.yScale = 1
+                            flipiconRotation.angle = 0
+                            
+                            // Reset flags
+                            animationFinished = false
+                            windowAppeared = false
+                        }
+                        
+                        
                         
                         //-----------------------------------------------------------
                         // Name
@@ -1087,7 +1158,7 @@ ApplicationWindow {
                             cursorShape: dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor
                             drag.target: dragging ? tile : null
                             
-
+                            
                             property bool dragging: false
                             onEntered: {
                                 tile.hovered = true
@@ -1115,7 +1186,7 @@ ApplicationWindow {
                                 contextMenu.open()
                             }
                             
-
+                            
                             onPressed: function(mouse) {
                                 if (mouse.button === Qt.LeftButton && !container.moving && !tile.launching) {
                                     dragTimer.start()
@@ -1146,7 +1217,7 @@ ApplicationWindow {
                             }
                             
                             
-
+                            
                             onClicked: function(mouse) {
                                 if (mouse.button === Qt.LeftButton) {
                                     
@@ -1296,6 +1367,8 @@ ApplicationWindow {
                             ScriptAction {
                                 script: {
                                     // recalculateTilePosition()
+                                    animationFinishedallApp = false
+                                    animationFinished = false
                                 }
                             }
                             
@@ -1573,7 +1646,7 @@ ApplicationWindow {
                             searchField.text = ""
                             categoryFilter.currentIndex = 0
                         }
-                            
+                        
                         // Horizontal scrolling
                         let delta = 0
                         if (isTouchpad) {
@@ -1600,11 +1673,11 @@ ApplicationWindow {
                     if (columns < 1) columns = 1
                         let rows = Math.floor(height / cellHeight)
                         if (rows < 1) rows = 1
-                        
+                            
                             // Alphanumeric key handling: focus searchField
                             let text = event.text
                             if (text.length === 1 && /[a-zA-Z0-9]/.test(text)) {
-                            
+                                
                                 // If searchField wasn't focused, this is the first keypress
                                 let firstKey = !searchField.activeFocus
                                 
@@ -1808,7 +1881,7 @@ ApplicationWindow {
                                     width: 32
                                     height: 32
                                     fillMode: Image.PreserveAspectFit
-                                        
+                                    
                                     transform: [
                                         Rotation {
                                             id: flipiconRot
@@ -1827,7 +1900,7 @@ ApplicationWindow {
                                     ]
                                 }
                             }
-                                
+                            
                             Text {
                                 id: apptext
                                 anchors.verticalCenter: parent.verticalCenter
@@ -1844,7 +1917,7 @@ ApplicationWindow {
                             MenuItem {
                                 text: "Open"
                                 icon.name: "system-run"   // or application-x-executable
-
+                                
                                 onTriggered: {
                                     appGridView.launchingIndex = apptilecol.index
                                     AppLauncher.launchApp(apptilecol.command)
@@ -2001,6 +2074,9 @@ ApplicationWindow {
                     // ------------------------------------------------------------
                     // LAUNCH ANIMATION (full screen)
                     // ------------------------------------------------------------
+                    property bool windowAppearedallApp: false
+                    property bool animationFinishedallApp: false
+                    
                     SequentialAnimation {
                         id: launchAnimAllapp
                         running: false
@@ -2018,33 +2094,54 @@ ApplicationWindow {
                             
                             moveXAnim.to = allapptile.x + (centerX - c.x)
                             moveYAnim.to = allapptile.y + (centerY - c.y)
+                        
+                            windowAppearedallApp = false
+                            animationFinishedallApp = false
                         }
                         
-                        onStopped: {
-                            // Hide window
-                            WindowController.hide()
-                            
-                            // Reset all transforms
-                            flipRot.angle = 0
-                            flipiconRot.angle = 0
-                            
-                            zoomScal.xScale = 1
-                            zoomScal.yScale = 1
-                            zoomiconScal.xScale = 1
-                            zoomiconScal.yScale = 1
-                            
-                            // Reset position
-                            allapptile.x = 0
-                            allapptile.y = 0
-                            
-                            // Reset opacity and launching state
-                            apptilecol.launching = false
-                            appGridView.launchingIndex = -1
-                            apptext.opacity = 1
-                            
-                            // close all app section
-                            allapparea.y=allapparea.height
-                            container.focus = true
+                        onFinished: {
+                            animationFinishedallApp = true
+                            if (windowAppearedallApp) {
+                                finishLaunchallapp()
+                            }
+                        }
+                        
+                        
+                        SequentialAnimation {
+                            ParallelAnimation {
+                                NumberAnimation { 
+                                    target: zoomScal
+                                    property: "xScale"
+                                    to: 0.9
+                                    duration: 100
+                                    easing.type: Easing.InOutQuad
+                                }
+                                
+                                NumberAnimation { 
+                                    target: zoomScal
+                                    property: "yScale"
+                                    to: 0.9
+                                    duration: 100
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+                            ParallelAnimation {
+                                NumberAnimation { 
+                                    target: zoomScal
+                                    property: "xScale"
+                                    to: 1
+                                    duration: 100
+                                    easing.type: Easing.InOutQuad
+                                }
+                                
+                                NumberAnimation { 
+                                    target: zoomScal
+                                    property: "yScale"
+                                    to: 1
+                                    duration: 100
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
                         }
                         
                         ParallelAnimation {
@@ -2053,14 +2150,14 @@ ApplicationWindow {
                                 target: flipRot
                                 property: "angle"
                                 to: 180
-                                duration: 650
+                                duration: 400
                                 easing.type: Easing.InOutQuad
                             }
                             NumberAnimation {
                                 target: flipiconRot
                                 property: "angle"
                                 to: 180
-                                duration: 650
+                                duration: 400
                                 easing.type: Easing.InOutQuad
                             }
                             
@@ -2069,14 +2166,14 @@ ApplicationWindow {
                                 target: zoomScal
                                 property: "xScale"
                                 to: mainwindow.width / allapptile.width
-                                duration: 650
+                                duration: 400
                                 easing.type: Easing.InOutCubic
                             }
                             NumberAnimation {
                                 target: zoomScal
                                 property: "yScale"
                                 to: mainwindow.height / allapptile.height
-                                duration: 650
+                                duration: 400
                                 easing.type: Easing.InOutCubic
                             }
                             
@@ -2111,8 +2208,50 @@ ApplicationWindow {
                                 easing.type: Easing.InOutQuad
                             }
                         }
+                        PauseAnimation {
+                            duration: 200
+                        }
                         
-                        PauseAnimation { duration: 500 }
+                        
+                    }
+                    
+                    Connections {
+                        target: windowWatcher
+                        function onWindowAdded(title) {
+                            if (animationFinishedallApp) {
+                                // Animation already finished: handle immediately
+                                finishLaunchallapp()
+                            } else {
+                                // Animation still running: mark window appeared, will finish in onStopped
+                                windowAppearedallApp = true
+                            }
+                        }
+                    }
+                    function finishLaunchallapp() {
+                        // Hide window
+                        WindowController.hide()
+                        
+                        // Reset all transforms
+                        flipRot.angle = 0
+                        flipiconRot.angle = 0
+                        
+                        zoomScal.xScale = 1
+                        zoomScal.yScale = 1
+                        zoomiconScal.xScale = 1
+                        zoomiconScal.yScale = 1
+                        
+                        // Reset position
+                        allapptile.x = 0
+                        allapptile.y = 0
+                        
+                        // Reset opacity and launching state
+                        apptilecol.launching = false
+                        appGridView.launchingIndex = -1
+                        apptext.opacity = 1
+                        
+                        // close all app section
+                        allapparea.y=allapparea.height
+                        container.focus = true
                     }
                 }
             }
