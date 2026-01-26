@@ -925,12 +925,6 @@ ApplicationWindow {
                                 windowAppeared = false
                             }
                             
-<<<<<<< HEAD
-                            onStopped: {
-                                suppressBorder = false
-                            }
-=======
->>>>>>> d30544e (fixed a bug due to last commit border was lost on launched app)
                             
                             SequentialAnimation {
                                 ParallelAnimation {
