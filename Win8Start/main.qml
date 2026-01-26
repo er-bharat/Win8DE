@@ -788,7 +788,8 @@ ApplicationWindow {
                             }
                         }
                         
-                        border.width: container.focusedIndex === index || hovered ? 1 : 0
+                        border.width: (!suppressBorder && (container.focusedIndex === index || hovered)) ? 1 : 0
+                        
                         border.color: container.focusedIndex === index || hovered
                         ? "#949494"
                         : Qt.rgba(1,1,1,0.2)
@@ -911,7 +912,7 @@ ApplicationWindow {
                         
                         property bool windowAppeared: false
                         property bool animationFinished: false
-                        
+                        property bool suppressBorder: false
                         
                         SequentialAnimation {
                             id: launchAnim
@@ -919,9 +920,13 @@ ApplicationWindow {
                             
                             // --- Reset state when animation starts ---
                             onStarted: {
-                                tile.border.width = 0
+                                suppressBorder = true
                                 animationFinished = false
                                 windowAppeared = false
+                            }
+                            
+                            onStopped: {
+                                suppressBorder = false
                             }
                             
                             SequentialAnimation {
