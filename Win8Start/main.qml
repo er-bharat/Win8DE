@@ -923,6 +923,7 @@ ApplicationWindow {
                                 suppressBorder = true
                                 animationFinished = false
                                 windowAppeared = false
+                                focus = true
                             }
                             
                             
@@ -933,7 +934,7 @@ ApplicationWindow {
                                         property: "xScale"
                                         to: 0.9
                                         duration: 100
-                                        easing.type: Easing.InOutQuad
+                                        easing.type: Easing.OutBack
                                     }
                                     
                                     NumberAnimation { 
@@ -941,7 +942,7 @@ ApplicationWindow {
                                         property: "yScale"
                                         to: 0.9
                                         duration: 100
-                                        easing.type: Easing.InOutQuad
+                                        easing.type: Easing.OutBack
                                     }
                                 }
                                 ParallelAnimation {
@@ -950,7 +951,7 @@ ApplicationWindow {
                                         property: "xScale"
                                         to: 1
                                         duration: 100
-                                        easing.type: Easing.InOutQuad
+                                        easing.type: Easing.OutBack
                                     }
                                     
                                     NumberAnimation { 
@@ -958,7 +959,7 @@ ApplicationWindow {
                                         property: "yScale"
                                         to: 1
                                         duration: 100
-                                        easing.type: Easing.InOutQuad
+                                        easing.type: Easing.OutBack
                                     }
                                 }
                             }
@@ -1085,8 +1086,16 @@ ApplicationWindow {
                             // Reset flags
                             animationFinished = false
                             windowAppeared = false
+                            focus = false
+                            container.focus = true
                         }
                         
+                        Keys.onPressed: function(event) {
+                            if (event.key === Qt.Key_Escape && tile.launching) {
+                                finishLaunch()
+                                event.accepted = true
+                            }
+                        }
                         
                         
                         //-----------------------------------------------------------
@@ -2102,6 +2111,7 @@ ApplicationWindow {
                         
                             windowAppearedallApp = false
                             animationFinishedallApp = false
+                            focus = true
                         }
                         
                         onFinished: {
@@ -2119,7 +2129,7 @@ ApplicationWindow {
                                     property: "xScale"
                                     to: 0.9
                                     duration: 100
-                                    easing.type: Easing.InOutQuad
+                                    easing.type: Easing.OutBack
                                 }
                                 
                                 NumberAnimation { 
@@ -2127,7 +2137,7 @@ ApplicationWindow {
                                     property: "yScale"
                                     to: 0.9
                                     duration: 100
-                                    easing.type: Easing.InOutQuad
+                                    easing.type: Easing.OutBack
                                 }
                             }
                             ParallelAnimation {
@@ -2136,7 +2146,7 @@ ApplicationWindow {
                                     property: "xScale"
                                     to: 1
                                     duration: 100
-                                    easing.type: Easing.InOutQuad
+                                    easing.type: Easing.OutBack
                                 }
                                 
                                 NumberAnimation { 
@@ -2144,7 +2154,7 @@ ApplicationWindow {
                                     property: "yScale"
                                     to: 1
                                     duration: 100
-                                    easing.type: Easing.InOutQuad
+                                    easing.type: Easing.OutBack
                                 }
                             }
                         }
@@ -2257,7 +2267,16 @@ ApplicationWindow {
                         // close all app section
                         allapparea.y=allapparea.height
                         container.focus = true
+                        focus = false
                     }
+                    
+                    Keys.onPressed: function(event) {
+                        if (event.key === Qt.Key_Escape && apptilecol.launching) {
+                            finishLaunchallapp()
+                            event.accepted = true
+                        }
+                    }
+                    
                 }
             }
         }
