@@ -219,7 +219,7 @@ ApplicationWindow {
                 acceptedButtons: Qt.RightButton | Qt.LeftButton
                 cursorShape: Qt.PointingHandCursor
                 onClicked: (mouse)=>{
-                    powerMenu.popup()
+                    powerMenu.popup(0,userCard.height)
                 }
             }
         }
@@ -1197,7 +1197,7 @@ ApplicationWindow {
                             
                             
                             onPressAndHold: {
-                                contextMenu.open()
+                                contextMenu.open(0,0)
                             }
                             
                             
@@ -1239,7 +1239,7 @@ ApplicationWindow {
                                     tile.launch()
                                     
                                 } else if (mouse.button === Qt.RightButton) {
-                                    contextMenu.open()
+                                    contextMenu.open(0,0)
                                 }
                             }
                             
@@ -1770,13 +1770,11 @@ ApplicationWindow {
                                     
                                 case Qt.Key_Menu:
                                 case Qt.Key_F10:
-                                    if (event.modifiers & Qt.ShiftModifier) {
-                                        var item = appGridView.currentItem
-                                        if (item) {
-                                            item.openActionMenu()
-                                        }
-                                        event.accepted = true
+                                    var item = appGridView.currentItem
+                                    if (item) {
+                                        item.openActionMenu()
                                     }
+                                    event.accepted = true
                                     break
                                 case Qt.Key_F5:
                                     if (AppLauncher) {
@@ -1815,7 +1813,7 @@ ApplicationWindow {
                     
                     function openActionMenu() {
                         AppLauncher.loadDesktopActions(desktopFilePath, actionModel)
-                        actionMenu.popup(appRect)
+                        actionMenu.popup(0,apptilecol.height)
                     }
                     
                     // opacity logic
@@ -2024,7 +2022,7 @@ ApplicationWindow {
                                     apptilecol.desktopFilePath,
                                     actionModel
                                 )
-                                actionMenu.popup()
+                                actionMenu.popup(0,apptilecol.height)
                             }
                             
                             onPositionChanged: (mouse) => {
@@ -2077,7 +2075,7 @@ ApplicationWindow {
                                             apptilecol.desktopFilePath,
                                             actionModel
                                         )
-                                        actionMenu.popup()
+                                        actionMenu.popup(0,apptilecol.height)
                                     }
                             }
                         }
