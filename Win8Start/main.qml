@@ -304,6 +304,7 @@ ApplicationWindow {
                 property bool anyTileLaunching: false
                 property int gridSize: tilearea.height/5
                 property int halfGrid: gridSize / 2
+                property int tileGap: 5
                 property int cols: Math.floor(width / halfGrid)
                 property int focusedIndex: -1
                 
@@ -737,14 +738,14 @@ ApplicationWindow {
                         required property string tileQml
                         required property bool qmlEnabled
                         
-                        property int tileGap: 5
+                        
                         
                         //size setup of tiles.
-                        readonly property int smallSize:   container.halfGrid - tileGap
-                        readonly property int mediumSize:  container.halfGrid * 2 - tileGap
-                        readonly property int largeWidth:  container.halfGrid * 4 - tileGap
-                        readonly property int largeHeight: container.halfGrid * 2 - tileGap
-                        readonly property int xlargeSize:  container.halfGrid * 4 - tileGap   // 4x4 tile
+                        readonly property int smallSize:   container.halfGrid - container.tileGap
+                        readonly property int mediumSize:  container.halfGrid * 2 - container.tileGap
+                        readonly property int largeWidth:  container.halfGrid * 4 - container.tileGap
+                        readonly property int largeHeight: container.halfGrid * 2 - container.tileGap
+                        readonly property int xlargeSize:  container.halfGrid * 4 - container.tileGap   // 4x4 tile
                         
                         width:  size === "small"   ? smallSize
                         : size === "medium"  ? mediumSize
@@ -1046,7 +1047,7 @@ ApplicationWindow {
                                 animationFinished = true
                                 if (windowAppeared) {
                                     finishLaunch()
-                                    suppressBorder = false
+                                    
                                 }
                             }
                             
@@ -1093,6 +1094,8 @@ ApplicationWindow {
                             dragArea.enabled = true
                             
                             container.interactive = true
+                            
+                            suppressBorder = false
                         }
                         
                         Keys.onPressed: function(event) {
@@ -1390,7 +1393,6 @@ ApplicationWindow {
                             ScriptAction {
                                 script: {
                                     // recalculateTilePosition()
-                                    animationFinishedallApp = false
                                     animationFinished = false
                                     
                                 }
@@ -1646,13 +1648,15 @@ ApplicationWindow {
                 ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
                 
                 function iconName(fullPathOrName) {
-                    if (fullPathOrName.startsWith("file://")) {
-                        // Extract filename without extension
-                        var parts = fullPathOrName.split("/")
-                        var fileName = parts[parts.length-1]
-                        return fileName.split(".")[0]  // remove extension like .png
-                    }
-                    return fullPathOrName
+                    // If it's a path (with or without file://), extract the filename
+                    let path = fullPathOrName.startsWith("file://")
+                    ? fullPathOrName.slice(7)
+                    : fullPathOrName
+                    
+                    let fileName = path.split("/").pop()
+                    
+                    // Remove only the final extension
+                    return fileName.replace(/\.[^/.]+$/, "")
                 }
                 
                 MouseArea {
@@ -1854,13 +1858,9 @@ ApplicationWindow {
                         height: 50
                         clip: apptilecol.launching ? false : true
                         color: appGridView.currentIndex === apptilecol.index ? "#0078D7" : "transparent"
-                        // Behavior on color {
-                        //     NumberAnimation {
-                        //         duration: 100
-                        //         easing.type: Easing.Linear
-                        //     }
-                        // }
-                        // property bool hovered: false
+                        Behavior on color {
+                            ColorAnimation { duration: 180 }
+                        }
                         
                         Row {
                             anchors.fill: parent
@@ -1960,7 +1960,7 @@ ApplicationWindow {
                                     }
                                     
                                     // Determine default tile size in pixels
-                                    var tileW = container.halfGrid * 2 - 5    // medium tile width
+                                    var tileW = container.halfGrid * 2 - container.tileGap    // medium tile width
                                     var tileH = tileW                          // medium tile height
                                     var pos = container.nextFreeTilePosition(tileW, tileH)
                                     
