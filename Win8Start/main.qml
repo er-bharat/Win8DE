@@ -1326,8 +1326,12 @@ ApplicationWindow {
                         ParallelAnimation {
                             id: appearAnim
                             running: false
-                            onStarted: container.clip = false
-                            // onStopped: container.clip = !anyTileLaunching
+                            onStarted: {
+                                container.clip = false
+                                allapparea.y=allapparea.height
+                                container.focus = true
+                            }
+                            
                             
                             PropertyAnimation {
                                 target: tile
@@ -1388,6 +1392,7 @@ ApplicationWindow {
                                     // recalculateTilePosition()
                                     animationFinishedallApp = false
                                     animationFinished = false
+                                    
                                 }
                             }
                             
