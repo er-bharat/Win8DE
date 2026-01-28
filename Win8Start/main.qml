@@ -1543,6 +1543,7 @@ ApplicationWindow {
                                 if (appGridView.count > 0) {
                                     // Launch the first app (currentIndex = 0)
                                     appGridView.currentIndex = 0
+                                    appGridView.launchingIndex = 0
                                     var firstItem = appGridView.currentItem
                                     if (firstItem) {
                                         firstItem.launch()   // assuming your delegate has a launch() function
@@ -2109,6 +2110,8 @@ ApplicationWindow {
                         
                             windowAppearedallApp = false
                             animationFinishedallApp = false
+                            searchField.focus = false
+                            appGridView.focus= true
                             focus = true
                         }
                         

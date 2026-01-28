@@ -661,7 +661,7 @@ updated version in /usr/share/docs/labwc/rc.xml.all
   -->
   <tablet mapToOutput="" rotate="0" mouseEmulation="no">
     <!-- Active area dimensions are in mm -->
-    <area top="0.0" left="0.0" width="0.0" height="0.0"/>
+    <area top="0.0" left="0.0" width="160" height="90"/>
     <map button="Tip" to="Left"/>
     <map button="Stylus" to="Right"/>
     <map button="Stylus2" to="Middle"/>
