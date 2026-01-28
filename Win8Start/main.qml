@@ -924,6 +924,8 @@ ApplicationWindow {
                                 animationFinished = false
                                 windowAppeared = false
                                 focus = true
+                                dragArea.enabled = false
+                                container.interactive = false
                             }
                             
                             
@@ -1088,6 +1090,9 @@ ApplicationWindow {
                             windowAppeared = false
                             focus = false
                             container.focus = true
+                            dragArea.enabled = true
+                            
+                            container.interactive = true
                         }
                         
                         Keys.onPressed: function(event) {
@@ -2113,6 +2118,8 @@ ApplicationWindow {
                             searchField.focus = false
                             appGridView.focus= true
                             focus = true
+                            appdragarea.enabled = false
+                            appGridView.interactive = false
                         }
                         
                         onFinished: {
@@ -2269,6 +2276,9 @@ ApplicationWindow {
                         allapparea.y=allapparea.height
                         container.focus = true
                         focus = false
+                        
+                        appdragarea.enabled = true
+                        appGridView.interactive = true
                     }
                     
                     Keys.onPressed: function(event) {
