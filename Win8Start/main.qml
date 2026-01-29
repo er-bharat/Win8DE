@@ -50,237 +50,256 @@ ApplicationWindow {
     Item {
         anchors.fill: parent
         
-        Text {
-            id: start
-            text: "Start"
-            color: "white"
-            font.pixelSize: 60
-            font.weight: Font.Thin
-            anchors.left: parent.left
+        Item {
+            id: topstrip
             anchors.top: parent.top
-            anchors.margins: 30
-            anchors.leftMargin: 120
-            anchors.topMargin: 50
+            width: parent.width
+            height: parent.height / 6
+            
+            Text {
+                id: start
+                text: "Start"
+                color: "white"
+                font.pixelSize: 60
+                font.weight: Font.Thin
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: parent.height / 3
+                anchors.leftMargin: parent.width / 18
+                anchors.topMargin: 50
+            }
+            
+            // Battery display next to "Start"
+            Item {
+                id: batteryDisplay
+                width: batteryFill.width + batteryOutline.width + batteryPercent.width * 1.5
+                height: start.height
+                anchors.verticalCenter: start.verticalCenter
+                anchors.right: userCard.left
+                
+                // Battery fill
+                Rectangle {
+                    id: batteryFill
+                    x: batteryOutline.x + 2
+                    y: batteryOutline.y + 2
+                    height: batteryOutline.height - 4
+                    width: (batteryOutline.width - 4) * Math.min(Math.max(battery.percent / 100, 0), 1)
+                    radius: 0
+                    color: battery.charging ? "#FFD700"  // gold/yellow for charging
+                    : battery.percent < 20 ? "#FF4C4C" // red for low
+                    : "white"  // green for normal
+                    smooth: true
+                }
+                
+                // Outer battery shape
+                Rectangle {
+                    id: batteryOutline
+                    width: 50
+                    height: 30
+                    radius: 0
+                    color: "transparent"
+                    border.color: "white"
+                    border.width: 4
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                
+                // Battery tip (small rounded rectangle)
+                Rectangle {
+                    width: 6
+                    height: batteryOutline.height / 2
+                    radius: 0
+                    color: "#CCCCCC"
+                    anchors.left: batteryOutline.right
+                    anchors.verticalCenter: batteryOutline.verticalCenter
+                }
+                
+                // Percent text
+                Text {
+                    id: batteryPercent
+                    text: battery.percent >= 0 ? battery.percent + "%" : "N/A"
+                    color: "#FFFFFF"
+                    font.pixelSize: 30
+                    font.weight: Font.Thin
+                    anchors.verticalCenter: batteryOutline.verticalCenter
+                    anchors.left: batteryOutline.right
+                    anchors.leftMargin: 12
+                }
+                
+                // Optional: subtle shadow behind battery
+                Rectangle {
+                    anchors.fill: batteryOutline
+                    radius: batteryOutline.radius
+                    color: "transparent"
+                    border.color: "transparent"
+                    
+                }
+            }
+            // the user icon at top right hosts power menu and settings.
+            Item {
+                id: userCard
+                width: userNameImage.width
+                height: start.height
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.verticalCenter: start.verticalCenter
+                anchors.margins: 30
+                anchors.rightMargin: parent.width / 18
+                // anchors.topMargin: parent.height / 3
+                
+                Row {
+                    id: userNameImage
+                    spacing: 12
+                    anchors.centerIn: parent
+                    
+                    Text {
+                        text: AppLauncher.getCurrentUser()
+                        color: "white"
+                        font.pixelSize: 40
+                        font.weight: Font.Thin
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    Rectangle {
+                        width: 48
+                        height: 48
+                        color: Win8Colors.Tile
+                        
+                        //backup user icon
+                        Image {
+                            id: userIcon
+                            source: "icons/peoplew.png"
+                            width: 48
+                            height: 48
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        //icon set for linux account.
+                        Image {
+                            id: userIcon2
+                            source: "file:///var/lib/AccountsService/icons/" + AppLauncher.getCurrentUser()
+                            width: 48
+                            height: 48
+                            fillMode: Image.PreserveAspectFit
+                        }
+                    }
+                }
+                // powermenu shutdown power logout etc
+                Menu {
+                    id: powerMenu
+                    
+                    MenuItem {
+                        text: "Suspend"
+                        icon.source: "/icons/suspend.svg"
+                        onTriggered: powerControl.suspend()
+                    }
+                    
+                    MenuItem {
+                        text: "Logout"
+                        icon.source: "/icons/logout.svg"
+                        onTriggered: powerControl.logout()
+                    }
+                    
+                    MenuItem {
+                        text: "Reboot"
+                        icon.source: "/icons/reboot.svg"
+                        onTriggered: powerControl.reboot()
+                    }
+                    
+                    MenuItem {
+                        text: "Shutdown"
+                        icon.source: "/icons/shutdown.svg"
+                        onTriggered: powerControl.shutdown()
+                    }
+                    
+                    MenuSeparator {}
+                    
+                    MenuItem {
+                        text: "Settings"
+                        icon.source: "/icons/settings.svg"
+                        onTriggered: {
+                            Launcher.launch("Win8Settings")
+                            WindowController.hide()
+                        }
+                    }
+                }
+                
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.RightButton | Qt.LeftButton
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: (mouse)=>{
+                        powerMenu.popup(0,userCard.height)
+                    }
+                }
+            }
         }
         
-        // Battery display next to "Start"
         Item {
-            id: batteryDisplay
-            width: 120
-            height: 40
-            anchors.verticalCenter: userCard.verticalCenter
-            anchors.right: userCard.left
-            anchors.rightMargin: 40
-            
-            // Battery fill
-            Rectangle {
-                id: batteryFill
-                x: batteryOutline.x + 2
-                y: batteryOutline.y + 2
-                height: batteryOutline.height - 4
-                width: (batteryOutline.width - 4) * Math.min(Math.max(battery.percent / 100, 0), 1)
-                radius: 0
-                color: battery.charging ? "#FFD700"  // gold/yellow for charging
-                : battery.percent < 20 ? "#FF4C4C" // red for low
-                : "white"  // green for normal
-                smooth: true
-            }
-            
-            // Outer battery shape
-            Rectangle {
-                id: batteryOutline
-                width: 50
-                height: 30
-                radius: 0
-                color: "transparent"
-                border.color: "white"
-                border.width: 4
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            
-            // Battery tip (small rounded rectangle)
-            Rectangle {
-                width: 6
-                height: batteryOutline.height / 2
-                radius: 0
-                color: "#CCCCCC"
-                anchors.left: batteryOutline.right
-                anchors.verticalCenter: batteryOutline.verticalCenter
-            }
-            
-            // Percent text
-            Text {
-                text: battery.percent >= 0 ? battery.percent + "%" : "N/A"
-                color: "#FFFFFF"
-                font.pixelSize: 30
-                font.weight: Font.Thin
-                anchors.verticalCenter: batteryOutline.verticalCenter
-                anchors.left: batteryOutline.right
-                anchors.leftMargin: 12
-            }
-            
-            // Optional: subtle shadow behind battery
-            Rectangle {
-                anchors.fill: batteryOutline
-                radius: batteryOutline.radius
-                color: "transparent"
-                border.color: "transparent"
-                
-            }
-        }
-        // the user icon at top right hosts power menu and settings.
-        Item {
-            id: userCard
-            width: 150
-            height: 50
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 30
-            anchors.rightMargin: 120
-            anchors.topMargin: 50
-            
-            Row {
-                spacing: 12
-                anchors.centerIn: parent
-                
-                Text {
-                    text: AppLauncher.getCurrentUser()
-                    color: "white"
-                    font.pixelSize: 40
-                    font.weight: Font.Thin
-                    verticalAlignment: Text.AlignVCenter
-                }
-                Rectangle {
-                    width: 48
-                    height: 48
-                    color: Win8Colors.Tile
-                    
-                    //backup user icon
-                    Image {
-                        id: userIcon
-                        source: "icons/peoplew.png"
-                        width: 48
-                        height: 48
-                        fillMode: Image.PreserveAspectFit
-                    }
-                    //icon set for linux account.
-                    Image {
-                        id: userIcon2
-                        source: "file:///var/lib/AccountsService/icons/" + AppLauncher.getCurrentUser()
-                        width: 48
-                        height: 48
-                        fillMode: Image.PreserveAspectFit
-                    }
-                }
-            }
-            // powermenu shutdown power logout etc
-            Menu {
-                id: powerMenu
-                
-                MenuItem {
-                    text: "Suspend"
-                    icon.source: "/icons/suspend.svg"
-                    onTriggered: powerControl.suspend()
-                }
-                
-                MenuItem {
-                    text: "Logout"
-                    icon.source: "/icons/logout.svg"
-                    onTriggered: powerControl.logout()
-                }
-                
-                MenuItem {
-                    text: "Reboot"
-                    icon.source: "/icons/reboot.svg"
-                    onTriggered: powerControl.reboot()
-                }
-                
-                MenuItem {
-                    text: "Shutdown"
-                    icon.source: "/icons/shutdown.svg"
-                    onTriggered: powerControl.shutdown()
-                }
-                
-                MenuSeparator {}
-                
-                MenuItem {
-                    text: "Settings"
-                    icon.source: "/icons/settings.svg"
-                    onTriggered: {
-                        Launcher.launch("Win8Settings")
-                        WindowController.hide()
-                    }
-                }
-            }
-            
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.RightButton | Qt.LeftButton
-                cursorShape: Qt.PointingHandCursor
-                onClicked: (mouse)=>{
-                    powerMenu.popup(0,userCard.height)
-                }
-            }
-        }
-        // button to open all apps section.
-        Rectangle {
-            id: allAppsButton
-            width: 50
-            height: 50
-            radius: width/2
-            border.width: 2
-            border.color: "white"
-            color: "transparent"
-            anchors.left: parent.left
+            id: bottomstrip
             anchors.bottom: parent.bottom
-            anchors.margins: 30
-            anchors.leftMargin: 120
+            width: parent.width
+            height: parent.height / 10
             
-            Image {
-                id: iconImg
-                anchors.centerIn: parent
-                width: 40
-                height: 40
-                source: "icons/go-down-skip.svg"
-                sourceSize.width: 50
-                sourceSize.height: 50
-                fillMode: Image.PreserveAspectFit
-            }
-            
-            MouseArea {
-                id: mouseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
+            // button to open all apps section.
+            Rectangle {
+                id: allAppsButton
+                width: 50
+                height: 50
+                radius: width/2
+                border.width: 2
+                border.color: "white"
+                color: "transparent"
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                anchors.margins: parent.height / 3
+                anchors.leftMargin: parent.width / 18
                 
-                Timer {
-                    id: refreshTimer
-                    interval: 500
-                    repeat: false
-                    running: false
-                    onTriggered: {
-                        AppLauncher.refreshApplications()
-                    }
+                Image {
+                    id: iconImg
+                    anchors.centerIn: parent
+                    width: 40
+                    height: 40
+                    source: "icons/go-down-skip.svg"
+                    sourceSize.width: 50
+                    sourceSize.height: 50
+                    fillMode: Image.PreserveAspectFit
                 }
-                // show allapparea focus the grid and once refresh the list.
-                onClicked: {
-                    allapparea.y = 0
-                    appGridView.focus = true
-                    refreshTimer.start()
-                    // searchField.focus = true
+                
+                MouseArea {
+                    id: mouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    
+                    Timer {
+                        id: refreshTimer
+                        interval: 500
+                        repeat: false
+                        running: false
+                        onTriggered: {
+                            AppLauncher.refreshApplications()
+                        }
+                    }
+                    // show allapparea focus the grid and once refresh the list.
+                    onClicked: {
+                        allapparea.y = 0
+                        appGridView.focus = true
+                        // refreshTimer.start()
+                        // searchField.focus = true
+                    }
                 }
             }
         }
+        
+        
         // holds the area in which the flickable lives
         Item {
             id: tilearea
             // anchors.verticalCenter: parent.verticalCenter
-            anchors.top: start.bottom
-            anchors.bottom: allAppsButton.top
+            anchors.top: topstrip.bottom
+            anchors.bottom: bottomstrip.top
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.leftMargin: 120
+            anchors.leftMargin: parent.width / 18
             anchors.topMargin: 30
             anchors.bottomMargin: 30
             width: parent.width-anchors.leftMargin
@@ -577,14 +596,14 @@ ApplicationWindow {
                                         if (event.modifiers & Qt.ControlModifier) {
                                             allapparea.y = 0
                                             appGridView.focus = true
-                                            refreshTimer.start()
+                                            // refreshTimer.start()
                                             event.accepted = true
                                         }
                                         break
                                     case Qt.Key_PageDown:
                                         allapparea.y = 0
                                         appGridView.focus = true
-                                        refreshTimer.start()
+                                        // refreshTimer.start()
                                         break
                                     case Qt.Key_Return:
                                     case Qt.Key_Enter:
@@ -616,7 +635,7 @@ ApplicationWindow {
                         if (isTouchpad && wheel.pixelDelta.y < 0) {
                             allapparea.y = 0
                             appGridView.focus = true
-                            refreshTimer.start()
+                            // refreshTimer.start()
                         }
                         // Horizontal scrolling
                         let delta = 0
@@ -837,17 +856,6 @@ ApplicationWindow {
                             snapGhost.height = tile.height
                         }
                         
-                        
-                        //-----------------------------------------------------------
-                        // LAUNCH ANIMATION PROPERTIES
-                        //-----------------------------------------------------------
-                        property bool launching: false
-                        
-                        // fixed center target
-                        property real finalX: (container.contentX + container.width  / 2 - width  / 2) - tilearea.anchors.leftMargin/2
-                        property real finalY: (container.contentY + container.height / 2 - height / 2) - (start.height-allAppsButton.height)
-                        
-                        
                         Loader {
                             id: externalTile
                             anchors.fill: parent
@@ -885,6 +893,15 @@ ApplicationWindow {
                             
                         }
                         
+                        
+                        //-----------------------------------------------------------
+                        // LAUNCH ANIMATION PROPERTIES
+                        //-----------------------------------------------------------
+                        property bool launching: false
+                        
+                        // center target for launched tile
+                        property real finalX: (container.contentX + container.width  / 2 - width  / 2) - tilearea.anchors.leftMargin/2
+                        property real finalY: (container.contentY + container.height / 2 - height / 2) - (topstrip.height-bottomstrip.height)/2
                         
                         // transforms
                         transform: [
@@ -1434,6 +1451,7 @@ ApplicationWindow {
                                 script: {
                                     // recalculateTilePosition()
                                     animationFinished = false
+                                    refreshTimer.start()
                                     
                                 }
                             }
@@ -1484,176 +1502,201 @@ ApplicationWindow {
             NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
         }
         
-        Text {
-            id: apps
-            text: "Apps"
-            font.pixelSize: 60
-            color: "white"
-            font.weight: Font.Thin
-            anchors.left: parent.left
+        Item {
+            id: topstrip2
             anchors.top: parent.top
-            anchors.margins: 30
-            anchors.leftMargin: 120
-            anchors.topMargin: 50
-        }
-        Rectangle {
-            id: allAppsButton2
-            width: 50
-            height: 50
-            radius: width/2
-            border.width: 2
-            border.color: "white"
-            color: "transparent"
-            anchors.left: parent.left
-            anchors.bottom: parent.bottom
-            anchors.margins: 30
-            anchors.leftMargin: 120
+            width: topstrip.width
+            height: topstrip.height
             
-            Image {
-                id: iconImg2
-                anchors.centerIn: parent
-                width: 40
-                height: 40
-                source: "icons/go-up-skip.svg"
-                sourceSize.width: 50
-                sourceSize.height: 50
-                fillMode: Image.PreserveAspectFit
+            Text {
+                id: apps
+                text: "Apps"
+                font.pixelSize: 60
+                color: "white"
+                font.weight: Font.Thin
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: parent.height / 3
+                anchors.leftMargin: parent.width / 18
+                anchors.topMargin: 50
             }
-            
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
+            Text {
+                id: by
+                anchors.left: apps.right
+                anchors.bottom: apps.bottom
+                anchors.leftMargin: 20
+                anchors.bottomMargin: 10
+                text: "by"
+                font.pixelSize: 30
+                font.weight: Font.Thin
                 
-                onClicked: {
-                    onClicked: {
-                        allapparea.y=allapparea.height
-                        searchField.focus = false
-                        appGridView.focus = false
-                        container.focus = true
-                        searchField.text = ""
-                        categoryFilter.currentIndex = 0
-                    }
-                }
             }
-            
-        }
-        //Searchfield searches for apps.
-        Rectangle {
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 30
-            anchors.leftMargin: 120
-            anchors.topMargin: 50
-            height: 50
-            width: 350
-            color: Win8Colors.Tile
-            
-            Row {
-                anchors.fill: parent
-                anchors.leftMargin: 10
-                spacing: 10
+            ComboBox {
+                id: categoryFilter
+                anchors.verticalCenter: apps.verticalCenter
+                anchors.left: by.right
+                anchors.leftMargin: 20
+                width: 500
+                height: apps.height
+                font.pixelSize: 50
+                font.weight: Font.Thin
+                model: ["All", "Utility", "Development", "Network", "Office", "AudioVideo", "Game", "System", "Graphics", "KDE", "Gnome"] // populate dynamically if needed
+                currentIndex: 0
                 
-                Image {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 30
-                    height: 30
-                    source: "icons/search.svg"
-                    sourceSize.width: 30
-                    sourceSize.height: 30
+                background: Rectangle {
+                    color: "transparent"
+                    border.color: "transparent"
                 }
                 
-                TextField {
-                    id: searchField
-                    width: 300
-                    height: 50
-                    placeholderText: "Search apps…"
-                    color: "white"
-                    background: null
-                    placeholderTextColor: "#888888"
-                    font.pointSize: 16
-                    onTextChanged: {
-                        appModel.search(text)
-                        appGridView.currentIndex = 0   // ⭐ reset selection
-                        categoryFilter.currentIndex = 0
+                Keys.onTabPressed: {
+                    appGridView.forceActiveFocus()
+                }
+                
+                onCurrentTextChanged: {
+                    if (currentText === "All")
+                        appModel.setCategoryFilter("")
+                        else
+                            appModel.setCategoryFilter(currentText)
+                            appGridView.currentIndex = 0
+                            appGridView.focus = true
+                }
+            }
+            //Searchfield searches for apps.
+            Rectangle {
+                anchors.right: parent.right
+                anchors.verticalCenter: apps.verticalCenter
+                anchors.margins: 30
+                anchors.leftMargin: 120
+                anchors.topMargin: 50
+                height: 50
+                width: 350
+                color: Win8Colors.Tile
+                
+                Row {
+                    anchors.fill: parent
+                    anchors.leftMargin: 10
+                    spacing: 10
+                    
+                    Image {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 30
+                        height: 30
+                        source: "icons/search.svg"
+                        sourceSize.width: 30
+                        sourceSize.height: 30
                     }
                     
-                    Keys.onTabPressed: {
-                        appGridView.forceActiveFocus()
-                    }
-                    Keys.onPressed: function(event) {
-                        switch (event.key) {
-                            case Qt.Key_Down:
-                                if (appGridView.count > 0) {
-                                    appGridView.forceActiveFocus()
-                                    appGridView.currentIndex = 1
-                                    event.accepted = true
-                                }
-                                break
-                            case Qt.Key_Return:
-                            case Qt.Key_Enter:
-                                if (appGridView.count > 0) {
-                                    // Launch the first app (currentIndex = 0)
-                                    appGridView.currentIndex = 0
-                                    appGridView.launchingIndex = 0
-                                    var firstItem = appGridView.currentItem
-                                    if (firstItem) {
-                                        firstItem.launch()   // assuming your delegate has a launch() function
+                    TextField {
+                        id: searchField
+                        width: 300
+                        height: 50
+                        placeholderText: "Search apps…"
+                        color: "white"
+                        background: null
+                        placeholderTextColor: "#888888"
+                        font.pointSize: 16
+                        onTextChanged: {
+                            appModel.search(text)
+                            appGridView.currentIndex = 0   // ⭐ reset selection
+                            categoryFilter.currentIndex = 0
+                        }
+                        
+                        Keys.onTabPressed: {
+                            appGridView.forceActiveFocus()
+                        }
+                        Keys.onPressed: function(event) {
+                            switch (event.key) {
+                                case Qt.Key_Down:
+                                    if (appGridView.count > 0) {
+                                        appGridView.forceActiveFocus()
+                                        appGridView.currentIndex = 1
+                                        event.accepted = true
                                     }
-                                    event.accepted = true
-                                }
-                                break
-                            case Qt.Key_A:
-                                // Check for Ctrl modifier
-                                if (event.modifiers & Qt.ControlModifier) {
-                                    allapparea.y=allapparea.height
-                                    searchField.focus = false
-                                    appGridView.focus = false
-                                    container.focus = true
-                                    event.accepted = true
-                                }
-                                break
+                                    break
+                                case Qt.Key_Return:
+                                case Qt.Key_Enter:
+                                    if (appGridView.count > 0) {
+                                        // Launch the first app (currentIndex = 0)
+                                        appGridView.currentIndex = 0
+                                        appGridView.launchingIndex = 0
+                                        var firstItem = appGridView.currentItem
+                                        if (firstItem) {
+                                            firstItem.launch()   // assuming your delegate has a launch() function
+                                        }
+                                        event.accepted = true
+                                    }
+                                    break
+                                case Qt.Key_A:
+                                    // Check for Ctrl modifier
+                                    if (event.modifiers & Qt.ControlModifier) {
+                                        allapparea.y=allapparea.height
+                                        searchField.focus = false
+                                        appGridView.focus = false
+                                        container.focus = true
+                                        event.accepted = true
+                                    }
+                                    break
+                            }
                         }
                     }
                 }
+                
             }
             
         }
-        ComboBox {
-            id: categoryFilter
-            anchors.top: apps.top
-            anchors.left: apps.right
-            anchors.topMargin: 10
-            anchors.leftMargin: 120
-            width: 300
-            height: apps.height
-            font.pixelSize: 40
-            font.weight: Font.Thin
-            model: ["All", "Utility", "Development", "Network", "Office", "AudioVideo", "Game", "System", "Graphics", "KDE", "Gnome"] // populate dynamically if needed
-            currentIndex: 0
-            
-            background: Rectangle {
+        
+        Item {
+            id: bottomstrip2
+            anchors.bottom: parent.bottom
+            width: bottomstrip.width
+            height: bottomstrip.height
+            Rectangle {
+                id: allAppsButton2
+                width: 50
+                height: 50
+                radius: width/2
+                border.width: 2
+                border.color: "white"
                 color: "transparent"
-                border.color: "transparent"
-            }
-            
-            Keys.onTabPressed: {
-                appGridView.forceActiveFocus()
-            }
-            
-            onCurrentTextChanged: {
-                if (currentText === "All")
-                    appModel.setCategoryFilter("")
-                    else
-                        appModel.setCategoryFilter(currentText)
-                        appGridView.currentIndex = 0
-                        appGridView.focus = true
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                anchors.margins: parent.height / 3
+                anchors.leftMargin: parent.width / 18
+                
+                Image {
+                    id: iconImg2
+                    anchors.centerIn: parent
+                    width: 40
+                    height: 40
+                    source: "icons/go-up-skip.svg"
+                    sourceSize.width: 50
+                    sourceSize.height: 50
+                    fillMode: Image.PreserveAspectFit
+                }
+                
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    
+                    onClicked: {
+                        onClicked: {
+                            allapparea.y=allapparea.height
+                            searchField.focus = false
+                            appGridView.focus = false
+                            container.focus = true
+                            searchField.text = ""
+                            categoryFilter.currentIndex = 0
+                        }
+                    }
+                }
+                
             }
         }
         
         Item {
-            anchors.top: apps.bottom
-            anchors.bottom: allAppsButton2.top
+            anchors.top: topstrip2.bottom
+            anchors.bottom: bottomstrip2.top
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.leftMargin: 120
@@ -1979,17 +2022,20 @@ ApplicationWindow {
                             id: actionMenu
                             MenuItem {
                                 text: "Open"
-                                icon.name: "system-run"   // or application-x-executable
+                                icon.name: "system-run" 
                                 
                                 onTriggered: {
+                                    apptilecol.launching = true
                                     appGridView.launchingIndex = apptilecol.index
-                                    AppLauncher.launchApp(apptilecol.command)
+                                    AppLauncher.launchApp(apptilecol.command, terminal)
+                                    apptext.opacity = 0
                                     launchAnimAllapp.start()
                                 }
                             }
                             
                             MenuItem {
                                 text: "Add to Start"
+                                icon.name: "window-pin"
                                 onTriggered: {
                                     var appData = {
                                         "name": apptilecol.name,
