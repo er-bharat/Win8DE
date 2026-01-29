@@ -1,0 +1,14 @@
+
+cmake
+gcc
+ninja
+pkgconf
+
+qt6-base
+qt6-declarative
+qt6-wayland
+
+layer-shell-qt
+wayland
+pam
+glibc

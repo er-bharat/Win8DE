@@ -1169,6 +1169,44 @@ ApplicationWindow {
                             && tile.qmlEnabled
                             
                         }
+                        
+                        ParallelAnimation {
+                            id: pickanim
+                            NumberAnimation { 
+                                target: zoomScale
+                                property: "xScale"
+                                to: 0.9
+                                duration: 100
+                                easing.type: Easing.OutBack
+                            }
+                            
+                            NumberAnimation { 
+                                target: zoomScale
+                                property: "yScale"
+                                to: 0.9
+                                duration: 100
+                                easing.type: Easing.OutBack
+                            }
+                        }
+                        
+                        ParallelAnimation {
+                            id: dropanim
+                            NumberAnimation { 
+                                target: zoomScale
+                                property: "xScale"
+                                to: 1
+                                duration: 100
+                                easing.type: Easing.OutBack
+                            }
+                            
+                            NumberAnimation { 
+                                target: zoomScale
+                                property: "yScale"
+                                to: 1
+                                duration: 100
+                                easing.type: Easing.OutBack
+                            }
+                        }
                         //-----------------------------------------------------------
                         // Dragging & Click
                         //-----------------------------------------------------------
@@ -1198,6 +1236,7 @@ ApplicationWindow {
                                     if (!container.moving && tile.launching !== true) {
                                         dragArea.dragging = true
                                         snapGhost.visible = true
+                                        pickanim.start()
                                         tile.updateSnapGhost()
                                     }
                                 }
@@ -1223,6 +1262,7 @@ ApplicationWindow {
                             
                             onReleased: {
                                 if (dragging) {
+                                    dropanim.start()
                                     tile.x = snapGhost.x
                                     tile.y = Math.max(
                                         0,

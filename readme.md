@@ -62,6 +62,25 @@ it dosent provide charms menu because i always thought its useless.
 ---
 ## Installation ##
 
+### dependency Arch
+
+cmake  
+gcc  
+ninja  
+pkgconf  
+
+qt6-base  
+qt6-declarative  
+qt6-wayland  
+
+layer-shell-qt  
+wayland  
+pam  
+glibc  
+
+`sudo pacman -S --needed - < dependencies.txt`
+
+
 ### for local binary use run
 
 `./build.sh`
@@ -93,7 +112,7 @@ find your compositors config loading command and make a .desktop file like this 
 `[Desktop Entry]`\
 `Name=labwc-win8`\
 `Comment=A wayland stacking compositor`\
-`Exec=labwc -C /home/user1/.config/labwc3`\
+`Exec=labwc -C /usr/share/labwc3`\
 `Icon=labwc`\
 `Type=Application`\
 `DesktopNames=labwc;wlroots`
