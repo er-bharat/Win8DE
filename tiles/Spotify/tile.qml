@@ -15,27 +15,30 @@ Item {
 			width: parent.width
 			height: parent.height * 1.5
 			source: Qt.resolvedUrl("art.jpg")
-			cache: false
 			fillMode: Image.PreserveAspectCrop
 			smooth: true
+			cache: true
 			y: -height * 0.25
 			
 			onStatusChanged: {
-				if (status === Image.Error)
+				if (status === Image.Ready) {
+					moveAnim.start()
+				} else if (status === Image.Error) {
 					console.log("Failed to load image:", source)
+				}
 			}
 			
 			SequentialAnimation {
 				id: moveAnim
 				loops: Animation.Infinite
-				running: true
+				running: false
 				
 				NumberAnimation {
 					target: animatedImage
 					property: "y"
 					from: -animatedImage.height * 0.25
 					to: 0
-					duration: 10000
+					duration: 3000
 					easing.type: Easing.InOutQuad
 				}
 				
@@ -44,20 +47,10 @@ Item {
 					property: "y"
 					from: 0
 					to: -animatedImage.height * 0.25
-					duration: 10000
+					duration: 3000
 					easing.type: Easing.InOutQuad
 				}
 			}
-		}
-	}
-	
-	Timer {
-		interval: 1000
-		running: true
-		repeat: true
-		onTriggered: {
-			animatedImage.source = ""
-			animatedImage.source = Qt.resolvedUrl("art.jpg")
 		}
 	}
 }

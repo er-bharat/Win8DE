@@ -39,7 +39,6 @@ Item {
 			height: parent.height * 2
 			fillMode: Image.PreserveAspectCrop
 			y:parent.height
-			cache: true
 		}
 	}
 	
@@ -57,7 +56,6 @@ Item {
 			height: parent.height * 2
 			fillMode: Image.PreserveAspectCrop
 			y:0
-			cache: true
 		}
 	}
 	
@@ -70,7 +68,7 @@ Item {
 			from: height
 			to: 0
 			duration: 600
-			easing.type: Easing.InOutQuad
+			easing.type: Easing.InExpo
 		}
 		
 		NumberAnimation {
@@ -79,7 +77,7 @@ Item {
 			from: 0
 			to: -height
 			duration: 600
-			easing.type: Easing.InOutQuad
+			easing.type: Easing.InExpo
 		}
 		
 		onStopped: {
@@ -100,8 +98,8 @@ Item {
 				property: "y"
 				from: 0
 				to: -height/2
-				duration: 1700
-				easing.type: Easing.InOutQuad
+				duration: 4200
+				easing.type: Easing.Linear
 			}
 			
 			NumberAnimation {
@@ -109,8 +107,8 @@ Item {
 				property: "y"
 				from: -height/2
 				to: 0
-				duration: 1700
-				easing.type: Easing.InOutQuad
+				duration: 4200
+				easing.type: Easing.Linear
 			}
 		}
 		
@@ -121,23 +119,41 @@ Item {
 				property: "y"
 				from: 0
 				to: -height/2
-				duration: 1700
-				easing.type: Easing.InOutQuad
+				duration: 4200
+				easing.type: Easing.Linear
 			}
 			NumberAnimation {
 				target: currentImage
 				property: "y"
 				from: -height/2
 				to: 0
-				duration: 1700
-				easing.type: Easing.InOutQuad
+				duration: 4200
+				easing.type: Easing.Linear
 			}
 		}
 		}
 		
-	
+		Timer {
+			interval: 900
+			repeat: false
+			running: imageModel.count > 1
+			
+			onTriggered: {
+				if (imageModel.count < 2)
+					return
+					
+					var nextIndex = (currentIndex + 1) % imageModel.count
+					var url = imageModel.get(nextIndex, "fileUrl")   // ✅ correct role
+					
+					if (url !== undefined && url !== "") {
+						nextImage.source = url
+						slideAnim.start()
+						imageslide.start()
+					}
+			}
+		}
 	Timer {
-		interval: 4000
+		interval: 9000
 		repeat: true
 		running: imageModel.count > 1
 		

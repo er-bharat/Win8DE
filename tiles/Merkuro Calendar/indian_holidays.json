@@ -1,0 +1,537 @@
+[
+  {"date": "20210216", "name": "Vasant Panchami"},
+  {"date": "20210413", "name": "Chaitra Sukhladi"},
+  {"date": "20210830", "name": "Janmashtami"},
+  {"date": "20211002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20220114", "name": "Makar Sankranti"},
+  {"date": "20220402", "name": "Chaitra Sukhladi"},
+  {"date": "20230509", "name": "Birthday of Rabindranath"},
+  {"date": "20230729", "name": "Muharram/Ashura"},
+  {"date": "20240101", "name": "New Year's Day"},
+  {"date": "20240117", "name": "Guru Govind Singh Jayanti"},
+  {"date": "20240409", "name": "Gudi Padwa"},
+  {"date": "20240413", "name": "Vaisakhi"},
+  {"date": "20241002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20250509", "name": "Birthday of Rabindranath"},
+  {"date": "20250815", "name": "Janmashtami (Smarta)"},
+  {"date": "20260101", "name": "New Year's Day"},
+  {"date": "20260716", "name": "Rath Yatra"},
+  {"date": "20270126", "name": "Republic Day"},
+  {"date": "20270407", "name": "Ugadi"},
+  {"date": "20270414", "name": "Ambedkar Jayanti"},
+  {"date": "20271225", "name": "Christmas"},
+  {"date": "20280327", "name": "Gudi Padwa"},
+  {"date": "20280416", "name": "Easter Day"},
+  {"date": "20281017", "name": "Diwali/Deepavali"},
+  {"date": "20281225", "name": "Christmas"},
+  {"date": "20290401", "name": "Easter Day"},
+  {"date": "20290815", "name": "Independence Day"},
+  {"date": "20290822", "name": "Onam"},
+  {"date": "20291008", "name": "First Day of Sharad Navratri"},
+  {"date": "20210816", "name": "Parsi New Year"},
+  {"date": "20210820", "name": "Muharram/Ashura"},
+  {"date": "20211012", "name": "Maha Saptami"},
+  {"date": "20211020", "name": "Maharishi Valmiki Jayanti"},
+  {"date": "20211106", "name": "Bhai Duj"},
+  {"date": "20211110", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20220415", "name": "Good Friday"},
+  {"date": "20220809", "name": "Muharram/Ashura"},
+  {"date": "20230101", "name": "New Year's Day"},
+  {"date": "20230115", "name": "Pongal"},
+  {"date": "20230205", "name": "Hazarat Ali's Birthday"},
+  {"date": "20230322", "name": "Gudi Padwa"},
+  {"date": "20230322", "name": "Chaitra Sukhladi"},
+  {"date": "20230404", "name": "Mahavir Jayanti"},
+  {"date": "20230414", "name": "Ambedkar Jayanti"},
+  {"date": "20231225", "name": "Christmas"},
+  {"date": "20240214", "name": "Vasant Panchami"},
+  {"date": "20240409", "name": "Ugadi"},
+  {"date": "20240417", "name": "Rama Navami"},
+  {"date": "20240508", "name": "Birthday of Rabindranath"},
+  {"date": "20241012", "name": "Dussehra"},
+  {"date": "20241017", "name": "Maharishi Valmiki Jayanti"},
+  {"date": "20241103", "name": "Bhai Duj"},
+  {"date": "20241107", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20250114", "name": "Makar Sankranti"},
+  {"date": "20250219", "name": "Shivaji Jayanti"},
+  {"date": "20251020", "name": "Diwali/Deepavali"},
+  {"date": "20260319", "name": "Gudi Padwa"},
+  {"date": "20261108", "name": "Diwali/Deepavali"},
+  {"date": "20270825", "name": "Janmashtami (Smarta)"},
+  {"date": "20271031", "name": "Bhai Duj"},
+  {"date": "20280115", "name": "Pongal"},
+  {"date": "20280126", "name": "Republic Day"},
+  {"date": "20280311", "name": "Holi"},
+  {"date": "20290119", "name": "Vasant Panchami"},
+  {"date": "20290414", "name": "Ambedkar Jayanti"},
+  {"date": "20210101", "name": "New Year's Day"},
+  {"date": "20210114", "name": "Pongal"},
+  {"date": "20210126", "name": "Republic Day"},
+  {"date": "20210227", "name": "Guru Ravidas Jayanti"},
+  {"date": "20210414", "name": "Mesadi"},
+  {"date": "20210414", "name": "Vaisakhi"},
+  {"date": "20210414", "name": "Ambedkar Jayanti"},
+  {"date": "20210421", "name": "Rama Navami"},
+  {"date": "20210815", "name": "Independence Day"},
+  {"date": "20211224", "name": "Christmas Eve"},
+  {"date": "20220126", "name": "Republic Day"},
+  {"date": "20220219", "name": "Shivaji Jayanti"},
+  {"date": "20220317", "name": "Holika Dahana"},
+  {"date": "20220701", "name": "Rath Yatra"},
+  {"date": "20221024", "name": "Naraka Chaturdasi"},
+  {"date": "20230322", "name": "Ugadi"},
+  {"date": "20230620", "name": "Rath Yatra"},
+  {"date": "20231112", "name": "Naraka Chaturdasi"},
+  {"date": "20231224", "name": "Christmas Eve"},
+  {"date": "20240219", "name": "Shivaji Jayanti"},
+  {"date": "20250126", "name": "Republic Day"},
+  {"date": "20250223", "name": "Maharishi Dayanand Saraswati Jayanti"},
+  {"date": "20250930", "name": "Maha Ashtami"},
+  {"date": "20261224", "name": "Christmas Eve"},
+  {"date": "20270101", "name": "New Year's Day"},
+  {"date": "20271005", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20281224", "name": "Christmas Eve"},
+  {"date": "20290126", "name": "Republic Day"},
+  {"date": "20290414", "name": "Gudi Padwa"},
+  {"date": "20291124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20210413", "name": "Ugadi"},
+  {"date": "20210413", "name": "Gudi Padwa"},
+  {"date": "20211015", "name": "Dussehra"},
+  {"date": "20211119", "name": "Guru Nanak Jayanti"},
+  {"date": "20220215", "name": "Hazarat Ali's Birthday"},
+  {"date": "20220816", "name": "Parsi New Year"},
+  {"date": "20220819", "name": "Janmashtami"},
+  {"date": "20220926", "name": "First Day of Sharad Navratri"},
+  {"date": "20221002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20221224", "name": "Christmas Eve"},
+  {"date": "20230126", "name": "Republic Day"},
+  {"date": "20230816", "name": "Parsi New Year"},
+  {"date": "20231020", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20231023", "name": "Maha Navami"},
+  {"date": "20240115", "name": "Pongal"},
+  {"date": "20240125", "name": "Hazarat Ali's Birthday"},
+  {"date": "20240324", "name": "Holika Dahana"},
+  {"date": "20240414", "name": "Ambedkar Jayanti"},
+  {"date": "20240815", "name": "Independence Day"},
+  {"date": "20250202", "name": "Vasant Panchami"},
+  {"date": "20250414", "name": "Ambedkar Jayanti"},
+  {"date": "20250420", "name": "Easter Day"},
+  {"date": "20250815", "name": "Independence Day"},
+  {"date": "20251224", "name": "Christmas Eve"},
+  {"date": "20260219", "name": "Shivaji Jayanti"},
+  {"date": "20260405", "name": "Easter Day"},
+  {"date": "20261002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20261011", "name": "First Day of Sharad Navratri"},
+  {"date": "20271124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20271212", "name": "Hazarat Ali's Birthday"},
+  {"date": "20280414", "name": "Ambedkar Jayanti"},
+  {"date": "20280901", "name": "Onam"},
+  {"date": "20281023", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20290301", "name": "Holi"},
+  {"date": "20290901", "name": "Janmashtami (Smarta)"},
+  {"date": "20210402", "name": "Good Friday"},
+  {"date": "20211011", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20211013", "name": "Maha Ashtami"},
+  {"date": "20220101", "name": "New Year's Day"},
+  {"date": "20220414", "name": "Vaisakhi"},
+  {"date": "20221025", "name": "Govardhan Puja"},
+  {"date": "20221229", "name": "Guru Govind Singh Jayanti"},
+  {"date": "20230308", "name": "Holi"},
+  {"date": "20230907", "name": "Janmashtami"},
+  {"date": "20231021", "name": "Maha Saptami"},
+  {"date": "20231113", "name": "Govardhan Puja"},
+  {"date": "20231115", "name": "Bhai Duj"},
+  {"date": "20231127", "name": "Guru Nanak Jayanti"},
+  {"date": "20240224", "name": "Guru Ravidas Jayanti"},
+  {"date": "20240826", "name": "Janmashtami"},
+  {"date": "20241009", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20241031", "name": "Diwali/Deepavali"},
+  {"date": "20241224", "name": "Christmas Eve"},
+  {"date": "20250212", "name": "Guru Ravidas Jayanti"},
+  {"date": "20250330", "name": "Gudi Padwa"},
+  {"date": "20250922", "name": "First Day of Sharad Navratri"},
+  {"date": "20250929", "name": "Maha Saptami"},
+  {"date": "20251001", "name": "Maha Navami"},
+  {"date": "20251007", "name": "Maharishi Valmiki Jayanti"},
+  {"date": "20260123", "name": "Vasant Panchami"},
+  {"date": "20261111", "name": "Bhai Duj"},
+  {"date": "20270328", "name": "Easter Day"},
+  {"date": "20270815", "name": "Independence Day"},
+  {"date": "20290713", "name": "Rath Yatra"},
+  {"date": "20291111", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20210712", "name": "Rath Yatra"},
+  {"date": "20210821", "name": "Onam"},
+  {"date": "20220318", "name": "Holi"},
+  {"date": "20220410", "name": "Rama Navami"},
+  {"date": "20220815", "name": "Independence Day"},
+  {"date": "20221002", "name": "Maha Saptami"},
+  {"date": "20221005", "name": "Dussehra"},
+  {"date": "20221009", "name": "Maharishi Valmiki Jayanti"},
+  {"date": "20230307", "name": "Holika Dahana"},
+  {"date": "20231119", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20240126", "name": "Republic Day"},
+  {"date": "20240421", "name": "Mahavir Jayanti"},
+  {"date": "20241010", "name": "Maha Saptami"},
+  {"date": "20241031", "name": "Naraka Chaturdasi"},
+  {"date": "20250114", "name": "Hazarat Ali's Birthday"},
+  {"date": "20250330", "name": "Chaitra Sukhladi"},
+  {"date": "20251105", "name": "Guru Nanak Jayanti"},
+  {"date": "20251124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20260103", "name": "Hazarat Ali's Birthday"},
+  {"date": "20260826", "name": "Onam"},
+  {"date": "20261124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20271002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20271029", "name": "Diwali/Deepavali"},
+  {"date": "20280219", "name": "Shivaji Jayanti"},
+  {"date": "20281002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20281201", "name": "Hazarat Ali's Birthday"},
+  {"date": "20290101", "name": "New Year's Day"},
+  {"date": "20290414", "name": "Ugadi"},
+  {"date": "20291016", "name": "Dussehra"},
+  {"date": "20210509", "name": "Birthday of Rabindranath"},
+  {"date": "20220818", "name": "Janmashtami (Smarta)"},
+  {"date": "20220908", "name": "Onam"},
+  {"date": "20221001", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20221124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20230114", "name": "Makar Sankranti"},
+  {"date": "20230414", "name": "Vaisakhi"},
+  {"date": "20230820", "name": "Vinayaka Chathurthi"},
+  {"date": "20231002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20231024", "name": "Dussehra"},
+  {"date": "20231124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20240114", "name": "Makar Sankranti"},
+  {"date": "20241124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20250816", "name": "Janmashtami"},
+  {"date": "20251002", "name": "Dussehra"},
+  {"date": "20251002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20251225", "name": "Christmas"},
+  {"date": "20260114", "name": "Pongal"},
+  {"date": "20260326", "name": "Rama Navami"},
+  {"date": "20270115", "name": "Pongal"},
+  {"date": "20270825", "name": "Janmashtami"},
+  {"date": "20271009", "name": "Dussehra"},
+  {"date": "20271104", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20280624", "name": "Rath Yatra"},
+  {"date": "20280927", "name": "Dussehra"},
+  {"date": "20291012", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20291120", "name": "Hazarat Ali's Birthday"},
+  {"date": "20210404", "name": "Easter Day"},
+  {"date": "20211105", "name": "Govardhan Puja"},
+  {"date": "20220114", "name": "Pongal"},
+  {"date": "20221026", "name": "Bhai Duj"},
+  {"date": "20221225", "name": "Christmas"},
+  {"date": "20230324", "name": "Ramadan Start"},
+  {"date": "20230815", "name": "Independence Day"},
+  {"date": "20230906", "name": "Janmashtami (Smarta)"},
+  {"date": "20231015", "name": "First Day of Sharad Navratri"},
+  {"date": "20231022", "name": "Maha Ashtami"},
+  {"date": "20240331", "name": "Easter Day"},
+  {"date": "20240409", "name": "Chaitra Sukhladi"},
+  {"date": "20240815", "name": "Parsi New Year"},
+  {"date": "20240915", "name": "Onam"},
+  {"date": "20241011", "name": "Maha Ashtami"},
+  {"date": "20250101", "name": "New Year's Day"},
+  {"date": "20250330", "name": "Ugadi"},
+  {"date": "20250905", "name": "Onam"},
+  {"date": "20260126", "name": "Republic Day"},
+  {"date": "20260304", "name": "Holi"},
+  {"date": "20260414", "name": "Ambedkar Jayanti"},
+  {"date": "20260904", "name": "Janmashtami"},
+  {"date": "20270326", "name": "Good Friday"},
+  {"date": "20280101", "name": "New Year's Day"},
+  {"date": "20280131", "name": "Vasant Panchami"},
+  {"date": "20281019", "name": "Bhai Duj"},
+  {"date": "20290114", "name": "Makar Sankranti"},
+  {"date": "20290330", "name": "Good Friday"},
+  {"date": "20210120", "name": "Guru Govind Singh Jayanti"},
+  {"date": "20211007", "name": "First Day of Sharad Navratri"},
+  {"date": "20220216", "name": "Guru Ravidas Jayanti"},
+  {"date": "20220226", "name": "Maharishi Dayanand Saraswati Jayanti"},
+  {"date": "20220414", "name": "Mahavir Jayanti"},
+  {"date": "20230126", "name": "Vasant Panchami"},
+  {"date": "20230215", "name": "Maharishi Dayanand Saraswati Jayanti"},
+  {"date": "20230219", "name": "Shivaji Jayanti"},
+  {"date": "20230407", "name": "Good Friday"},
+  {"date": "20240306", "name": "Maharishi Dayanand Saraswati Jayanti"},
+  {"date": "20240312", "name": "Ramadan Start"},
+  {"date": "20240325", "name": "Holi"},
+  {"date": "20241003", "name": "First Day of Sharad Navratri"},
+  {"date": "20250418", "name": "Good Friday"},
+  {"date": "20250928", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20251023", "name": "Bhai Duj"},
+  {"date": "20260403", "name": "Good Friday"},
+  {"date": "20261017", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20261115", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20261225", "name": "Christmas"},
+  {"date": "20270115", "name": "Makar Sankranti"},
+  {"date": "20270219", "name": "Shivaji Jayanti"},
+  {"date": "20280414", "name": "Good Friday"},
+  {"date": "20280813", "name": "Janmashtami (Smarta)"},
+  {"date": "20280813", "name": "Janmashtami"},
+  {"date": "20280919", "name": "First Day of Sharad Navratri"},
+  {"date": "20281124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20290114", "name": "Pongal"},
+  {"date": "20290219", "name": "Shivaji Jayanti"},
+  {"date": "20290422", "name": "Rama Navami"},
+  {"date": "20291002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20291225", "name": "Christmas"},
+  {"date": "20210114", "name": "Makar Sankranti"},
+  {"date": "20210226", "name": "Hazarat Ali's Birthday"},
+  {"date": "20210308", "name": "Maharishi Dayanand Saraswati Jayanti"},
+  {"date": "20210328", "name": "Holika Dahana"},
+  {"date": "20210329", "name": "Holi"},
+  {"date": "20210425", "name": "Mahavir Jayanti"},
+  {"date": "20210507", "name": "Jamat Ul-Vida"},
+  {"date": "20211104", "name": "Naraka Chaturdasi"},
+  {"date": "20220109", "name": "Guru Govind Singh Jayanti"},
+  {"date": "20220205", "name": "Vasant Panchami"},
+  {"date": "20220402", "name": "Gudi Padwa"},
+  {"date": "20220509", "name": "Birthday of Rabindranath"},
+  {"date": "20221108", "name": "Guru Nanak Jayanti"},
+  {"date": "20230829", "name": "Onam"},
+  {"date": "20231028", "name": "Maharishi Valmiki Jayanti"},
+  {"date": "20240707", "name": "Rath Yatra"},
+  {"date": "20240717", "name": "Muharram/Ashura"},
+  {"date": "20241011", "name": "Maha Navami"},
+  {"date": "20241102", "name": "Govardhan Puja"},
+  {"date": "20241115", "name": "Guru Nanak Jayanti"},
+  {"date": "20241225", "name": "Christmas"},
+  {"date": "20250627", "name": "Rath Yatra"},
+  {"date": "20250815", "name": "Parsi New Year"},
+  {"date": "20251020", "name": "Naraka Chaturdasi"},
+  {"date": "20260114", "name": "Makar Sankranti"},
+  {"date": "20260319", "name": "Ugadi"},
+  {"date": "20260815", "name": "Independence Day"},
+  {"date": "20260904", "name": "Janmashtami (Smarta)"},
+  {"date": "20261020", "name": "Dussehra"},
+  {"date": "20261223", "name": "Hazarat Ali's Birthday"},
+  {"date": "20270407", "name": "Gudi Padwa"},
+  {"date": "20270912", "name": "Onam"},
+  {"date": "20280924", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20291107", "name": "Bhai Duj"},
+  {"date": "20210219", "name": "Shivaji Jayanti"},
+  {"date": "20210830", "name": "Janmashtami (Smarta)"},
+  {"date": "20211014", "name": "Maha Navami"},
+  {"date": "20211104", "name": "Diwali/Deepavali"},
+  {"date": "20211225", "name": "Christmas"},
+  {"date": "20220402", "name": "Ugadi"},
+  {"date": "20220417", "name": "Easter Day"},
+  {"date": "20221004", "name": "Maha Navami"},
+  {"date": "20221024", "name": "Diwali/Deepavali"},
+  {"date": "20221030", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20230205", "name": "Guru Ravidas Jayanti"},
+  {"date": "20230330", "name": "Rama Navami"},
+  {"date": "20231112", "name": "Diwali/Deepavali"},
+  {"date": "20240329", "name": "Good Friday"},
+  {"date": "20240826", "name": "Janmashtami (Smarta)"},
+  {"date": "20250313", "name": "Holika Dahana"},
+  {"date": "20250410", "name": "Mahavir Jayanti"},
+  {"date": "20270322", "name": "Holi"},
+  {"date": "20270705", "name": "Rath Yatra"},
+  {"date": "20270930", "name": "First Day of Sharad Navratri"},
+  {"date": "20280327", "name": "Ugadi"},
+  {"date": "20280403", "name": "Rama Navami"},
+  {"date": "20280815", "name": "Independence Day"},
+  {"date": "20290901", "name": "Janmashtami"},
+  {"date": "20291105", "name": "Diwali/Deepavali"},
+  {"date": "20291224", "name": "Christmas Eve"},
+  {"date": "20211124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20220414", "name": "Ambedkar Jayanti"},
+  {"date": "20221003", "name": "Maha Ashtami"},
+  {"date": "20230409", "name": "Easter Day"},
+  {"date": "20250114", "name": "Pongal"},
+  {"date": "20250314", "name": "Holi"},
+  {"date": "20251022", "name": "Govardhan Puja"},
+  {"date": "20270211", "name": "Vasant Panchami"},
+  {"date": "20270415", "name": "Rama Navami"},
+  {"date": "20271224", "name": "Christmas Eve"},
+  {"date": "20280115", "name": "Makar Sankranti"},
+  {"date": "20260219", "name": "Ramadan Start (tentative)"},
+  {"date": "20260626", "name": "Muharram/Ashura (tentative)"},
+  {"date": "20270209", "name": "Ramadan Start (tentative)"},
+  {"date": "20270616", "name": "Muharram/Ashura (tentative)"},
+  {"date": "20280129", "name": "Ramadan Start (tentative)"},
+  {"date": "20280604", "name": "Muharram/Ashura (tentative)"},
+  {"date": "20290117", "name": "Ramadan Start (tentative)"},
+  {"date": "20290525", "name": "Muharram/Ashura (tentative)"},
+  {"date": "20220429", "name": "Jamat Ul-Vida"},
+  {"date": "20230421", "name": "Jamat Ul-Vida"},
+  {"date": "20240405", "name": "Jamat Ul-Vida"},
+  {"date": "20250106", "name": "Guru Govind Singh Jayanti"},
+  {"date": "20250406", "name": "Rama Navami"},
+  {"date": "20250413", "name": "Vaisakhi"},
+  {"date": "20250414", "name": "Mesadi"},
+  {"date": "20251028", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20210113", "name": "Lohri"},
+  {"date": "20210328", "name": "Dolyatra"},
+  {"date": "20220113", "name": "Lohri"},
+  {"date": "20220318", "name": "Dolyatra"},
+  {"date": "20230307", "name": "Dolyatra"},
+  {"date": "20240113", "name": "Lohri"},
+  {"date": "20240325", "name": "Dolyatra"},
+  {"date": "20250314", "name": "Dolyatra"},
+  {"date": "20300101", "name": "New Year's Day"},
+  {"date": "20300106", "name": "Ramadan Start (tentative)"},
+  {"date": "20300114", "name": "Makar Sankranti"},
+  {"date": "20300114", "name": "Pongal"},
+  {"date": "20300126", "name": "Republic Day"},
+  {"date": "20300207", "name": "Vasant Panchami"},
+  {"date": "20300219", "name": "Shivaji Jayanti"},
+  {"date": "20300320", "name": "Holi"},
+  {"date": "20300403", "name": "Gudi Padwa"},
+  {"date": "20300403", "name": "Ugadi"},
+  {"date": "20300412", "name": "Rama Navami"},
+  {"date": "20300414", "name": "Ambedkar Jayanti"},
+  {"date": "20300419", "name": "Good Friday"},
+  {"date": "20300421", "name": "Easter Day"},
+  {"date": "20300514", "name": "Muharram/Ashura (tentative)"},
+  {"date": "20300702", "name": "Rath Yatra"},
+  {"date": "20300815", "name": "Independence Day"},
+  {"date": "20300821", "name": "Janmashtami"},
+  {"date": "20300821", "name": "Janmashtami (Smarta)"},
+  {"date": "20300909", "name": "Onam"},
+  {"date": "20300928", "name": "First Day of Sharad Navratri"},
+  {"date": "20301002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20301002", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20301006", "name": "Dussehra"},
+  {"date": "20301026", "name": "Diwali/Deepavali"},
+  {"date": "20301028", "name": "Bhai Duj"},
+  {"date": "20301101", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20301110", "name": "Hazarat Ali's Birthday"},
+  {"date": "20301124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20301224", "name": "Christmas Eve"},
+  {"date": "20301225", "name": "Christmas"},
+  {"date": "20301226", "name": "Ramadan Start (tentative)"},
+  {"date": "20250302", "name": "Ramadan Start"},
+  {"date": "20210721", "name": "Bakrid"},
+  {"date": "20220710", "name": "Bakrid"},
+  {"date": "20230629", "name": "Bakrid"},
+  {"date": "20240617", "name": "Bakrid"},
+  {"date": "20270517", "name": "Bakrid (tentative)"},
+  {"date": "20280506", "name": "Bakrid (tentative)"},
+  {"date": "20290425", "name": "Bakrid (tentative)"},
+  {"date": "20300414", "name": "Bakrid (tentative)"},
+  {"date": "20250328", "name": "Jamat Ul-Vida"},
+  {"date": "20210514", "name": "Ramzan Id"},
+  {"date": "20220503", "name": "Ramzan Id"},
+  {"date": "20230422", "name": "Ramzan Id"},
+  {"date": "20240411", "name": "Ramzan Id"},
+  {"date": "20250331", "name": "Ramzan Id"},
+  {"date": "20260321", "name": "Ramzan Id (tentative)"},
+  {"date": "20270310", "name": "Ramzan Id (tentative)"},
+  {"date": "20280227", "name": "Ramzan Id (tentative)"},
+  {"date": "20290215", "name": "Ramzan Id (tentative)"},
+  {"date": "20300205", "name": "Ramzan Id (tentative)"},
+  {"date": "20250607", "name": "Bakrid"},
+  {"date": "20250706", "name": "Muharram/Ashura"},
+  {"date": "20260201", "name": "Guru Ravidas Jayanti"},
+  {"date": "20260212", "name": "Maharishi Dayanand Saraswati Jayanti"},
+  {"date": "20260303", "name": "Holika Dahana"},
+  {"date": "20260320", "name": "Jamat Ul-Vida"},
+  {"date": "20260331", "name": "Mahavir Jayanti"},
+  {"date": "20260414", "name": "Vaisakhi"},
+  {"date": "20260414", "name": "Mesadi"},
+  {"date": "20260509", "name": "Birthday of Rabindranath"},
+  {"date": "20260527", "name": "Bakrid (tentative)"},
+  {"date": "20261018", "name": "Maha Saptami"},
+  {"date": "20261019", "name": "Maha Ashtami"},
+  {"date": "20261026", "name": "Maharishi Valmiki Jayanti"},
+  {"date": "20261108", "name": "Naraka Chaturdasi"},
+  {"date": "20261109", "name": "Govardhan Puja"},
+  {"date": "20261124", "name": "Guru Nanak Jayanti"},
+  {"date": "20211019", "name": "Milad un-Nabi"},
+  {"date": "20221009", "name": "Milad un-Nabi"},
+  {"date": "20230928", "name": "Milad un-Nabi"},
+  {"date": "20240916", "name": "Milad un-Nabi"},
+  {"date": "20260826", "name": "Milad un-Nabi (tentative)"},
+  {"date": "20250905", "name": "Milad un-Nabi"},
+  {"date": "20210311", "name": "Maha Shivaratri"},
+  {"date": "20210415", "name": "Bahag Bihu"},
+  {"date": "20210822", "name": "Raksha Bandhan"},
+  {"date": "20210910", "name": "Ganesh Chaturthi"},
+  {"date": "20220301", "name": "Maha Shivaratri"},
+  {"date": "20220414", "name": "Mesadi"},
+  {"date": "20220516", "name": "Buddha Purnima"},
+  {"date": "20220811", "name": "Raksha Bandhan"},
+  {"date": "20220831", "name": "Ganesh Chaturthi"},
+  {"date": "20221013", "name": "Karaka Chaturthi"},
+  {"date": "20230218", "name": "Maha Shivaratri"},
+  {"date": "20230415", "name": "Mesadi"},
+  {"date": "20230505", "name": "Buddha Purnima"},
+  {"date": "20230830", "name": "Raksha Bandhan"},
+  {"date": "20231101", "name": "Karaka Chaturthi"},
+  {"date": "20240308", "name": "Maha Shivaratri"},
+  {"date": "20240414", "name": "Mesadi"},
+  {"date": "20240523", "name": "Buddha Purnima"},
+  {"date": "20240907", "name": "Ganesh Chaturthi"},
+  {"date": "20241020", "name": "Karaka Chaturthi"},
+  {"date": "20250415", "name": "Bahag Bihu"},
+  {"date": "20250512", "name": "Buddha Purnima"},
+  {"date": "20250809", "name": "Raksha Bandhan"},
+  {"date": "20250827", "name": "Ganesh Chaturthi"},
+  {"date": "20260215", "name": "Maha Shivaratri"},
+  {"date": "20260415", "name": "Bahag Bihu"},
+  {"date": "20260501", "name": "Buddha Purnima"},
+  {"date": "20260828", "name": "Raksha Bandhan"},
+  {"date": "20260914", "name": "Ganesh Chaturthi"},
+  {"date": "20261029", "name": "Karaka Chaturthi"},
+  {"date": "20270306", "name": "Maha Shivaratri"},
+  {"date": "20270817", "name": "Raksha Bandhan"},
+  {"date": "20270904", "name": "Ganesh Chaturthi"},
+  {"date": "20271018", "name": "Karaka Chaturthi"},
+  {"date": "20280223", "name": "Maha Shivaratri"},
+  {"date": "20280805", "name": "Raksha Bandhan"},
+  {"date": "20280823", "name": "Ganesh Chaturthi"},
+  {"date": "20281007", "name": "Karaka Chaturthi"},
+  {"date": "20290211", "name": "Maha Shivaratri"},
+  {"date": "20290823", "name": "Raksha Bandhan"},
+  {"date": "20290911", "name": "Ganesh Chaturthi"},
+  {"date": "20291026", "name": "Karaka Chaturthi"},
+  {"date": "20300813", "name": "Raksha Bandhan"},
+  {"date": "20300901", "name": "Ganesh Chaturthi"},
+  {"date": "20301015", "name": "Karaka Chaturthi"},
+  {"date": "20210526", "name": "Buddha Purnima"},
+  {"date": "20211024", "name": "Karaka Chaturthi"},
+  {"date": "20230919", "name": "Ganesh Chaturthi"},
+  {"date": "20240819", "name": "Raksha Bandhan"},
+  {"date": "20250226", "name": "Maha Shivaratri"},
+  {"date": "20251010", "name": "Karaka Chaturthi"},
+  {"date": "20300302", "name": "Maha Shivaratri"},
+  {"date": "20310101", "name": "New Year's Day"},
+  {"date": "20310115", "name": "Pongal"},
+  {"date": "20310115", "name": "Makar Sankranti"},
+  {"date": "20310125", "name": "Ramzan Id (tentative)"},
+  {"date": "20310126", "name": "Republic Day"},
+  {"date": "20310127", "name": "Vasant Panchami"},
+  {"date": "20310219", "name": "Shivaji Jayanti"},
+  {"date": "20310220", "name": "Maha Shivaratri"},
+  {"date": "20310309", "name": "Holi"},
+  {"date": "20310324", "name": "Gudi Padwa"},
+  {"date": "20310324", "name": "Ugadi"},
+  {"date": "20310401", "name": "Rama Navami"},
+  {"date": "20310403", "name": "Bakrid (tentative)"},
+  {"date": "20310411", "name": "Good Friday"},
+  {"date": "20310413", "name": "Easter Day"},
+  {"date": "20310414", "name": "Ambedkar Jayanti"},
+  {"date": "20310503", "name": "Muharram/Ashura (tentative)"},
+  {"date": "20310622", "name": "Rath Yatra"},
+  {"date": "20310802", "name": "Raksha Bandhan"},
+  {"date": "20310809", "name": "Janmashtami (Smarta)"},
+  {"date": "20310810", "name": "Janmashtami"},
+  {"date": "20310815", "name": "Independence Day"},
+  {"date": "20310830", "name": "Onam"},
+  {"date": "20310920", "name": "Ganesh Chaturthi"},
+  {"date": "20311002", "name": "Mahatma Gandhi Jayanti"},
+  {"date": "20311017", "name": "First Day of Sharad Navratri"},
+  {"date": "20311021", "name": "First Day of Durga Puja Festivities"},
+  {"date": "20311025", "name": "Dussehra"},
+  {"date": "20311031", "name": "Hazarat Ali's Birthday"},
+  {"date": "20311102", "name": "Karaka Chaturthi"},
+  {"date": "20311114", "name": "Diwali/Deepavali"},
+  {"date": "20311116", "name": "Bhai Duj"},
+  {"date": "20311120", "name": "Chhat Puja (Pratihar Sashthi/Surya Sashthi)"},
+  {"date": "20311124", "name": "Guru Tegh Bahadur's Martyrdom Day"},
+  {"date": "20311216", "name": "Ramadan Start (tentative)"},
+  {"date": "20311224", "name": "Christmas Eve"},
+  {"date": "20311225", "name": "Christmas"}
+]
