@@ -3,6 +3,8 @@
 /build-*
 /.directory
 
+tiles/Spotify/art.jpg
+
 # Qt
 *.pro.user
 *.qmlc
