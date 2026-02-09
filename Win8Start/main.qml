@@ -46,6 +46,140 @@ ApplicationWindow {
             WindowController.hide()
         }
     }
+    
+    Dialog {
+        id: confirmDialog
+        modal: true
+        anchors.centerIn: Overlay.overlay
+        width: 400
+        height: 200
+        
+        focus: true
+        
+        property string message: ""
+        property var yesAction: function() {}
+        
+        onOpened: {
+            cancelBtn.forceActiveFocus()
+        }
+        onClosed: {
+            container.focus = true
+        }
+        
+        
+        // ✅ Sharp black rectangle
+        background: Rectangle {
+            color: "#000000"
+            radius: 0
+            border.width: 1
+            border.color: "#222"   // subtle edge so it doesn't disappear on dark wallpapers
+        }
+        
+        contentItem: Column {
+            padding: 24
+            spacing: 16
+            
+            Label {
+                text: confirmDialog.message
+                wrapMode: Text.WordWrap
+                
+                // white dialog text
+                color: "white"
+                font.pixelSize: 25
+            }
+        }
+        
+        footer: Item {
+            height: 72   // gives breathing room at bottom
+            
+            Row {
+                spacing: 12
+                anchors {
+                    right: parent.right
+                    bottom: parent.bottom
+                    rightMargin: 16
+                    bottomMargin: 16
+                }
+                
+                Button {
+                    id: cancelBtn
+                    text: "Cancel"
+                    focus: true
+                    
+                    width: 110
+                    height: 40
+                    
+                    background: Rectangle {
+                        radius: 0
+                        
+                        color:
+                        cancelBtn.pressed ? "#dcdcdc" :
+                        cancelBtn.hovered ? Win8Colors.Tile :
+                        cancelBtn.activeFocus ? Win8Colors.Tile :
+                        "white"
+                    }
+                    
+                    contentItem: Text {
+                        text: cancelBtn.text
+                        color: "black"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.centerIn: parent
+                    }
+                    
+                    onClicked: confirmDialog.close()
+                    Keys.onReturnPressed: {
+                        cancelBtn.clicked()
+                    }
+                }
+                
+                Button {
+                    id: yesBtn
+                    text: "Yes"
+                    
+                    width: cancelBtn.width   // ⭐ guarantees equal width
+                    height: cancelBtn.height
+                    
+                    background: Rectangle {
+                        radius: 0
+                        
+                        color:
+                        yesBtn.pressed ? "#dcdcdc" :
+                        yesBtn.hovered ? Win8Colors.Tile :
+                        yesBtn.activeFocus ? Win8Colors.Tile :
+                        "white"
+                    }
+                    
+                    contentItem: Text {
+                        text: parent.text
+                        color: "black"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.centerIn: parent
+                    }
+                    
+                    onClicked: {
+                        confirmDialog.close()
+                        
+                        if (confirmDialog.yesAction)
+                            confirmDialog.yesAction()
+                    }
+                    Keys.onReturnPressed: {
+                        yesBtn.clicked()
+                    }
+                }
+            }
+        }
+        
+        
+        function ask(text, action) {
+            message = text
+            yesAction = action
+            open()
+        }
+    }
+    
+    
     // main start screen
     Item {
         anchors.fill: parent
@@ -189,25 +323,39 @@ ApplicationWindow {
                     MenuItem {
                         text: "Suspend"
                         icon.source: "/icons/suspend.svg"
-                        onTriggered: powerControl.suspend()
+                        
+                        onTriggered: confirmDialog.ask(
+                            "Suspend the computer?",
+                            function() { powerControl.suspend() }
+                        )
                     }
+                    
                     
                     MenuItem {
                         text: "Logout"
                         icon.source: "/icons/logout.svg"
-                        onTriggered: powerControl.logout()
+                        onTriggered: confirmDialog.ask(
+                            "LogOut of the session?",
+                            function() { powerControl.logout() }
+                        )
                     }
                     
                     MenuItem {
                         text: "Reboot"
                         icon.source: "/icons/reboot.svg"
-                        onTriggered: powerControl.reboot()
+                        onTriggered: confirmDialog.ask(
+                            "Reboot the computer?",
+                            function() { powerControl.reboot() }
+                        )
                     }
                     
                     MenuItem {
                         text: "Shutdown"
                         icon.source: "/icons/shutdown.svg"
-                        onTriggered: powerControl.shutdown()
+                        onTriggered: confirmDialog.ask(
+                            "Shutdown the computer?",
+                            function() { powerControl.shutdown() }
+                        )
                     }
                     
                     MenuSeparator {}
