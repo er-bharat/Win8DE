@@ -29,9 +29,14 @@ ApplicationWindow {
 				}
 				
 				Switch {
+					id: wifiswitch
 					checked: wifiModel.wifiEnabled
-					onToggled:
-					wifiModel.wifiEnabled = checked
+					onToggled: {
+						wifiModel.wifiEnabled = checked
+						wifiModel.refreshWifi()
+					}
+					
+					
 				}
 			}
 		}
@@ -154,6 +159,14 @@ ApplicationWindow {
 				verticalAlignment: Text.AlignVCenter
 				anchors.centerIn: parent
 			}
+		}
+		Timer {
+			id: autoScanTimer
+			interval: 1000   // 5 seconds
+			running: wifiswitch.checked
+			repeat: true
+			triggeredOnStart: true
+			onTriggered: wifiModel.refreshWifi()
 		}
 	}
 	Connections {

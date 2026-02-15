@@ -22,6 +22,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Qml
     Quick
     DBus
+    Concurrent
 )
 
 # LayerShellQt (for Linux panel behavior)
@@ -41,6 +42,7 @@ target_link_libraries(winnm PRIVATE
     Qt6::Qml
     Qt6::Quick
     Qt6::DBus
+    Qt6::Concurrent 
     LayerShellQt::Interface
 )
 
