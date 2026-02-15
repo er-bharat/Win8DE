@@ -12,6 +12,8 @@
     <file>icons/go-down-skip.svg</file>
     <file>icons/go-up-skip.svg</file>
     <file>icons/search.svg</file>
+    <file>icons/wifi.svg</file>
+    <file>icons/bluetooth.svg</file>
     <file>background.jpg</file>
   </qresource>
 </RCC>

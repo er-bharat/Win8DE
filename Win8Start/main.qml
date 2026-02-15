@@ -206,7 +206,7 @@ ApplicationWindow {
             // Battery display next to "Start"
             Item {
                 id: batteryDisplay
-                width: batteryFill.width + batteryOutline.width + batteryPercent.width * 1.5
+                width: batteryFill.width + batteryOutline.width + batteryPercent.width * 1.1
                 height: start.height
                 anchors.verticalCenter: start.verticalCenter
                 anchors.right: userCard.left
@@ -365,6 +365,22 @@ ApplicationWindow {
                         icon.source: "/icons/settings.svg"
                         onTriggered: {
                             Launcher.launch("Win8Settings")
+                            WindowController.hide()
+                        }
+                    }
+                    MenuItem {
+                        text: "Wifi"
+                        icon.source: "/icons/wifi.svg"
+                        onTriggered: {
+                            Launcher.launch("winnm")
+                            WindowController.hide()
+                        }
+                    }
+                    MenuItem {
+                        text: "Bluetooth"
+                        icon.source: "/icons/bluetooth.svg"
+                        onTriggered: {
+                            Launcher.launch("winbt")
                             WindowController.hide()
                         }
                     }

@@ -20,6 +20,8 @@ PROJECTS=(
     battery
     list-windows
     Win8Running
+    network/internet
+    network/bluetooth
 )
 
 # ================================
