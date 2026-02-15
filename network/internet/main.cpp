@@ -5,12 +5,14 @@
 #include <QtDBus/QtDBus>
 #include <QProcess>
 #include <QDebug>
+#include <algorithm>
 
 struct WifiNetwork
 {
 	QString ssid;
-	QString strength;
+	int strength;          // store raw number
 	QString security;
+	QString band;
 	bool connected;
 };
 
@@ -20,10 +22,12 @@ class WifiModel : public QAbstractListModel
 	Q_PROPERTY(bool wifiEnabled READ wifiEnabled WRITE setWifiEnabled NOTIFY wifiEnabledChanged)
 	
 public:
+	
 	enum Roles {
 		SSIDRole = Qt::UserRole + 1,
 		StrengthRole,
 		SecurityRole,
+		BandRole,
 		ConnectedRole
 	};
 	
@@ -46,8 +50,9 @@ public:
 		switch(role)
 		{
 			case SSIDRole: return n.ssid;
-			case StrengthRole: return n.strength;
+			case StrengthRole: return QString::number(n.strength) + "%";
 			case SecurityRole: return n.security;
+			case BandRole: return n.band;
 			case ConnectedRole: return n.connected;
 		}
 		
@@ -60,6 +65,7 @@ public:
 			{SSIDRole, "ssid"},
 			{StrengthRole, "strength"},
 			{SecurityRole, "security"},
+			{BandRole, "band"},
 			{ConnectedRole, "connected"}
 		};
 	}
@@ -85,20 +91,14 @@ public:
 		refreshWifi();
 	}
 	
-	// ---------------- CONNECT / DISCONNECT ----------------
+	// ---------------- CONNECT ----------------
 	
-	Q_INVOKABLE void toggleConnection(QString ssid, bool currentlyConnected)
+	Q_INVOKABLE void toggleConnection(QString ssid, bool connected)
 	{
-		if (currentlyConnected)
-		{
-			qDebug() << "Disconnecting:" << ssid;
-			QProcess::execute("nmcli", {"connection", "down", "id", ssid});
-		}
+		if (connected)
+			QProcess::execute("nmcli", {"connection","down","id",ssid});
 		else
-		{
-			qDebug() << "Connecting:" << ssid;
-			QProcess::execute("nmcli", {"device", "wifi", "connect", ssid});
-		}
+			QProcess::execute("nmcli", {"device","wifi","connect",ssid});
 		
 		refreshWifi();
 	}
@@ -107,9 +107,7 @@ public:
 	
 	Q_INVOKABLE void refreshWifi()
 	{
-		beginResetModel();
-		networks.clear();
-		endResetModel();
+		QList<WifiNetwork> newList;
 		
 		QString activeSSID = currentConnection();
 		
@@ -126,7 +124,7 @@ public:
 		if (!devices.isValid())
 			return;
 		
-		for (const QDBusObjectPath &path : devices.value())
+		for (const auto &path : devices.value())
 		{
 			QDBusInterface dev(
 				"org.freedesktop.NetworkManager",
@@ -153,9 +151,7 @@ public:
 			if (!aps.isValid())
 				continue;
 			
-			beginResetModel();
-			
-			for (const QDBusObjectPath &apPath : aps.value())
+			for (const auto &apPath : aps.value())
 			{
 				QDBusInterface ap(
 					"org.freedesktop.NetworkManager",
@@ -165,9 +161,7 @@ public:
 				);
 				
 				QString ssid =
-				QString::fromUtf8(
-					ap.property("Ssid").toByteArray()
-				);
+				QString::fromUtf8(ap.property("Ssid").toByteArray());
 				
 				if (ssid.isEmpty())
 					continue;
@@ -175,20 +169,52 @@ public:
 				int strength =
 				ap.property("Strength").toUInt();
 				
-				bool secured =
-				ap.property("WpaFlags").toUInt() ||
-				ap.property("RsnFlags").toUInt();
+				// -------- REAL SECURITY DETECTION --------
 				
-				networks.append({
+				uint wpa = ap.property("WpaFlags").toUInt();
+				uint rsn = ap.property("RsnFlags").toUInt();
+				
+				QString security;
+				
+				if (!wpa && !rsn)
+					security = "Open";
+				else if (rsn)
+					security = "WPA2/WPA3";
+				else
+					security = "WPA";
+				
+				// -------- GHz detection --------
+				
+				uint freq = ap.property("Frequency").toUInt();
+				
+				QString band;
+				
+				if (freq >= 5925)
+					band = "6 GHz";
+				else if (freq >= 5000)
+					band = "5 GHz";
+				else
+					band = "2.4 GHz";
+				
+				newList.append({
 					ssid,
-					QString::number(strength) + "%",
-								secured ? "Secured" : "Open",
-								ssid == activeSSID
+					strength,
+					security,
+					band,
+					ssid == activeSSID
 				});
 			}
-			
-			endResetModel();
 		}
+		
+		// ⭐ strongest first
+		std::sort(newList.begin(), newList.end(),
+				  [](const WifiNetwork &a, const WifiNetwork &b){
+					  return a.strength > b.strength;
+				  });
+		
+		beginResetModel();
+		networks = std::move(newList);
+		endResetModel();
 	}
 	
 signals:
@@ -199,19 +225,24 @@ private:
 	QString currentConnection()
 	{
 		QProcess proc;
-		proc.start("nmcli", {"-t", "-f", "active,ssid", "dev", "wifi"});
+		proc.start("nmcli", {"-t","-f","active,ssid","dev","wifi"});
 		proc.waitForFinished();
 		
-		QString output = proc.readAllStandardOutput();
+		QString output =
+		QString::fromUtf8(proc.readAllStandardOutput());
 		
-		for (auto line : output.split("\n"))
+		for (const QString &line :
+			output.split('\n', Qt::SkipEmptyParts))
 		{
-			if (line.startsWith("yes:"))
-				return line.section(":",1);
+			QStringList parts = line.split(':');
+			
+			if (parts.size() >= 2 && parts[0] == "yes")
+				return parts[1];
 		}
 		
-		return "";
+		return {};
 	}
+	
 	
 	void checkWifiState()
 	{
