@@ -193,8 +193,8 @@ ApplicationWindow {
 		
 		background: Rectangle {
 			color: "#111111"
-			radius: 10
-			border.color: "#333333"
+			radius: 0
+			border.color: "#969696"
 		}
 		
 		ColumnLayout {
