@@ -340,14 +340,18 @@ int main(int argc, char *argv[])
 {
 	QGuiApplication app(argc, argv);
 	
-	WifiModel wifiModel;
-	
 	QQmlApplicationEngine engine;
-	engine.rootContext()->setContextProperty("wifiModel", &wifiModel);
+	
+	
 	engine.load(QUrl("qrc:/main.qml"));
 	
 	if (engine.rootObjects().isEmpty())
 		return -1;
+	
+	WifiModel *wifiModel = new WifiModel(); // no refreshWifi() yet
+	engine.rootContext()->setContextProperty("wifiModel", wifiModel);
+	// Refresh in background after UI is loaded
+	QTimer::singleShot(0, wifiModel, &WifiModel::refreshWifi);
 	
 	return app.exec();
 }

@@ -140,9 +140,20 @@ ApplicationWindow {
 		
 		// ================= SCAN =================
 		Button {
-			text: "Scan"
+			
 			Layout.fillWidth: true
 			onClicked: wifiModel.refreshWifi()
+			background: Rectangle {
+				color: "#55557c"
+				radius: 0
+			}
+			contentItem: Text {
+				text: "scan"
+				color: "#ffffff"
+				horizontalAlignment: Text.AlignHCenter
+				verticalAlignment: Text.AlignVCenter
+				anchors.centerIn: parent
+			}
 		}
 	}
 	Connections {
@@ -204,7 +215,7 @@ ApplicationWindow {
 				
 				background: Rectangle {
 					color: "#1b1b1b"
-					radius: 6
+					radius: 0
 					border.color: "#444"
 				}
 			}
