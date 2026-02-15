@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/">
+		<file>main.qml</file>
+		<file>icons/wifi_icon.png</file>
+	</qresource>
+</RCC>
