@@ -93,15 +93,87 @@ public:
 	
 	// ---------------- CONNECT ----------------
 	
-	Q_INVOKABLE void toggleConnection(QString ssid, bool connected)
+	Q_INVOKABLE void toggleConnection(QString ssid, bool connected, QString password = "")
 	{
-		if (connected)
-			QProcess::execute("nmcli", {"connection","down","id",ssid});
-		else
-			QProcess::execute("nmcli", {"device","wifi","connect",ssid});
+		qDebug() << "\n========== WIFI TOGGLE ==========";
+		qDebug() << "SSID:" << ssid;
+		qDebug() << "Connected:" << connected;
+		qDebug() << "Password empty:" << password.isEmpty();
 		
-		refreshWifi();
+		QString combined;
+		
+		// ================= DISCONNECT =================
+		if (connected)
+		{
+			QProcess::execute("nmcli", {"connection","down","id",ssid});
+			refreshWifi(); // call directly
+			return;
+		}
+		
+		// ================= TRY SAVED PROFILE FIRST =================
+		if (password.isEmpty())
+		{
+			QProcess saved;
+			saved.start("nmcli", {"connection","up","id",ssid});
+			saved.waitForFinished();
+			
+			combined = saved.readAllStandardOutput() + saved.readAllStandardError();
+			QString lower = combined.toLower();
+			
+			if (saved.exitCode() == 0)
+			{
+				qDebug() << "✅ Connected using saved profile!";
+				refreshWifi(); // call directly
+				return;
+			}
+			
+			if (lower.contains("secrets were required") ||
+				lower.contains("authentication") ||
+				lower.contains("wrong") ||
+				lower.contains("failed"))
+			{
+				qDebug() << "❌ Saved password invalid -> deleting profile";
+				QProcess::execute("nmcli", {"connection","delete","id",ssid});
+				emit passwordRequired(ssid);
+				return;
+			}
+		}
+		
+		// ================= NORMAL CONNECT =================
+		QStringList args = {"device","wifi","connect",ssid};
+		if (!password.isEmpty())
+			args << "password" << password;
+		
+		QProcess proc;
+		proc.start("nmcli", args);
+		proc.waitForFinished();
+		
+		combined = proc.readAllStandardOutput() + proc.readAllStandardError();
+		QString lower = combined.toLower();
+		
+		qDebug() << combined;
+		
+		if (proc.exitCode() == 0)
+		{
+			qDebug() << "✅ Connected successfully!";
+			refreshWifi(); // call directly
+			return;
+		}
+		
+		if (lower.contains("secrets were required") ||
+			lower.contains("authentication") ||
+			lower.contains("incorrect") ||
+			lower.contains("wrong password"))
+		{
+			qDebug() << "❌ Wrong password -> deleting & asking again";
+			QProcess::execute("nmcli", {"connection","delete","id",ssid});
+			emit passwordRequired(ssid);
+			return;
+		}
+		
+		qDebug() << "⚠️ Unknown failure";
 	}
+	
 	
 	// ---------------- SCAN ----------------
 	
@@ -219,6 +291,7 @@ public:
 	
 signals:
 	void wifiEnabledChanged();
+	void passwordRequired(QString ssid);
 	
 private:
 	

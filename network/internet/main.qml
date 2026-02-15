@@ -77,7 +77,6 @@ ApplicationWindow {
 					anchors.margins: 12
 					spacing: 12
 					
-					// ⭐ SIGNAL BARS (LEFT)
 					// ⭐ SIGNAL BARS (REAL WIFI SHAPE)
 					Item {
 						id: signalRoot
@@ -146,4 +145,108 @@ ApplicationWindow {
 			onClicked: wifiModel.refreshWifi()
 		}
 	}
+	Connections {
+		target: wifiModel
+		
+		function onPasswordRequired(ssid) {
+			passwordDialog.targetSSID = ssid
+			passwordField.text = ""
+			passwordDialog.open()
+		}
+	}
+	Dialog {
+		id: passwordDialog
+		
+		modal: true
+		focus: true
+		
+		width: 320
+		height: 190
+		
+		anchors.centerIn: parent
+		
+		property string targetSSID: ""
+		
+		background: Rectangle {
+			color: "#111111"
+			radius: 10
+			border.color: "#333333"
+		}
+		
+		ColumnLayout {
+			anchors.fill: parent
+			anchors.margins: 16
+			spacing: 14
+			
+			Label {
+				text: "Enter password"
+				color: "white"
+				font.pixelSize: 18
+				Layout.alignment: Qt.AlignHCenter
+			}
+			
+			Label {
+				text: passwordDialog.targetSSID
+				color: "#aaaaaa"
+				font.pixelSize: 13
+				Layout.alignment: Qt.AlignHCenter
+			}
+			
+			TextField {
+				id: passwordField
+				Layout.fillWidth: true
+				
+				echoMode: TextInput.Password
+				placeholderText: "Wi-Fi password"
+				
+				color: "white"
+				placeholderTextColor: "#777"
+				
+				background: Rectangle {
+					color: "#1b1b1b"
+					radius: 6
+					border.color: "#444"
+				}
+			}
+			
+			RowLayout {
+				Layout.fillWidth: true
+				spacing: 10
+				
+				Button {
+					text: "Cancel"
+					Layout.fillWidth: true
+					
+					background: Rectangle {
+						color: "#2b2b2b"
+						radius: 6
+					}
+					
+					onClicked: passwordDialog.close()
+				}
+				
+				Button {
+					text: "Connect"
+					Layout.fillWidth: true
+					
+					background: Rectangle {
+						color: "#0078d7"
+						radius: 6
+					}
+					
+					onClicked: {
+						wifiModel.toggleConnection(
+							passwordDialog.targetSSID,
+							false,
+							passwordField.text
+						)
+						
+						passwordDialog.close()
+					}
+				}
+			}
+		}
+	}
+	
+	
 }
