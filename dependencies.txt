@@ -12,3 +12,6 @@ layer-shell-qt
 wayland
 pam
 glibc
+
+brightnessctl
+alsa-utils
