@@ -423,7 +423,13 @@ public:
     
     QStringList dirs = {
       "/usr/share/applications",
-      QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation)
+      QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation),
+      
+      // Flatpak system
+      "/var/lib/flatpak/exports/share/applications",
+      
+      // Flatpak user
+      QDir::homePath() + "/.local/share/flatpak/exports/share/applications"
     };
     
     for (const QString &dirPath : dirs) {
@@ -554,6 +560,8 @@ public:
         "/usr/share/icons/breeze/apps/64/",
         "/usr/share/icons/breeze/apps/48/",
         "/usr/share/icons/breeze/apps/32/",
+        "/var/lib/flatpak/exports/share/icons",
+        home + "/.local/share/flatpak/exports/share/icons",
         home + "/.local/share/icons/hicolor/256x256/apps/"};
 
     for (const QString &dir : iconDirs) {
@@ -746,8 +754,15 @@ private:
     QCryptographicHash md5(QCryptographicHash::Md5);
 
     QStringList dirs = {
-        "/usr/share/applications",
-        QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation)};
+      "/usr/share/applications",
+      QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation),
+      
+      // Flatpak system
+      "/var/lib/flatpak/exports/share/applications",
+      
+      // Flatpak user
+      QDir::homePath() + "/.local/share/flatpak/exports/share/applications"
+    };
 
     for (const QString &dir : dirs) {
       QDir d(dir);
@@ -844,8 +859,15 @@ private:
     QString desktopName = name.endsWith(".desktop") ? name : name + ".desktop";
 
     QStringList dirs = {
-        "/usr/share/applications",
-        QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation)};
+      "/usr/share/applications",
+      QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation),
+      
+      // Flatpak system
+      "/var/lib/flatpak/exports/share/applications",
+      
+      // Flatpak user
+      QDir::homePath() + "/.local/share/flatpak/exports/share/applications"
+    };
 
     for (const QString &dir : dirs) {
       QString path = dir + "/" + desktopName;
