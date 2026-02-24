@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 
 pragma ComponentBehavior: Bound
+//=======================================APPLICATIONSETUP============================
 
 ApplicationWindow {
     
@@ -13,16 +14,14 @@ ApplicationWindow {
     title: "Linux Start Menu Clone"
     color: "#180052"  // background color in case no wallpaper
     // start wallpaper
+    
     Image {
         id: background
         anchors.fill: parent
         source: startWallpaper // choose from Win8Settings
         fillMode: Image.PreserveAspectCrop
     }
-    
-    Keys.onTabPressed: {
-        container.forceActiveFocus()
-    }
+//======================================HIDE/CLOSE=======================================
     
     // area at bottom to hide the start screen on click
     MouseArea {
@@ -47,6 +46,9 @@ ApplicationWindow {
         }
     }
     
+//=================================CONFIRM=DIALOG========================================
+    
+    // Dialog to confirm power off reboot etc.
     Dialog {
         id: confirmDialog
         modal: true
@@ -67,7 +69,7 @@ ApplicationWindow {
         }
         
         
-        // ✅ Sharp black rectangle
+        // Sharp black rectangle
         background: Rectangle {
             color: "#000000"
             radius: 0
@@ -137,7 +139,7 @@ ApplicationWindow {
                     id: yesBtn
                     text: "Yes"
                     
-                    width: cancelBtn.width   // ⭐ guarantees equal width
+                    width: cancelBtn.width   // guarantees equal width
                     height: cancelBtn.height
                     
                     background: Rectangle {
@@ -178,7 +180,7 @@ ApplicationWindow {
             open()
         }
     }
-    
+//===================================START=SCREEN========================================
     
     // main start screen
     Item {
@@ -630,7 +632,7 @@ ApplicationWindow {
                         return Qt.point(c.col * grid, c.row * grid)
                     }
                     
-                    // ✅ No free space available
+                    // No free space available
                     return null
                 }
                 
@@ -1654,6 +1656,8 @@ ApplicationWindow {
             
         }
     }
+//==================================APPLICATIONS=SCREEN=================================
+    
     // shows all app in fullscreen rectangle.
     Rectangle {
         id: allapparea
@@ -2065,7 +2069,7 @@ ApplicationWindow {
                     spacing: 0
                     clip: false
                     
-                    // 🔑 REQUIRED MODEL ROLES (Qt 6)
+                    // REQUIRED MODEL ROLES
                     required property int index
                     required property string name
                     required property string icon
@@ -2554,4 +2558,6 @@ ApplicationWindow {
             onEntered: allapparea.y=allapparea.height
         }
     }
+//========================================ENDING=========================================
+    
 }

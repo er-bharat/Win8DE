@@ -119,4 +119,60 @@ Window {
             }
         }
     }
+    
+    Item {
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        
+        width:40
+        
+        Rectangle {
+            anchors.fill: parent
+            color: "black"
+        }
+        
+        Column {
+            anchors.fill: parent
+            spacing: 10
+            Item {
+                width: 40
+                height: 40
+                
+                Image {
+                    anchors.fill: parent
+                    source: "wifi.svg"
+                    sourceSize.width: parent.width
+                    sourceSize.height: parent.height
+                }
+                
+                MouseArea {
+                    anchors.fill: parent
+                    
+                    onClicked: {
+                        hotCornerLauncher.launch("winnm")
+                    }
+                }
+            }
+            Item {
+                width: 40
+                height: 40
+                
+                Image {
+                    anchors.fill: parent
+                    source: "bluetooth.svg"
+                    sourceSize.width: parent.width
+                    sourceSize.height: parent.height
+                }
+                
+                MouseArea {
+                    anchors.fill: parent
+                    
+                    onClicked: {
+                        hotCornerLauncher.launch("winbt")
+                    }
+                }
+            }
+        }
+    }
 }

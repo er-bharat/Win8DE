@@ -5,5 +5,7 @@
 		<file>main3.qml</file>
 		<file>main4.qml</file>
 		<file>start.png</file>
+		<file>wifi.svg</file>
+		<file>bluetooth.svg</file>
 	</qresource>
 </RCC>
