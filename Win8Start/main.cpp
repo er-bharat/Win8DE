@@ -560,6 +560,7 @@ public:
         "/usr/share/icons/breeze/apps/64/",
         "/usr/share/icons/breeze/apps/48/",
         "/usr/share/icons/breeze/apps/32/",
+        "/usr/share/icons/",
         "/var/lib/flatpak/exports/share/icons",
         home + "/.local/share/flatpak/exports/share/icons",
         home + "/.local/share/icons/hicolor/256x256/apps/"};

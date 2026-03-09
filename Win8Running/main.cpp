@@ -207,15 +207,16 @@ private:
         QString xdgDataHome = qEnvironmentVariable("XDG_DATA_HOME");
         if (xdgDataHome.isEmpty())
             xdgDataHome = QDir::homePath() + "/.local/share";
-
+        
         QStringList basePaths = {
             xdgDataHome + "/icons/hicolor",
             QDir::homePath() + "/.icons",
             "/usr/share/icons/hicolor",
             "/usr/share/icons/breeze/apps",
-            "/usr/share/pixmaps"
+            "/usr/share/pixmaps",
+            "/usr/share/icons"
         };
-
+        
         QStringList sizes = {
             "scalable/apps",
             "256x256/apps",
@@ -225,39 +226,39 @@ private:
             "64",
             "48"
         };
-
+        
         for (const QString &base : basePaths) {
-
-            // 🔹 pixmaps: search directly, no size directories
-            if (base == "/usr/share/pixmaps") {
+            
+            // 🔹 search directly for pixmaps and /usr/share/icons
+            if (base == "/usr/share/pixmaps" || base == "/usr/share/icons") {
+                
                 QString png = base + "/" + name + ".png";
                 if (QFile::exists(png))
                     return QUrl::fromLocalFile(png).toString();
-
+                
                 QString svg = base + "/" + name + ".svg";
                 if (QFile::exists(svg))
                     return QUrl::fromLocalFile(svg).toString();
-
+                
                 continue;
             }
-
-            // 🔹 icon themes: search with sizes
+            
+            // 🔹 icon themes with sizes
             for (const QString &size : sizes) {
                 QString path = base + "/" + size + "/" + name;
-
+                
                 QString svg = path + ".svg";
                 if (QFile::exists(svg))
                     return QUrl::fromLocalFile(svg).toString();
-
+                
                 QString png = path + ".png";
                 if (QFile::exists(png))
                     return QUrl::fromLocalFile(png).toString();
             }
         }
-
+        
         return {};
     }
-
 
     void run(const QStringList &args) {
         QProcess::startDetached("list-windows", args);
