@@ -3,7 +3,7 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BIN_SRC="$ROOT_DIR/build/bin"
-BIN_DST="/usr/bin"
+BIN_DST="/usr/local/bin"
 
 ASSET_SRC="$ROOT_DIR/assets/labwc3"
 CONFIG_DST="/usr/share/labwc3"

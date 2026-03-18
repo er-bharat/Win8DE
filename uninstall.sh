@@ -4,9 +4,9 @@ set -e
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 BIN_SRC="$ROOT_DIR/build/bin"
-BIN_DST="/usr/bin"
+BIN_DST="/usr/local/bin"
 
-CONFIG_DST="$HOME/.config/labwc3"
+CONFIG_DST="/usr/share/labwc3"
 SDDM_DST="/usr/share/sddm/themes/Win8Login"
 WAYLAND_SESSION_DST="/usr/share/wayland-sessions/labwc-win8.desktop"
 
@@ -73,7 +73,7 @@ echo
 echo "🧹 Removing labwc3 config"
 
 if [ -d "$CONFIG_DST" ]; then
-    rm -rv "$CONFIG_DST"
+    sudo rm -rv "$CONFIG_DST"
 else
     echo "⚠️  $CONFIG_DST not found"
 fi

@@ -321,17 +321,25 @@ ApplicationWindow {
                 // powermenu shutdown power logout etc
                 Menu {
                     id: powerMenu
+                    width: 200
+                    
+                    palette.text: "#202020"
+                    palette.windowText: "#202020"
+                    
+                    background: Rectangle {
+                        color: "#ffffff"
+                        border.color: "#d0d0d0"
+                        radius: 4
+                    }
                     
                     MenuItem {
                         text: "Suspend"
                         icon.source: "/icons/suspend.svg"
-                        
                         onTriggered: confirmDialog.ask(
                             "Suspend the computer?",
                             function() { powerControl.suspend() }
                         )
                     }
-                    
                     
                     MenuItem {
                         text: "Logout"
@@ -370,6 +378,7 @@ ApplicationWindow {
                             WindowController.hide()
                         }
                     }
+                    
                     MenuItem {
                         text: "Wifi"
                         icon.source: "/icons/wifi.svg"
@@ -378,6 +387,7 @@ ApplicationWindow {
                             WindowController.hide()
                         }
                     }
+                    
                     MenuItem {
                         text: "Bluetooth"
                         icon.source: "/icons/bluetooth.svg"
@@ -1507,11 +1517,36 @@ ApplicationWindow {
                         //-----------------------------------------------------------
                         Menu {
                             id: contextMenu
+                            width: 200
                             
-                            MenuItem { text: "Small";   onTriggered: tileModel.resizeTile(tile.index, "small") }
-                            MenuItem { text: "Medium";  onTriggered: tileModel.resizeTile(tile.index, "medium") }
-                            MenuItem { text: "Large";   onTriggered: tileModel.resizeTile(tile.index, "large") }
-                            MenuItem { text: "XLarge";  onTriggered: tileModel.resizeTile(tile.index, "xlarge") }
+                            palette.text: "#202020"
+                            palette.windowText: "#202020"
+                            
+                            background: Rectangle {
+                                color: "#ffffff"
+                                border.color: "#d0d0d0"
+                                radius: 4
+                            }
+                            
+                            MenuItem { 
+                                text: "Small"
+                                onTriggered: tileModel.resizeTile(tile.index, "small")
+                            }
+                            
+                            MenuItem { 
+                                text: "Medium"
+                                onTriggered: tileModel.resizeTile(tile.index, "medium")
+                            }
+                            
+                            MenuItem { 
+                                text: "Large"
+                                onTriggered: tileModel.resizeTile(tile.index, "large")
+                            }
+                            
+                            MenuItem { 
+                                text: "XLarge"
+                                onTriggered: tileModel.resizeTile(tile.index, "xlarge")
+                            }
                             
                             MenuSeparator {}
                             
@@ -1528,6 +1563,7 @@ ApplicationWindow {
                                 enabled: tileColor && tileColor.length > 0
                                 onTriggered: tileModel.resetTileColor(tile.index)
                             }
+                            
                             MenuSeparator {}
                             
                             MenuItem {
@@ -1535,12 +1571,13 @@ ApplicationWindow {
                                 onTriggered: tileModel.setTileQmlEnabled(tile.index, !qmlEnabled)
                             }
                             
-                            
                             MenuSeparator {}
                             
-                            MenuItem { text: "Remove"; onTriggered: tileModel.removeTile(tile.index) }
+                            MenuItem {
+                                text: "Remove"
+                                onTriggered: tileModel.removeTile(tile.index)
+                            }
                         }
-                        
                         
                         // --- APPEAR ANIMATION ---
                         property bool appeared: false
@@ -2188,9 +2225,20 @@ ApplicationWindow {
                         
                         Menu {
                             id: actionMenu
+                            width: 200
+                            
+                            palette.text: "#202020"
+                            palette.windowText: "#202020"
+                            
+                            background: Rectangle {
+                                color: "#ffffff"
+                                border.color: "#d0d0d0"
+                                radius: 4
+                            }
+                            
                             MenuItem {
                                 text: "Open"
-                                icon.name: "system-run" 
+                                icon.name: "system-run"
                                 
                                 onTriggered: {
                                     apptilecol.launching = true
@@ -2204,6 +2252,7 @@ ApplicationWindow {
                             MenuItem {
                                 text: "Add to Start"
                                 icon.name: "window-pin"
+                                
                                 onTriggered: {
                                     var appData = {
                                         "name": apptilecol.name,
@@ -2213,9 +2262,8 @@ ApplicationWindow {
                                         "terminal": apptilecol.terminal
                                     }
                                     
-                                    // Determine default tile size in pixels
-                                    var tileW = container.halfGrid * 2 - container.tileGap    // medium tile width
-                                    var tileH = tileW                          // medium tile height
+                                    var tileW = container.halfGrid * 2 - container.tileGap
+                                    var tileH = tileW
                                     var pos = container.nextFreeTilePosition(tileW, tileH)
                                     
                                     if (pos) {
@@ -2223,12 +2271,11 @@ ApplicationWindow {
                                     } else {
                                         console.warn("No free space available for new tile!")
                                     }
-                                    
                                 }
                             }
                             
+                            MenuSeparator {}
                             
-                            MenuSeparator { }
                             Repeater {
                                 model: actionModel
                                 
@@ -2248,7 +2295,6 @@ ApplicationWindow {
                                 }
                             }
                         }
-                        
                         MouseArea {
                             id: appdragarea
                             anchors.fill: parent
