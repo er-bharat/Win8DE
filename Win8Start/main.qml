@@ -918,7 +918,7 @@ ApplicationWindow {
                     Rectangle {
                         id: tile
                         z: (launching || dragArea.dragging) ? 200 : 0
-                        
+                        clip: true
                         // --- Size handling ---
                         
                         required property int index
@@ -1305,14 +1305,15 @@ ApplicationWindow {
                         Text {
                             anchors.left: parent.left
                             anchors.bottom: parent.bottom
-                            anchors.margins: 4
+                            anchors.leftMargin: 16
+                            anchors.bottomMargin: 8
                             text: tile.name
                             color: "white"
-                            font.pointSize: tile.size === "small" ? 1 : 12
-                            wrapMode: Text.Wrap
+                            font.pointSize: 14
+                            font.weight: 600
                             width: parent.width - 10
                             z: 2
-                            visible: !tile.launching
+                            visible: !tile.launching && tile.size !== "small"
                         }
                         
                         //-----------------------------------------------------------
@@ -1320,7 +1321,14 @@ ApplicationWindow {
                         //-----------------------------------------------------------
                         Image {
                             id: tileicon
-                            anchors.centerIn: parent
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            y: tile.launching ? (parent.height-tileicon.height)/2 : (parent.height-tileicon.height)/3
+                            Behavior on y {
+                                NumberAnimation {
+                                    duration: 400 
+                                    easing.type: Easing.Linear
+                                }
+                            }
                             width: parent.height / 2
                             height: width
                             fillMode: Image.PreserveAspectFit
@@ -1351,6 +1359,8 @@ ApplicationWindow {
                             id: tileicon2
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
+                            anchors.rightMargin: 16
+                            anchors.bottomMargin: 8
                             width: 25
                             height: 25
                             fillMode: Image.PreserveAspectFit
