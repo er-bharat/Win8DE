@@ -1912,7 +1912,8 @@ ApplicationWindow {
             GridView {
                 id: appGridView
                 anchors.fill: parent
-                model: appModel
+                model: allapparea.y < allapparea.height ? appModel : null  // null model = no delegates
+                cacheBuffer: 0
                 cellWidth: 400
                 cellHeight: 80
                 focus: false

@@ -42,6 +42,7 @@
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QVariantMap>
+#include <malloc.h>
 
 #include "windowwatcher.h"
 #include "wlr-foreign-toplevel-management-unstable-v1-client-protocol.h"
@@ -1644,15 +1645,29 @@ static QString monitorConfigPath()
 // --------------------------------------------------------
 // QML / SceneGraph cache cleanup (RAM saver)
 // --------------------------------------------------------
-static void clearQmlCaches(QQuickWindow *window)
+static void clearQmlCaches(QQuickWindow *window, QQmlApplicationEngine *engine)
 {
-  if (!window)
+  if (!window || !engine)
     return;
   
-  // Releases GPU textures, image cache, scene graph resources
+  // 1. Flush QML image cache — this is the big one.
+  //    Clears all decoded QImage objects the engine holds per icon.
+  engine->clearComponentCache();
+  engine->collectGarbage();
+  
+  // 2. Release GPU textures / scene graph nodes (you already had this)
   window->releaseResources();
+  
+  // 3. Trim glibc heap — returns freed pages to the kernel immediately.
+  //    Without this, freed memory stays in the process's virtual space.
+  malloc_trim(0);
+  
+  // 4. A second trim after a short delay catches any deferred Qt cleanup
+  //    that finishes asynchronously after releaseResources().
+  QTimer::singleShot(300, []() {
+    malloc_trim(0);
+  });
 }
-
 
 static QString readPreferredOutput()
 {
@@ -1925,13 +1940,11 @@ int main(int argc, char *argv[]) {
                        for (int i = 0; i < tileModel.rowCount(); ++i)
                          tileModel.reloadTileQml(i);
                      } else {
-                       qDebug() << "🧹 Start hidden → releasing QML resources";
-                       clearQmlCaches(window);
+                       qDebug() << "🧹 Start hidden → flushing RAM";
+                       clearQmlCaches(window, &engine);  // pass &engine
                      }
                    });
   
-
-
   return app.exec();
 }
 
