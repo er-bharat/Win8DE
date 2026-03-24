@@ -127,7 +127,7 @@ public:
   
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     Q_UNUSED(parent);
-    return m_apps.count();
+    return static_cast<int>(m_apps.size());
   }
   
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
@@ -225,10 +225,11 @@ private:
     // 🔴 relevance order
     int best = scoreText(app.name);                 // highest priority
     best = qMin(best, scoreText(app.genericName) + 10); // slightly weaker
-    for (const QString &kw : app.keywords)
-      best = qMin(best, scoreText(kw) + 20);        // weakest
-      
-      return best;
+    for (const QString &kw : app.keywords) {
+      best = qMin(best, scoreText(kw) + 20);
+    }
+    
+    return best;
   }
   
   
@@ -300,7 +301,7 @@ public:
     : QAbstractListModel(parent) {}
 
     int rowCount(const QModelIndex &) const override {
-        return m_actions.size();
+        return static_cast<int>(m_actions.size());
     }
 
     QVariant data(const QModelIndex &index, int role) const override {
@@ -732,7 +733,10 @@ public:
       QImage rendered = win->grabWindow();
       if (!rendered.isNull()) {
         QPoint itemPos = iconItem->mapToScene(QPointF(0, 0)).toPoint();
-        QRect rect(itemPos, QSize(iconItem->width(), iconItem->height()));
+        QRect rect(itemPos, QSize(
+                              static_cast<int>(iconItem->width()),
+                              static_cast<int>(iconItem->height())
+        ));
         QPixmap pix = QPixmap::fromImage(rendered.copy(rect));
         drag->setPixmap(pix);
         drag->setHotSpot(QPoint(pix.width() / 2, pix.height() / 2));
@@ -931,7 +935,7 @@ public:
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     Q_UNUSED(parent);
-    return m_tiles.count();
+    return static_cast<int>(m_tiles.size());
   }
 
   QVariant data(const QModelIndex &index, int role) const override {
@@ -1082,7 +1086,8 @@ public:
         return t;
       },
       [this](Tile t) {
-        beginInsertRows(QModelIndex(), m_tiles.count(), m_tiles.count());
+        int row = static_cast<int>(m_tiles.size());
+        beginInsertRows(QModelIndex(), row, row);
         m_tiles.append(t);
         endInsertRows();
 
@@ -1119,15 +1124,14 @@ public:
         return t;
       },
       [this](Tile t) {
-        beginInsertRows(QModelIndex(), m_tiles.count(), m_tiles.count());
+        int row = static_cast<int>(m_tiles.size());
+        beginInsertRows(QModelIndex(), row, row);
         m_tiles.append(t);
         endInsertRows();
         saveAsync();
         qDebug() << "✅ Added tile from AppModel:" << t.name;
       });
-      
     }
-    
     
     Q_INVOKABLE void setTileColor(int index, const QString &color) {
       if (index < 0 || index >= m_tiles.count())
@@ -1137,8 +1141,8 @@ public:
       
       emit dataChanged(
         this->index(index),
-                       this->index(index),
-                       { ColorRole }
+        this->index(index),
+        { ColorRole }
       );
       
       saveAsync();
@@ -1152,8 +1156,8 @@ public:
       
       emit dataChanged(
         this->index(index),
-                       this->index(index),
-                       { ColorRole }
+        this->index(index),
+        { ColorRole }
       );
       
       saveAsync();

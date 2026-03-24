@@ -20,7 +20,9 @@ static int pam_conversation(int num_msg, const struct pam_message **msg,
     if (num_msg <= 0)
         return PAM_CONV_ERR;
 
-    struct pam_response *reply = static_cast<struct pam_response *>(calloc(num_msg, sizeof(struct pam_response)));
+    struct pam_response *reply = static_cast<struct pam_response *>(
+        calloc(static_cast<size_t>(num_msg), sizeof(struct pam_response))
+    );
     if (!reply)
         return PAM_BUF_ERR;
 
@@ -47,7 +49,7 @@ void LockManager::authenticate(const QString & /*qmlUsername*/, const QString &p
     // Keep the QByteArray alive until after pam_end()
     QByteArray passwordUtf8 = password.toLocal8Bit();
 
-    struct pam_conv conv = { pam_conversation, (void *)passwordUtf8.data() };
+    struct pam_conv conv = { pam_conversation, static_cast<void *>(passwordUtf8.data()) };
     pam_handle_t *pamh = nullptr;
 
     int ret = pam_start("system-auth", username.toLocal8Bit().constData(), &conv, &pamh);

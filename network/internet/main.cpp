@@ -7,21 +7,22 @@
 #include <QDebug>
 #include <algorithm>
 #include <QtConcurrent>
+#include <QTimer>
 
 struct WifiNetwork
 {
-	QString ssid;
-	int strength;          // store raw number
-	QString security;
-	QString band;
-	bool connected;
+    QString ssid;
+    int strength;          // store raw number as int
+    QString security;
+    QString band;
+    bool connected;
 };
 
 class WifiModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(bool wifiEnabled READ wifiEnabled WRITE setWifiEnabled NOTIFY wifiEnabledChanged)
-
+    
 public:
     enum Roles {
         SSIDRole = Qt::UserRole + 1,
@@ -30,14 +31,14 @@ public:
         BandRole,
         ConnectedRole
     };
-
+    
     WifiModel(QObject *parent=nullptr) : QAbstractListModel(parent)
     {
         checkWifiState();
     }
-
-    int rowCount(const QModelIndex &) const override { return networks.size(); }
-
+    
+    int rowCount(const QModelIndex &) const override { return static_cast<int>(networks.size()); }
+    
     QVariant data(const QModelIndex &index, int role) const override
     {
         const auto &n = networks[index.row()];
@@ -50,7 +51,7 @@ public:
         }
         return {};
     }
-
+    
     QHash<int, QByteArray> roleNames() const override {
         return {
             {SSIDRole, "ssid"},
@@ -60,21 +61,21 @@ public:
             {ConnectedRole, "connected"}
         };
     }
-
+    
     bool wifiEnabled() const { return m_wifiEnabled; }
-
+    
     void setWifiEnabled(bool enabled)
     {
-        QtConcurrent::run([this, enabled](){
+        (void)QtConcurrent::run([this, enabled](){
             QDBusInterface nm(
                 "org.freedesktop.NetworkManager",
                 "/org/freedesktop/NetworkManager",
                 "org.freedesktop.NetworkManager",
                 QDBusConnection::systemBus()
             );
-
+            
             nm.setProperty("WirelessEnabled", enabled);
-
+            
             QMetaObject::invokeMethod(this, [this, enabled](){
                 m_wifiEnabled = enabled;
                 emit wifiEnabledChanged();
@@ -82,80 +83,72 @@ public:
             });
         });
     }
-
+    
     Q_INVOKABLE void refreshWifi()
     {
-        QtConcurrent::run([this](){
+        (void)QtConcurrent::run([this](){
             QList<WifiNetwork> newList;
-            QString activeSSID = currentConnection(); // still blocking, but inside thread
-
+            QString activeSSID = currentConnection();
+            
             QDBusInterface nm(
                 "org.freedesktop.NetworkManager",
                 "/org/freedesktop/NetworkManager",
                 "org.freedesktop.NetworkManager",
                 QDBusConnection::systemBus()
             );
-
+            
             QDBusReply<QList<QDBusObjectPath>> devices = nm.call("GetDevices");
             if (!devices.isValid()) return;
-
+            
             for (const auto &path : devices.value())
             {
                 QDBusInterface dev(
                     "org.freedesktop.NetworkManager",
                     path.path(),
-                    "org.freedesktop.NetworkManager.Device",
-                    QDBusConnection::systemBus()
+                                   "org.freedesktop.NetworkManager.Device",
+                                   QDBusConnection::systemBus()
                 );
                 if (dev.property("DeviceType").toUInt() != 2) continue;
-
+                
                 QDBusInterface wifi(
                     "org.freedesktop.NetworkManager",
                     path.path(),
-                    "org.freedesktop.NetworkManager.Device.Wireless",
-                    QDBusConnection::systemBus()
+                                    "org.freedesktop.NetworkManager.Device.Wireless",
+                                    QDBusConnection::systemBus()
                 );
-
+                
                 wifi.call("RequestScan", QVariantMap());
                 QDBusReply<QList<QDBusObjectPath>> aps = wifi.call("GetAllAccessPoints");
                 if (!aps.isValid()) continue;
-
+                
                 for (const auto &apPath : aps.value())
                 {
                     QDBusInterface ap(
                         "org.freedesktop.NetworkManager",
                         apPath.path(),
-                        "org.freedesktop.NetworkManager.AccessPoint",
-                        QDBusConnection::systemBus()
+                                      "org.freedesktop.NetworkManager.AccessPoint",
+                                      QDBusConnection::systemBus()
                     );
-
+                    
                     QString ssid = QString::fromUtf8(ap.property("Ssid").toByteArray());
                     if (ssid.isEmpty()) continue;
-
-                    int strength = ap.property("Strength").toUInt();
+                    
+                    int strength = static_cast<int>(ap.property("Strength").toUInt());
                     uint wpa = ap.property("WpaFlags").toUInt();
                     uint rsn = ap.property("RsnFlags").toUInt();
-
-                    QString security;
-                    if (!wpa && !rsn) security = "Open";
-                    else if (rsn) security = "WPA2/WPA3";
-                    else security = "WPA";
-
+                    
+                    QString security = (!wpa && !rsn) ? "Open" : (rsn ? "WPA2/WPA3" : "WPA");
+                    
                     uint freq = ap.property("Frequency").toUInt();
-                    QString band;
-                    if (freq >= 5925) band = "6 GHz";
-                    else if (freq >= 5000) band = "5 GHz";
-                    else band = "2.4 GHz";
-
+                    QString band = (freq >= 5925) ? "6 GHz" : ((freq >= 5000) ? "5 GHz" : "2.4 GHz");
+                    
                     newList.append({ssid, strength, security, band, ssid == activeSSID});
                 }
             }
-
-            // sort strongest first
+            
             std::sort(newList.begin(), newList.end(),
                       [](const WifiNetwork &a, const WifiNetwork &b){ return a.strength > b.strength; });
-
-            // update model in main thread
+            
             QMetaObject::invokeMethod(this, [this, newList=std::move(newList)](){
                 beginResetModel();
                 networks = newList;
@@ -163,33 +156,33 @@ public:
             });
         });
     }
-
+    
     Q_INVOKABLE void toggleConnection(QString ssid, bool connected, QString password = "")
     {
-        QtConcurrent::run([this, ssid, connected, password](){
+        (void)QtConcurrent::run([this, ssid, connected, password](){
             if (connected)
             {
                 QProcess::execute("nmcli", {"connection","down","id",ssid});
                 QMetaObject::invokeMethod(this, &WifiModel::refreshWifi);
                 return;
             }
-
+            
             QStringList args = {"device","wifi","connect",ssid};
             if (!password.isEmpty()) args << "password" << password;
-
+            
             QProcess proc;
             proc.start("nmcli", args);
             proc.waitForFinished();
-
+            
             QString combined = proc.readAllStandardOutput() + proc.readAllStandardError();
             QString lower = combined.toLower();
-
+            
             if (proc.exitCode() == 0)
             {
                 QMetaObject::invokeMethod(this, &WifiModel::refreshWifi);
                 return;
             }
-
+            
             if (lower.contains("secrets were required") ||
                 lower.contains("authentication") ||
                 lower.contains("incorrect") ||
@@ -203,15 +196,15 @@ public:
             }
         });
     }
-
+    
 signals:
     void wifiEnabledChanged();
     void passwordRequired(QString ssid);
-
+    
 private:
     QList<WifiNetwork> networks;
     bool m_wifiEnabled = true;
-
+    
     QString currentConnection()
     {
         QProcess proc;
@@ -225,7 +218,7 @@ private:
         }
         return {};
     }
-
+    
     void checkWifiState()
     {
         QDBusInterface nm(
@@ -242,22 +235,19 @@ private:
 
 int main(int argc, char *argv[])
 {
-	QGuiApplication app(argc, argv);
-	
-	QQmlApplicationEngine engine;
-	
-	
-	engine.load(QUrl("qrc:/main.qml"));
-	
-	if (engine.rootObjects().isEmpty())
-		return -1;
-	
-	WifiModel *wifiModel = new WifiModel(); // no refreshWifi() yet
-	engine.rootContext()->setContextProperty("wifiModel", wifiModel);
-	// Refresh in background after UI is loaded
-	QTimer::singleShot(0, wifiModel, &WifiModel::refreshWifi);
-	
-	return app.exec();
+    QGuiApplication app(argc, argv);
+    
+    QQmlApplicationEngine engine;
+    engine.load(QUrl("qrc:/main.qml"));
+    if (engine.rootObjects().isEmpty())
+        return -1;
+    
+    WifiModel *wifiModel = new WifiModel();
+    engine.rootContext()->setContextProperty("wifiModel", wifiModel);
+    
+    QTimer::singleShot(0, wifiModel, &WifiModel::refreshWifi);
+    
+    return app.exec();
 }
 
 #include "main.moc"

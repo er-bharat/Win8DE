@@ -34,7 +34,7 @@ public:
 	}
 	
 	int rowCount(const QModelIndex &) const override {
-		return devices.size();
+		return static_cast<int>(devices.size());
 	}
 	
 	QVariant data(const QModelIndex &index, int role) const override {

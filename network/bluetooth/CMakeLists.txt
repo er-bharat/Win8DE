@@ -54,3 +54,40 @@ add_custom_target(copy_compile_commands ALL
         ${CMAKE_BINARY_DIR}/compile_commands.json
         ${CMAKE_SOURCE_DIR}/compile_commands.json
 )
+
+# --------------------------------------------------
+# ⚠️ Shared warnings & sanitizers config (Linux only)
+# --------------------------------------------------
+option(ENABLE_STRICT_BUILD "Treat warnings as errors" ON)
+option(ENABLE_SANITIZERS "Enable sanitizers" OFF)
+
+function(apply_strict_flags target)
+    # Only GCC/Clang on Linux
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+
+        target_compile_options(${target} PRIVATE
+            -Wall -Wextra -Wpedantic
+            -Wshadow -Wconversion -Wsign-conversion
+            -Wnull-dereference -Wdouble-promotion -Wformat=2
+            -Wold-style-cast -Woverloaded-virtual -Wnon-virtual-dtor
+            -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast
+            -Wcast-align -Wcast-qual -Wfloat-equal -Wundef -Wswitch-enum
+            -Wzero-as-null-pointer-constant
+            -Wno-unused-parameter
+            -Wno-missing-field-initializers
+        )
+
+        if (ENABLE_STRICT_BUILD)
+            target_compile_options(${target} PRIVATE -Werror)
+        endif()
+
+        if (ENABLE_SANITIZERS)
+            target_compile_options(${target} PRIVATE
+                -fsanitize=address,undefined -fno-omit-frame-pointer)
+            target_link_options(${target} PRIVATE
+                -fsanitize=address,undefined)
+        endif()
+    endif()
+endfunction()
+
+apply_strict_flags(winbt) 

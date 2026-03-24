@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(battery-daemon LANGUAGES CXX)
+project(battery LANGUAGES CXX)
 
 # --------------------------------------------------
 # ccls / clangd support
@@ -14,32 +14,91 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS
+    Core
     Gui
     Qml
     Quick
     DBus
 )
-# LayerShellQt (for Linux panel behavior)
+
+# LayerShellQt (only needed for client)
 find_package(LayerShellQt REQUIRED)
+
 # --------------------------------------------------
-# Build target
+# 🧠 Battery Daemon (HEADLESS)
 # --------------------------------------------------
 add_executable(battery-daemon
-    main.cpp        # ✅ add QML file
+    daemon.cpp   # 👉 rename your current main.cpp to daemon.cpp
+)
+
+target_link_libraries(battery-daemon PRIVATE
+    Qt6::Core
+    Qt6::DBus
+)
+
+target_compile_features(battery-daemon PRIVATE cxx_std_20)
+
+# --------------------------------------------------
+# 🎨 Battery Client (QML UI)
+# --------------------------------------------------
+add_executable(battery-client
+    client.cpp
     resources.qrc
 )
 
-target_link_libraries(battery-daemon
+target_link_libraries(battery-client PRIVATE
     Qt6::Gui
     Qt6::Qml
     Qt6::Quick
-    Qt6::DBus
     LayerShellQt::Interface
 )
 
-target_compile_features(battery-daemon PRIVATE cxx_std_17)
+target_compile_features(battery-client PRIVATE cxx_std_20)
+
+# --------------------------------------------------
+# ⚠️ Shared warnings config (applied to BOTH)
+# --------------------------------------------------
+option(ENABLE_STRICT_BUILD "Treat warnings as errors" ON)
+option(ENABLE_SANITIZERS "Enable sanitizers" OFF)
+
+function(apply_strict_flags target)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+
+        target_compile_options(${target} PRIVATE
+            -Wall -Wextra -Wpedantic
+            -Wshadow -Wconversion -Wsign-conversion
+            -Wnull-dereference -Wdouble-promotion -Wformat=2
+            -Wold-style-cast -Woverloaded-virtual -Wnon-virtual-dtor
+            -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast
+            -Wcast-align -Wcast-qual -Wfloat-equal -Wundef -Wswitch-enum
+            -Wzero-as-null-pointer-constant
+            -Wno-unused-parameter
+            -Wno-missing-field-initializers
+        )
+
+        if (ENABLE_STRICT_BUILD)
+            target_compile_options(${target} PRIVATE -Werror)
+        endif()
+
+        if (ENABLE_SANITIZERS)
+            target_compile_options(${target} PRIVATE
+                -fsanitize=address,undefined -fno-omit-frame-pointer)
+            target_link_options(${target} PRIVATE
+                -fsanitize=address,undefined)
+        endif()
+
+    endif()
+endfunction()
+
+# Apply to both targets
+apply_strict_flags(battery-daemon)
+apply_strict_flags(battery-client)
 
 # --------------------------------------------------
 # Copy compile_commands.json to project root
 # --------------------------------------------------
-
+add_custom_target(copy-compile-commands ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_BINARY_DIR}/compile_commands.json
+        ${CMAKE_SOURCE_DIR}/compile_commands.json
+)

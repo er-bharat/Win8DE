@@ -83,7 +83,7 @@ public:
     }
 
     int rowCount(const QModelIndex &) const override {
-        return windows.size();
+        return static_cast<int>(windows.size());
     }
 
     QVariant data(const QModelIndex &index, int role) const override {

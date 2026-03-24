@@ -64,7 +64,7 @@ QString find_icon_for_app(const std::string &app_id) {
 
   // extract short name
   QString shortName = app;
-  int lastDot = app.lastIndexOf('.');
+  int lastDot = static_cast<int>(app.lastIndexOf('.'));
   if (lastDot >= 0)
     shortName = app.mid(lastDot + 1);
 
@@ -236,7 +236,7 @@ void handle_command(const QString &cmd) {
     return;
 
   // Split into exactly 2 parts: action and title
-  int firstSpace = trimmedCmd.indexOf(' ');
+  int firstSpace = static_cast<int>(trimmedCmd.indexOf(' '));
   if (firstSpace <= 0 || firstSpace == trimmedCmd.length() - 1)
     return;
 
@@ -324,9 +324,13 @@ static void handle_state(void *, zwlr_foreign_toplevel_handle_v1 *handle,
   auto &win = windows[handle];
   win.focused = win.minimized = win.maximized = false;
 
-  char *end = (char *)state->data + state->size;
-  for (char *ptr = (char *)state->data; ptr < end; ptr += sizeof(uint32_t)) {
-    uint32_t s = *(uint32_t *)ptr;
+  const char *begin = static_cast<const char *>(state->data);
+  const char *end   = begin + state->size;
+  
+  for (const char *ptr = begin; ptr < end; ptr += sizeof(uint32_t)) {
+    uint32_t s;
+    std::memcpy(&s, ptr, sizeof(uint32_t));  // safe read
+    
     if (s == ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_ACTIVATED)
       win.focused = true;
     else if (s == ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_MINIMIZED)
@@ -377,15 +381,17 @@ static const zwlr_foreign_toplevel_manager_v1_listener manager_listener = {
 // ------------------------------------------------------------
 // Registry
 // ------------------------------------------------------------
-static void handle_global(void *, wl_registry *registry, uint32_t name,
-                          const char *interface, uint32_t) {
+static void handle_global(void *, wl_registry *reg, uint32_t name,
+                          const char *interface, uint32_t)
+{
   if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0) {
     toplevel_manager =
-        static_cast<zwlr_foreign_toplevel_manager_v1 *>(wl_registry_bind(
-            registry, name, &zwlr_foreign_toplevel_manager_v1_interface, 3));
+    static_cast<zwlr_foreign_toplevel_manager_v1 *>(
+      wl_registry_bind(reg, name,
+                       &zwlr_foreign_toplevel_manager_v1_interface, 3));
   } else if (strcmp(interface, "wl_seat") == 0) {
     seat = static_cast<wl_seat *>(
-        wl_registry_bind(registry, name, &wl_seat_interface, 1));
+      wl_registry_bind(reg, name, &wl_seat_interface, 1));
   }
 }
 

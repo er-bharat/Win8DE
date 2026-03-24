@@ -19,7 +19,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Gui
     Qml
     Quick
-    Widgets
+    # Widgets
     QuickControls2
 )
 
@@ -45,15 +45,35 @@ target_link_libraries(Win8Running
     Qt6::Quick
     Qt6::QuickControls2
     LayerShellQt::Interface
-    Qt6::Widgets
+    # Qt6::Widgets
 )
 
 # ----------------------------
-# Compile flags
+# Warnings & tooling
 # ----------------------------
-target_compile_options(Win8Running PRIVATE
-    -Wall
-    -Wextra
-    -Wpedantic
-)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+option(ENABLE_STRICT_BUILD "Treat warnings as errors" ON)
+option(ENABLE_SANITIZERS "Enable sanitizers" OFF)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(Win8Running PRIVATE
+        -Wall -Wextra -Wpedantic
+        -Wshadow -Wconversion -Wsign-conversion
+        -Wnull-dereference -Wdouble-promotion -Wformat=2
+        -Wold-style-cast -Woverloaded-virtual -Wnon-virtual-dtor
+        -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast
+        -Wno-unused-parameter -Wno-missing-field-initializers
+    )
+
+    if (ENABLE_STRICT_BUILD)
+        target_compile_options(Win8Running PRIVATE -Werror)
+    endif()
+
+    if (ENABLE_SANITIZERS)
+        target_compile_options(Win8Running PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+        target_link_options(Win8Running PRIVATE -fsanitize=address,undefined)
+    endif()
+endif()
+
 

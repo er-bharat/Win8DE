@@ -41,17 +41,46 @@ target_link_libraries(list-windows
     Qt6::Core
     Qt6::Network
 )
+# ----------------------------
+# Warnings & tooling
+# ----------------------------
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# ----------------------------
-# Optional: Set compile flags for better ccls parsing
-# ----------------------------
-target_compile_options(list-windows PRIVATE
-    -Wall
-    -Wextra
-    -Wpedantic
-)
+option(ENABLE_STRICT_BUILD "Treat warnings as errors" ON)
+option(ENABLE_SANITIZERS "Enable sanitizers" OFF)
 
-# ----------------------------
-# Automatically copy compile_commands.json to source dir
-# ----------------------------
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
+    # ---- C++ warnings ----
+    target_compile_options(list-windows PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:
+            -Wall -Wextra -Wpedantic
+            -Wshadow -Wconversion -Wsign-conversion
+            -Wnull-dereference -Wdouble-promotion -Wformat=2
+            -Wold-style-cast -Woverloaded-virtual -Wnon-virtual-dtor
+            -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast
+            -Wno-unused-parameter -Wno-missing-field-initializers
+        >
+    )
+
+    # ---- C warnings (clean subset) ----
+    target_compile_options(list-windows PRIVATE
+        $<$<COMPILE_LANGUAGE:C>:
+            -Wall -Wextra -Wpedantic
+            -Wshadow
+            -Wno-unused-parameter
+        >
+    )
+
+    if (ENABLE_STRICT_BUILD)
+        target_compile_options(list-windows PRIVATE -Werror)
+    endif()
+
+    if (ENABLE_SANITIZERS)
+        target_compile_options(list-windows PRIVATE
+            -fsanitize=address,undefined -fno-omit-frame-pointer)
+        target_link_options(list-windows PRIVATE
+            -fsanitize=address,undefined)
+    endif()
+
+endif()

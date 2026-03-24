@@ -15,10 +15,10 @@ set(CMAKE_AUTOUIC ON)
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
-    Widgets
+    # Widgets
     Quick
     QuickControls2
-    QuickLayouts
+    # QuickLayouts
     Concurrent
     DBus
 )
@@ -69,10 +69,10 @@ target_link_libraries(Win8Start
     PRIVATE
         Qt6::Core
         Qt6::Gui
-        Qt6::Widgets
+        # Qt6::Widgets
         Qt6::Quick
         Qt6::QuickControls2
-        Qt6::QuickLayouts
+        # Qt6::QuickLayouts
         Qt6::DBus
         Qt6::Concurrent
         LayerShellQt::Interface
@@ -86,3 +86,31 @@ target_link_libraries(Win8Start
 set_target_properties(Win8Start PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+# ----------------------------
+# Warnings & tooling
+# ----------------------------
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+option(ENABLE_STRICT_BUILD "Treat warnings as errors" ON)
+option(ENABLE_SANITIZERS "Enable sanitizers" OFF)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(Win8Start PRIVATE
+        -Wall -Wextra -Wpedantic
+        -Wshadow -Wconversion -Wsign-conversion
+        -Wnull-dereference -Wdouble-promotion -Wformat=2
+        -Wold-style-cast -Woverloaded-virtual -Wnon-virtual-dtor
+        -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast
+        -Wno-unused-parameter -Wno-missing-field-initializers
+    )
+
+    if (ENABLE_STRICT_BUILD)
+        target_compile_options(Win8Start PRIVATE -Werror)
+    endif()
+
+    if (ENABLE_SANITIZERS)
+        target_compile_options(Win8Start PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+        target_link_options(Win8Start PRIVATE -fsanitize=address,undefined)
+    endif()
+endif()
