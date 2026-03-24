@@ -338,14 +338,30 @@ public:
 
     Q_INVOKABLE void hide() {
         if (!window) return;
+        
         window->hide();
         emit visibleChanged();
+        
+        // Close and quit after 15 seconds if still hidden
+        QTimer::singleShot(15000, this, [this]() {
+            if (window && !window->isVisible()) {
+                window->close();  
+                QCoreApplication::quit();
+            }
+        });
     }
 
     Q_INVOKABLE void toggle() {
         if (!window) return;
-        window->setVisible(!window->isVisible());
-        emit visibleChanged();
+        
+        if (window->isVisible()) {
+            // If currently visible, hide it
+            hide();
+        } else {
+            // If currently hidden, just show it
+            window->show();
+            emit visibleChanged();
+        }
     }
 
     bool isVisible() const {
@@ -354,7 +370,6 @@ public:
 
 signals:
     void visibleChanged();
-    // void visibleChanged();
     void exclusiveChanged();
 
 private:

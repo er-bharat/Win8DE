@@ -6,11 +6,8 @@ cant install it on the newer hardware.
             This is for you it is a shell for wayland window managers like Labwc hyprland etc. It gives a
 wallpaper utility, a lock screen, a start menu, an OSD for volume and brightness a settins app for wall.
 it dosent provide charms menu because i always thought its useless.
-[Win8De.webm](https://github.com/user-attachments/assets/8b0269a7-01d3-404d-b637-948cd9f767c7)
 
 ## Screenshots
-
-![startmedc](https://github.com/user-attachments/assets/8fe8a124-665c-4f49-8c5e-f47f1453546b)
 
 <img width="640" height="360" alt="start" src="./screenshots/start.png" />
 <img width="640" height="360" alt="allapp" src="./screenshots/allapp.png" />
@@ -41,12 +38,13 @@ it dosent provide charms menu because i always thought its useless.
 ### OSD
 1. Volume up down mute
 2. brightness up down.
-3. two part Win8OSD-server and Win8OSD-client server should be autostarted
+3. two part Win8OSD-server and Win8OSD-client server doesn't need to be autostarted
 4. Win8OSD-client --volup voldown mute dispup dispdown
 
 ### Wall
-1. simple image wallpaper
-2. settable through settins
+1. simple image wallpaper supports gif
+2. settable through settings
+3. wallpaper gets blurred when mouse is not over it, and also gif stops playing so it dosent consume cpu.
 
 ### Lockscreen
 1. windows 8 style
@@ -93,12 +91,12 @@ bind win/super key to Win8Start
 
 `./install.sh`
 
-it will automatically run build.sh and move the binaries to "/usr/bin/" and will be available systemwide,
+it will automatically run build.sh and move the binaries to "/usr/local/bin/" and will be available systemwide,
 so it will be easier to put in configs and autostart
 
 `./uninstall.sh`
 
-it will remove binaries from `/usr/bin/`
+it will remove binaries from `/usr/local/bin/`
 
 ## Use It Like seperate DE ##
 
@@ -115,7 +113,7 @@ find your compositors config loading command and make a .desktop file like this 
 `Type=Application`\
 `DesktopNames=labwc;wlroots`
 
-and **paste** it in `/usr/share/wayland-sessions/`
+and **paste** it in `/usr/local/share/wayland-sessions/`
 
 and at ***login choose this session.***
 
