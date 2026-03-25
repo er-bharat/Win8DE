@@ -10,13 +10,20 @@ int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
 
   QString event = (argc > 1) ? argv[1] : "";
-
-  qDebug() << "Battery client event:" << event;
+  QString value;
+  
+  // if extra argument exists (like percent 87)
+  if (argc > 2) {
+    value = argv[2];
+  }
+  
+  qDebug() << "Battery client event:" << event << value;
 
   QQmlApplicationEngine engine;
 
   // Pass event to QML
   engine.rootContext()->setContextProperty("eventType", event);
+  engine.rootContext()->setContextProperty("eventValue", value);
 
   engine.load(QUrl("qrc:/main.qml"));
 
@@ -28,7 +35,7 @@ int main(int argc, char *argv[]) {
   if (!window)
     return -1;
 
-  // 🧩 LayerShell setup (Wayland overlay)
+  // LayerShell setup (Wayland overlay)
   auto layerWindow = LayerShellQt::Window::get(window);
   layerWindow->setLayer(LayerShellQt::Window::LayerOverlay);
   layerWindow->setKeyboardInteractivity(
@@ -42,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   window->show();
 
-  // ⏳ Auto exit after 5 sec (important for daemon-triggered apps)
+  // Auto exit after 5 sec (important for daemon-triggered apps)
   QTimer::singleShot(5000, &app, &QCoreApplication::quit);
 
   return app.exec();

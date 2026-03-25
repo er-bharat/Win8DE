@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Window
+import QtMultimedia
 
 Window {
     id: rootWindow
@@ -8,6 +9,13 @@ Window {
     height: 200
     title: "LayerShell Overlay Example"
     
+    SoundEffect {
+        id: playSound
+        source: "qrc:/alert.wav"
+    }
+    Component.onCompleted: {
+        playSound.play()
+    }
     Rectangle {
         anchors.fill: parent
         color: "black"
@@ -17,9 +25,9 @@ Window {
             spacing: 0
             
             Item {
-                width: parent.width/2
+                width: parent.width/3
                 height: parent.height
-                // Icon
+                
                 Image {
                     anchors.centerIn: parent
                     anchors.fill: parent
@@ -39,23 +47,34 @@ Window {
                     fillMode: Image.PreserveAspectFit
                     visible: source !== ""
                 }
-                
             }
             
             Item {
-                width: parent.width/2
+                width: parent.width*2/3
                 height: parent.height
-                // Text
-                Text {
+                
+                Column {
                     anchors.centerIn: parent
-                    text: eventType
-                    color: "white"
-                    font.pixelSize: 40
-                    font.weight: 800
-                    verticalAlignment: Text.AlignVCenter
+                    width: parent.width
+                    
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: eventType
+                        color: "white"
+                        font.pixelSize: 40
+                        font.weight: 800
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: eventValue + "%"
+                        color: "white"
+                        font.pixelSize: 40
+                        font.weight: 800
+                        verticalAlignment: Text.AlignVCenter
+                    }
                 }
             }
-            
         }
     }
 }
