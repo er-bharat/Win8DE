@@ -19,6 +19,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Qml
     Quick
     DBus
+    Network
 )
 
 # LayerShellQt (only needed for client)
@@ -34,6 +35,7 @@ add_executable(battery-daemon
 target_link_libraries(battery-daemon PRIVATE
     Qt6::Core
     Qt6::DBus
+    Qt6::Network
 )
 
 target_compile_features(battery-daemon PRIVATE cxx_std_20)

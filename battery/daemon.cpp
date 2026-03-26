@@ -5,6 +5,8 @@
 #include <QDBusReply>
 #include <QDebug>
 #include <QProcess>
+#include <QLocalServer>
+#include <QLocalSocket>
 
 class BatteryDaemon : public QObject {
   Q_OBJECT
@@ -178,9 +180,31 @@ private:
 
 int main(int argc, char **argv) {
   QCoreApplication app(argc, argv);
-
+  
+  const QString serverName = "battery-daemon-lock";
+  
+  QLocalSocket socket;
+  socket.connectToServer(serverName);
+  
+  // 🚫 If already running → exit immediately
+  if (socket.waitForConnected(100)) {
+    qDebug() << "⚠ BatteryDaemon already running. Exiting.";
+    return 0;
+  }
+  
+  // 🧹 Remove stale socket if crashed before
+  QLocalServer::removeServer(serverName);
+  
+  QLocalServer server;
+  if (!server.listen(serverName)) {
+    qWarning() << "❌ Failed to create single instance lock";
+    return 1;
+  }
+  
+  qDebug() << "🔒 Single instance lock acquired";
+  
   BatteryDaemon daemon;
-
+  
   return app.exec();
 }
 
