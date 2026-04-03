@@ -34,6 +34,11 @@ target_link_libraries(Win8OSD-server
 )
 
 # --------------------------------------------------
+# ccls / clangd support
+# --------------------------------------------------
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# --------------------------------------------------
 # ⚠️ Shared warnings & sanitizers config (Linux only)
 # --------------------------------------------------
 option(ENABLE_STRICT_BUILD "Treat warnings as errors" ON)

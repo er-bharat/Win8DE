@@ -48,15 +48,6 @@ target_link_libraries(winnm PRIVATE
 
 target_compile_features(winnm PRIVATE cxx_std_17)
 
-# --------------------------------------------------
-# Copy compile_commands.json to project root
-# (great for clangd / ccls)
-# --------------------------------------------------
-add_custom_target(copy_compile_commands ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_BINARY_DIR}/compile_commands.json
-        ${CMAKE_SOURCE_DIR}/compile_commands.json
-)
 
 # --------------------------------------------------
 # ⚠️ Shared warnings & sanitizers config (Linux only)

@@ -29,20 +29,7 @@ ApplicationWindow {
             focusIndex();
         }
     }
-    
-    // Timer {
-    //     interval: 500
-    //     repeat: root.visible
-    //     running: root.visible
-    //     onTriggered:{
-    //         WindowController.releaseKeyboardMomentarily()
-    //         Qt.callLater(function () {
-    //             focusIndex()
-    //         })
-    //     } 
-    // }
-    
-    
+  
     /* ---------- Close strip ---------- */
     Rectangle {
         id: cornerbtn
@@ -225,27 +212,54 @@ ApplicationWindow {
                         anchors.right: parent.right
                         anchors.margins: 8
                         
-                        Button {
-                            text: "—"
-                            width: 12
-                            height: 12
-                            onClicked: windowModel.minimize(index)
-                        }
-                        
-                        Button {
-                            text: maximized ? "o" : "O"
-                            width: 12
-                            height: 12
-                            onClicked: {
-                                maximized ? windowModel.unmaximize(index) : windowModel.maximize(index);
+                        Row {
+                            spacing: 6
+                            
+                            // Close
+                            Rectangle {
+                                width: 12
+                                height: 12
+                                radius: 6
+                                color: "#ff5f57"
+                                
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: windowModel.close(index)
+                                }
                             }
-                        }
-                        
-                        Button {
-                            text: "✕"
-                            width: 12
-                            height: 12
-                            onClicked: windowModel.close(index)
+                            
+                            // Minimize
+                            Rectangle {
+                                width: 12
+                                height: 12
+                                radius: 6
+                                color: "#ffbd2e"
+                                
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: windowModel.minimize(index)
+                                }
+                            }
+                            
+                            // Maximize / Restore
+                            Rectangle {
+                                width: 12
+                                height: 12
+                                radius: 6
+                                color: "#28c840"
+                                
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        maximized
+                                        ? windowModel.unmaximize(index)
+                                        : windowModel.maximize(index)
+                                    }
+                                }
+                            }
                         }
                     }
                     

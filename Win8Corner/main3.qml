@@ -6,7 +6,7 @@ Window {
     width: 4
     height: 4
     visible: false
-    color: "#c8150c79"
+    color: "transparent"
 
     property string cornerCommand: ""  // Set from C++
     property bool triggered: false
@@ -29,21 +29,20 @@ Window {
     // Smooth size animation
     Behavior on width {
         NumberAnimation {
-            duration: 50
+            duration: 150
             easing.type: Easing.Linear
         }
     }
 
     Behavior on height {
         NumberAnimation {
-            duration: 50
+            duration: 150
             easing.type: Easing.Linear
         }
     }
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
         
         onEntered: {
             triggered = false   // Reset when cursor enters
@@ -130,6 +129,7 @@ Window {
         Rectangle {
             anchors.fill: parent
             color: "black"
+            opacity: hovered ? 1 : 0
         }
         
         Column {
@@ -148,7 +148,7 @@ Window {
                 
                 MouseArea {
                     anchors.fill: parent
-                    
+                    cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         hotCornerLauncher.launch("winnm")
                     }
@@ -167,7 +167,7 @@ Window {
                 
                 MouseArea {
                     anchors.fill: parent
-                    
+                    cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         hotCornerLauncher.launch("winbt")
                     }

@@ -29,7 +29,7 @@ Window {
         source: wallImg
         blurEnabled : true
         blur: 2
-        blurMax : 50
+        blurMax : 20
         autoPaddingEnabled : false
         
         Behavior on blur {

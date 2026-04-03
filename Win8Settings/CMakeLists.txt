@@ -49,3 +49,8 @@ target_link_libraries(Win8Settings
 set_target_properties(Win8Settings PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+# --------------------------------------------------
+# ccls / clangd support
+# --------------------------------------------------
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

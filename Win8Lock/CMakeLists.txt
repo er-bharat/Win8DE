@@ -69,3 +69,8 @@ endfunction()
 
 apply_strict_flags(Win8Lock) 
 
+# --------------------------------------------------
+# ccls / clangd support
+# --------------------------------------------------
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+

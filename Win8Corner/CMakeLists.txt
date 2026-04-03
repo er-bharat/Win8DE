@@ -16,11 +16,12 @@ qt_add_executable(Win8Corner
     resources.qrc
 )
 
-# # Add QML resources
-# qt6_add_resources(Win8Corner "qml_resources"
-#     PREFIX "/"
-#     FILES main1.qml main2.qml main3.qml main4.qml
-# )
+
+# --------------------------------------------------
+# ccls / clangd support
+# --------------------------------------------------
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 # Link libraries
 target_link_libraries(Win8Corner

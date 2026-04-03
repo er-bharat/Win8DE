@@ -51,7 +51,6 @@ target_link_libraries(Win8Running
 # ----------------------------
 # Warnings & tooling
 # ----------------------------
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(ENABLE_STRICT_BUILD "Treat warnings as errors" ON)
 option(ENABLE_SANITIZERS "Enable sanitizers" OFF)

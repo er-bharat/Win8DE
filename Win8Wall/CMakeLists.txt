@@ -21,6 +21,12 @@ target_link_libraries(Win8Wall
     PRIVATE Qt6::Core Qt6::Gui Qt6::Quick LayerShellQt::Interface
 )
 
+
+# --------------------------------------------------
+# ccls / clangd support
+# --------------------------------------------------
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # --------------------------------------------------
 # ⚠️ Shared warnings & sanitizers config (Linux only)
 # --------------------------------------------------

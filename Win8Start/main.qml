@@ -497,7 +497,7 @@ ApplicationWindow {
                 focus: true                       // KEYBOARD NAVIGATION
                 activeFocusOnTab: true            // KEYBOARD NAVIGATION
                 property bool anyTileLaunching: false
-                property int gridSize: tilearea.height/5
+                property int gridSize: tilearea.height/4
                 property int halfGrid: gridSize / 2
                 property int tileGap: 5
                 property int cols: Math.floor(width / halfGrid)
