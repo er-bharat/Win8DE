@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QTimer>
 #include <algorithm>
+#include <QLocale>
+#include <QTranslator>
 
 struct BluetoothDevice
 {
@@ -173,6 +175,10 @@ private:
 int main(int argc, char *argv[])
 {
 	QGuiApplication app(argc, argv);
+	
+	QTranslator translator;
+	if (translator.load(":/i18n/bluetooth_" + QLocale::system().name()))
+		app.installTranslator(&translator);
 	
 	QQmlApplicationEngine engine;
 	

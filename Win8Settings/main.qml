@@ -53,7 +53,7 @@ ApplicationWindow {
                     height: parent.height/4
                     Text {
                         anchors.centerIn: parent
-                        text: "PC Settings"
+                        text: qsTr("PC Settings")
                         font.pixelSize: 40
                     }
                 }
@@ -65,7 +65,7 @@ ApplicationWindow {
                     spacing: 10
 
                     Button {
-                        text: "Wallpaper"
+                        text: qsTr("Wallpaper")
                         width: parent.width
                         checkable: true
                         checked: window.currentPage === 0
@@ -73,7 +73,7 @@ ApplicationWindow {
                     }
 
                     Button {
-                        text: "Colors"
+                        text: qsTr("Colors")
                         width: parent.width
                         checkable: true
                         checked: window.currentPage === 1
@@ -81,7 +81,7 @@ ApplicationWindow {
                     }
 
                     Button {
-                        text: "Hot Corners"
+                        text: qsTr("Hot Corners")
                         width: parent.width
                         checkable: true
                         checked: window.currentPage === 2
@@ -121,17 +121,22 @@ ApplicationWindow {
                             spacing: 20
 
                             Repeater {
-                                model: ["Desktop", "Lockscreen", "Start"]
+                                model: [
+                                    { key: "Desktop", label: qsTr("Desktop") },
+                                    { key: "Lockscreen", label: qsTr("Lockscreen") },
+                                    { key: "Start", label: qsTr("Start") }
+                                ]
 
                                 delegate: Column {
                                     id: walltype
                                     width: parent.width / 3 - 20
                                     spacing: 8
 
-                                    required property string modelData
+                                    required property string key
+                                    required property string label
 
                                     Text {
-                                        text: walltype.modelData
+                                        text: walltype.label
                                         font.bold: true
                                         horizontalAlignment: Text.AlignHCenter
                                         width: parent.width
@@ -144,27 +149,27 @@ ApplicationWindow {
 
                                         Rectangle {
                                             anchors.fill: parent
-                                            border.width: window.selectedWallpaperType === walltype.modelData ? 4 : 1
-                                            border.color: window.selectedWallpaperType === walltype.modelData ? "dodgerblue" : "#666"
+                                            border.width: window.selectedWallpaperType === walltype.key ? 4 : 1
+                                            border.color: window.selectedWallpaperType === walltype.key ? "dodgerblue" : "#666"
                                         }
 
                                         Image {
                                             anchors.fill: parent
                                             anchors.margins: 10
                                             fillMode: Image.PreserveAspectCrop
-                                            source: walltype.modelData === "Desktop"
+                                            source: walltype.key === "Desktop"
                                             ? toUrl(SettingsManager.desktopWallpaper)
-                                            : walltype.modelData === "Lockscreen"
+                                            : walltype.key === "Lockscreen"
                                             ? toUrl(SettingsManager.lockscreenWallpaper)
                                             : toUrl(SettingsManager.startWallpaper)
                                         }
 
                                         MouseArea {
                                             anchors.fill: parent
-                                            onClicked: window.selectedWallpaperType = walltype.modelData
+                                            onClicked: window.selectedWallpaperType = walltype.key
                                             onDoubleClicked: {
                                                 let file = SettingsManager.openWallpaperFileDialog()
-                                                if (file) SettingsManager.setWallpaper(walltype.modelData, file)
+                                                if (file) SettingsManager.setWallpaper(walltype.key, file)
                                             }
                                         }
                                     }
@@ -174,7 +179,7 @@ ApplicationWindow {
 
                         Button {
                             id: folderbtn
-                            text: "Select Wallpaper Folder"
+                            text: qsTr("Select Wallpaper Folder")
                             onClicked: {
                                 let folder = SettingsManager.openWallpaperFolderDialog(window.currentFolder)
                                 if (folder) {
@@ -245,16 +250,21 @@ ApplicationWindow {
                             spacing: 20
 
                             Repeater {
-                                model: ["Background", "Tile", "TileHighlight"]
+                                model: [
+                                    { key: "Background", label: qsTr("Background") },
+                                    { key: "Tile", label: qsTr("Tile") },
+                                    { key: "TileHighlight", label: qsTr("TileHighlight") }
+                                ]
 
                                 delegate: Row {
                                     id: colortype
                                     spacing: 10
 
-                                    required property string modelData
+                                    required property string key
+                                    required property string label
 
                                     Text { 
-                                        text: colortype.modelData
+                                        text: colortype.label
                                         width: 120 
                                         
                                     }
@@ -266,7 +276,7 @@ ApplicationWindow {
                                         border.width: 1
 
                                         Component.onCompleted: {
-                                            color = SettingsManager.getColor(colortype.modelData) || "white"
+                                            color = SettingsManager.getColor(colortype.key) || "white"
                                         }
 
                                         MouseArea {
@@ -279,7 +289,7 @@ ApplicationWindow {
                                             selectedColor: preview.color
                                             onAccepted: {
                                                 preview.color = selectedColor
-                                                SettingsManager.setColor(colortype.modelData, selectedColor)
+                                                SettingsManager.setColor(colortype.key, selectedColor)
                                             }
                                         }
                                     }
@@ -307,10 +317,10 @@ ApplicationWindow {
 
                         Repeater {
                             model: [
-                                {name: "TopLeft", value: SettingsManager.topLeftCorner},
-                                {name: "TopRight", value: SettingsManager.topRightCorner},
-                                {name: "BottomLeft", value: SettingsManager.bottomLeftCorner},
-                                {name: "BottomRight", value: SettingsManager.bottomRightCorner}
+                                {key: "TopLeft", label: qsTr("Top Left"), value: SettingsManager.topLeftCorner},
+                                {key: "TopRight", label: qsTr("Top Right"), value: SettingsManager.topRightCorner},
+                                {key: "BottomLeft", label: qsTr("Bottom Left"), value: SettingsManager.bottomLeftCorner},
+                                {key: "BottomRight", label: qsTr("Bottom Right"), value: SettingsManager.bottomRightCorner}
                             ]
 
                             delegate: Row {
@@ -318,12 +328,12 @@ ApplicationWindow {
                                 spacing: 10
                                 width: parent.width
 
-                                required property string modelData
-                                required property string name
+                                required property string key
+                                required property string label
                                 required property string value
 
                                 Text {
-                                    text: cornertype.name
+                                    text: cornertype.label
                                     width: 120
                                     font.bold: true
                                     verticalAlignment: Text.AlignVCenter
@@ -333,14 +343,14 @@ ApplicationWindow {
                                     id: cmdField
                                     text: cornertype.value
                                     width: parent.width - 140
-                                    placeholderText: "Enter command to run on hover"
+                                    placeholderText: qsTr("Enter command to run on hover")
 
                                     onEditingFinished: {
                                         // Update SettingsManager hot corner property dynamically
-                                        if (cornertype.name === "TopLeft") SettingsManager.topLeftCorner = text
-                                            else if (cornertype.name === "TopRight") SettingsManager.topRightCorner = text
-                                                else if (cornertype.name === "BottomLeft") SettingsManager.bottomLeftCorner = text
-                                                    else if (cornertype.name === "BottomRight") SettingsManager.bottomRightCorner = text
+                                        if (cornertype.key === "TopLeft") SettingsManager.topLeftCorner = text
+                                            else if (cornertype.key === "TopRight") SettingsManager.topRightCorner = text
+                                                else if (cornertype.key === "BottomLeft") SettingsManager.bottomLeftCorner = text
+                                                    else if (cornertype.key === "BottomRight") SettingsManager.bottomRightCorner = text
                                     }
                                 }
                             }

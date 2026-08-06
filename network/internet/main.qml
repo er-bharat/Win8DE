@@ -22,7 +22,7 @@ ApplicationWindow {
 				anchors.margins: 15
 				
 				Label {
-					text: "Wi-Fi"
+					text: qsTr("Wi-Fi")
 					color: "white"
 					font.pixelSize: 26
 					Layout.fillWidth: true
@@ -153,7 +153,7 @@ ApplicationWindow {
 				radius: 0
 			}
 			contentItem: Text {
-				text: "scan"
+				text: qsTr("scan")
 				color: "#ffffff"
 				horizontalAlignment: Text.AlignHCenter
 				verticalAlignment: Text.AlignVCenter
@@ -203,7 +203,7 @@ ApplicationWindow {
 			spacing: 14
 			
 			Label {
-				text: "Enter password"
+				text: qsTr("Enter password")
 				color: "white"
 				font.pixelSize: 18
 				Layout.alignment: Qt.AlignHCenter
@@ -221,7 +221,7 @@ ApplicationWindow {
 				Layout.fillWidth: true
 				
 				echoMode: TextInput.Password
-				placeholderText: "Wi-Fi password"
+				placeholderText: qsTr("Wi-Fi password")
 				
 				color: "white"
 				placeholderTextColor: "#777"
@@ -238,7 +238,7 @@ ApplicationWindow {
 				spacing: 10
 				
 				Button {
-					text: "Cancel"
+					text: qsTr("Cancel")
 					Layout.fillWidth: true
 					
 					background: Rectangle {
@@ -250,7 +250,7 @@ ApplicationWindow {
 				}
 				
 				Button {
-					text: "Connect"
+					text: qsTr("Connect")
 					Layout.fillWidth: true
 					
 					background: Rectangle {

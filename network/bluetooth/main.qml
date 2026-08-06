@@ -22,7 +22,7 @@ ApplicationWindow {
 				anchors.margins: 15
 				
 				Label {
-					text: "Bluetooth"
+					text: qsTr("Bluetooth")
 					color: "white"
 					font.pixelSize: 26
 					Layout.fillWidth: true
@@ -98,7 +98,7 @@ ApplicationWindow {
 						}
 						
 						Label {
-							text: address + (paired ? " • Paired" : "")
+							text: address + (paired ? " • " + qsTr("Paired") : "")
 							color: "#bbbbbb"
 							font.pixelSize: 13
 						}
@@ -116,7 +116,7 @@ ApplicationWindow {
 				radius: 0
 			}
 			contentItem: Text {
-				text: "Scan"
+				text: qsTr("Scan")
 				color: "#ffffff"
 				horizontalAlignment: Text.AlignHCenter
 				verticalAlignment: Text.AlignVCenter
@@ -162,7 +162,7 @@ ApplicationWindow {
 			spacing: 14
 			
 			Label {
-				text: "Pair with device?"
+				text: qsTr("Pair with device?")
 				color: "white"
 				font.pixelSize: 18
 				Layout.alignment: Qt.AlignHCenter
@@ -180,14 +180,14 @@ ApplicationWindow {
 				spacing: 10
 				
 				Button {
-					text: "Cancel"
+					text: qsTr("Cancel")
 					Layout.fillWidth: true
 					background: Rectangle { color: "#2b2b2b"; radius: 6 }
 					onClicked: pairingDialog.close()
 				}
 				
 				Button {
-					text: "Pair"
+					text: qsTr("Pair")
 					Layout.fillWidth: true
 					background: Rectangle { color: "#0078d7"; radius: 6 }
 					
@@ -222,7 +222,7 @@ ApplicationWindow {
 			spacing: 14
 			
 			Label {
-				text: "Connection failed"
+				text: qsTr("Connection failed")
 				color: "white"
 				font.pixelSize: 18
 				Layout.alignment: Qt.AlignHCenter
@@ -236,7 +236,7 @@ ApplicationWindow {
 			}
 			
 			Button {
-				text: "OK"
+				text: qsTr("OK")
 				Layout.fillWidth: true
 				background: Rectangle { color: "#0078d7"; radius: 6 }
 				onClicked: connectionDialog.close()

@@ -1,5 +1,6 @@
 <RCC>
 	<qresource prefix="/">
 		<file>main.qml</file>
+		<file alias="i18n/bluetooth_zh_CN.qm">translations/bluetooth_zh_CN.qm</file>
 	</qresource>
 </RCC>

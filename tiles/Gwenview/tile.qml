@@ -175,7 +175,7 @@ Item {
 	Text {
 		anchors.centerIn: parent
 		visible: imageModel.count === 0
-		text: "No Photos"
+		text: qsTr("No Photos")
 		color: "white"
 		font.pixelSize: parent.width * 0.1
 	}

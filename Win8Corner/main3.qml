@@ -84,7 +84,7 @@ Window {
                 Text {
                     id: start
                     font.pixelSize: 30
-                    text: "Start"
+                    text: qsTr("Start")
                     color: "white"
                 }
 

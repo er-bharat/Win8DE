@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>New/main.qml</file>
+        <file alias="i18n/Win8Lock_zh_CN.qm">translations/Win8Lock_zh_CN.qm</file>
         <file>New/main1.qml</file>
         <file>New/VirtualKeyboard.qml</file>
         <file>New/peoplew.png</file>

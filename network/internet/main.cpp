@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <QtConcurrent>
 #include <QTimer>
+#include <QLocale>
+#include <QTranslator>
 
 struct WifiNetwork
 {
@@ -236,6 +238,10 @@ private:
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    
+    QTranslator translator;
+    if (translator.load(":/i18n/internet_" + QLocale::system().name()))
+        app.installTranslator(&translator);
     
     QQmlApplicationEngine engine;
     engine.load(QUrl("qrc:/main.qml"));
