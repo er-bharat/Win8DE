@@ -24,6 +24,8 @@
 #include <QQuickWindow>
 #include <QStandardPaths>
 #include <QString>
+#include <QLocale>
+#include <QTranslator>
 
 #include <QLocalServer>
 #include <QLocalSocket>
@@ -1721,6 +1723,11 @@ int main(int argc, char *argv[]) {
   }
 
   QGuiApplication app(argc, argv);
+
+  QTranslator translator;
+  if (translator.load(":/i18n/Win8Start_" + QLocale::system().name()))
+    app.installTranslator(&translator);
+
   QQmlApplicationEngine engine;
 
   // --------------------------------------------------------

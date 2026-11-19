@@ -1,6 +1,7 @@
 <RCC>
 	<qresource prefix="/">
 		<file>main.qml</file>
+		<file alias="i18n/internet_zh_CN.qm">translations/internet_zh_CN.qm</file>
 		<file>icons/wifi_icon.png</file>
 	</qresource>
 </RCC>

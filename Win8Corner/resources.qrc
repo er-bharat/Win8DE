@@ -4,6 +4,7 @@
 		<file>main2.qml</file>
 		<file>main3.qml</file>
 		<file>main4.qml</file>
+		<file alias="i18n/Win8Corner_zh_CN.qm">translations/Win8Corner_zh_CN.qm</file>
 		<file>start.png</file>
 		<file>wifi.svg</file>
 		<file>bluetooth.svg</file>

@@ -7,6 +7,8 @@
 #include <QWindow>
 #include <LayerShellQt/window.h>
 #include <QDebug>
+#include <QLocale>
+#include <QTranslator>
 
 static constexpr auto socketName = "osd_instance_socket";
 static constexpr int AUTOHIDE_MS = 1500;
@@ -15,6 +17,10 @@ static constexpr int IDLE_TIMEOUT_MS = 15000;
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    
+    QTranslator translator;
+    if (translator.load(":/i18n/Win8OSD_" + QLocale::system().name()))
+        app.installTranslator(&translator);
     
     // --------------------------------------------------
     // SINGLE INSTANCE CHECK (Client fallback)

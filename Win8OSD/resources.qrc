@@ -2,6 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>bell.wav</file>
-
+        <file alias="i18n/Win8OSD_zh_CN.qm">translations/Win8OSD_zh_CN.qm</file>
     </qresource>
 </RCC>

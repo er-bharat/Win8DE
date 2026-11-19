@@ -8,6 +8,8 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QObject>
+#include <QLocale>
+#include <QTranslator>
 
 class SettingsManager : public QObject {
     Q_OBJECT
@@ -136,6 +138,10 @@ private:
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
+
+    QTranslator translator;
+    if (translator.load(":/i18n/Win8Settings_" + QLocale::system().name()))
+        app.installTranslator(&translator);
 
     SettingsManager settingsManager;
 

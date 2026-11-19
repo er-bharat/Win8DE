@@ -27,7 +27,7 @@ Item {
     // Holiday text (left side in rectangle mode, full width in square mode)
     Text {
         id: holidayText
-        text: "Loading..."
+        text: qsTr("Loading...")
         color: "white"
         anchors.top: parent.top
         anchors.left: parent.left

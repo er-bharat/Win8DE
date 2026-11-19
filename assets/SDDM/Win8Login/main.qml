@@ -160,7 +160,7 @@ Rectangle {
                             id: password
                             width: parent.width - loginBtn.width
                             height: 40
-                            placeholderText: "Password"
+                            placeholderText: qsTr("Password")
                             echoMode: TextInput.Password
                             font.pixelSize: 22
                             font.weight: Font.Black

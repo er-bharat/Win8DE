@@ -10,6 +10,8 @@
 #include <QProcess>
 #include <QFileSystemWatcher>
 #include <QScreen>
+#include <QLocale>
+#include <QTranslator>
 #include <LayerShellQt/window.h>
 
 /* ---------------- HotCorner launcher ---------------- */
@@ -145,6 +147,11 @@ static void loadCornerCommands(
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    
+    QTranslator translator;
+    if (translator.load(":/i18n/Win8Corner_" + QLocale::system().name()))
+        app.installTranslator(&translator);
+    
     QQmlApplicationEngine engine;
     
     QString iniFile = configFilePath();

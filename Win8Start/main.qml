@@ -11,7 +11,7 @@ ApplicationWindow {
     visible: false
     width: screen.width
     height: screen.height
-    title: "Linux Start Menu Clone"
+    title: qsTr("Linux Start Menu Clone")
     color: "#180052"  // background color in case no wallpaper
     // start wallpaper
     
@@ -105,7 +105,7 @@ ApplicationWindow {
                 
                 Button {
                     id: cancelBtn
-                    text: "Cancel"
+                    text: qsTr("Cancel")
                     focus: true
                     
                     width: 110
@@ -137,7 +137,7 @@ ApplicationWindow {
                 
                 Button {
                     id: yesBtn
-                    text: "Yes"
+                    text: qsTr("Yes")
                     
                     width: cancelBtn.width   // guarantees equal width
                     height: cancelBtn.height
@@ -194,7 +194,7 @@ ApplicationWindow {
             
             Text {
                 id: start
-                text: "Start"
+                text: qsTr("Start")
                 color: "white"
                 font.pixelSize: 60
                 font.weight: Font.Thin
@@ -253,7 +253,7 @@ ApplicationWindow {
                 // Percent text
                 Text {
                     id: batteryPercent
-                    text: battery.percent >= 0 ? battery.percent + "%" : "N/A"
+                    text: battery.percent >= 0 ? battery.percent + "%" : qsTr("N/A")
                     color: "#FFFFFF"
                     font.pixelSize: 30
                     font.weight: Font.Thin
@@ -333,37 +333,37 @@ ApplicationWindow {
                     }
                     
                     MenuItem {
-                        text: "Suspend"
+                        text: qsTr("Suspend")
                         icon.source: "/icons/suspend.svg"
                         onTriggered: confirmDialog.ask(
-                            "Suspend the computer?",
+                            qsTr("Suspend the computer?"),
                             function() { powerControl.suspend() }
                         )
                     }
                     
                     MenuItem {
-                        text: "Logout"
+                        text: qsTr("Logout")
                         icon.source: "/icons/logout.svg"
                         onTriggered: confirmDialog.ask(
-                            "LogOut of the session?",
+                            qsTr("LogOut of the session?"),
                             function() { powerControl.logout() }
                         )
                     }
                     
                     MenuItem {
-                        text: "Reboot"
+                        text: qsTr("Reboot")
                         icon.source: "/icons/reboot.svg"
                         onTriggered: confirmDialog.ask(
-                            "Reboot the computer?",
+                            qsTr("Reboot the computer?"),
                             function() { powerControl.reboot() }
                         )
                     }
                     
                     MenuItem {
-                        text: "Shutdown"
+                        text: qsTr("Shutdown")
                         icon.source: "/icons/shutdown.svg"
                         onTriggered: confirmDialog.ask(
-                            "Shutdown the computer?",
+                            qsTr("Shutdown the computer?"),
                             function() { powerControl.shutdown() }
                         )
                     }
@@ -371,7 +371,7 @@ ApplicationWindow {
                     MenuSeparator {}
                     
                     MenuItem {
-                        text: "Settings"
+                        text: qsTr("Settings")
                         icon.source: "/icons/settings.svg"
                         onTriggered: {
                             Launcher.launch("Win8Settings")
@@ -380,7 +380,7 @@ ApplicationWindow {
                     }
                     
                     MenuItem {
-                        text: "Wifi"
+                        text: qsTr("Wifi")
                         icon.source: "/icons/wifi.svg"
                         onTriggered: {
                             Launcher.launch("winnm")
@@ -389,7 +389,7 @@ ApplicationWindow {
                     }
                     
                     MenuItem {
-                        text: "Bluetooth"
+                        text: qsTr("Bluetooth")
                         icon.source: "/icons/bluetooth.svg"
                         onTriggered: {
                             Launcher.launch("winbt")
@@ -1539,29 +1539,29 @@ ApplicationWindow {
                             }
                             
                             MenuItem { 
-                                text: "Small"
+                                text: qsTr("Small")
                                 onTriggered: tileModel.resizeTile(tile.index, "small")
                             }
                             
                             MenuItem { 
-                                text: "Medium"
+                                text: qsTr("Medium")
                                 onTriggered: tileModel.resizeTile(tile.index, "medium")
                             }
                             
                             MenuItem { 
-                                text: "Large"
+                                text: qsTr("Large")
                                 onTriggered: tileModel.resizeTile(tile.index, "large")
                             }
                             
                             MenuItem { 
-                                text: "XLarge"
+                                text: qsTr("XLarge")
                                 onTriggered: tileModel.resizeTile(tile.index, "xlarge")
                             }
                             
                             MenuSeparator {}
                             
                             MenuItem {
-                                text: "Color"
+                                text: qsTr("Color")
                                 onTriggered: {
                                     dialog.open()
                                     WindowController.hide()
@@ -1569,7 +1569,7 @@ ApplicationWindow {
                             }
                             
                             MenuItem {
-                                text: "Reset Color"
+                                text: qsTr("Reset Color")
                                 enabled: tileColor && tileColor.length > 0
                                 onTriggered: tileModel.resetTileColor(tile.index)
                             }
@@ -1577,14 +1577,14 @@ ApplicationWindow {
                             MenuSeparator {}
                             
                             MenuItem {
-                                text: qmlEnabled ? "Disable Live Tile" : "Enable Live Tile"
+                                text: qmlEnabled ? qsTr("Disable Live Tile") : qsTr("Enable Live Tile")
                                 onTriggered: tileModel.setTileQmlEnabled(tile.index, !qmlEnabled)
                             }
                             
                             MenuSeparator {}
                             
                             MenuItem {
-                                text: "Remove"
+                                text: qsTr("Remove")
                                 onTriggered: tileModel.removeTile(tile.index)
                             }
                         }
@@ -1725,7 +1725,7 @@ ApplicationWindow {
             
             Text {
                 id: apps
-                text: "Apps"
+                text: qsTr("Apps")
                 font.pixelSize: 60
                 color: "white"
                 font.weight: Font.Thin
@@ -1741,7 +1741,7 @@ ApplicationWindow {
                 anchors.bottom: apps.bottom
                 anchors.leftMargin: 20
                 anchors.bottomMargin: 10
-                text: "by"
+                text: qsTr("by")
                 font.pixelSize: 30
                 font.weight: Font.Thin
                 
@@ -1755,7 +1755,19 @@ ApplicationWindow {
                 height: apps.height
                 font.pixelSize: 50
                 font.weight: Font.Thin
-                model: ["All", "Utility", "Development", "Network", "Office", "AudioVideo", "Game", "System", "Graphics", "KDE", "Gnome"] // populate dynamically if needed
+                model: [
+                    { value: "", text: qsTr("All") },
+                    { value: "Utility", text: qsTr("Utility") },
+                    { value: "Development", text: qsTr("Development") },
+                    { value: "Network", text: qsTr("Network") },
+                    { value: "Office", text: qsTr("Office") },
+                    { value: "AudioVideo", text: qsTr("AudioVideo") },
+                    { value: "Game", text: qsTr("Game") },
+                    { value: "System", text: qsTr("System") },
+                    { value: "Graphics", text: qsTr("Graphics") },
+                    { value: "KDE", text: qsTr("KDE") },
+                    { value: "Gnome", text: qsTr("Gnome") }
+                ]
                 currentIndex: 0
                 
                 background: Rectangle {
@@ -1768,12 +1780,9 @@ ApplicationWindow {
                 }
                 
                 onCurrentTextChanged: {
-                    if (currentText === "All")
-                        appModel.setCategoryFilter("")
-                        else
-                            appModel.setCategoryFilter(currentText)
-                            appGridView.currentIndex = 0
-                            appGridView.focus = true
+                    appModel.setCategoryFilter(currentValue)
+                    appGridView.currentIndex = 0
+                    appGridView.focus = true
                 }
             }
             //Searchfield searches for apps.
@@ -1805,7 +1814,7 @@ ApplicationWindow {
                         id: searchField
                         width: 300
                         height: 50
-                        placeholderText: "Search apps…"
+                        placeholderText: qsTr("Search apps…")
                         color: "white"
                         background: null
                         placeholderTextColor: "#888888"
@@ -2248,7 +2257,7 @@ ApplicationWindow {
                             }
                             
                             MenuItem {
-                                text: "Open"
+                                text: qsTr("Open")
                                 icon.name: "system-run"
                                 
                                 onTriggered: {
@@ -2261,7 +2270,7 @@ ApplicationWindow {
                             }
                             
                             MenuItem {
-                                text: "Add to Start"
+                                text: qsTr("Add to Start")
                                 icon.name: "window-pin"
                                 
                                 onTriggered: {

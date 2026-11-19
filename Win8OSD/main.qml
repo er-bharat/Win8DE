@@ -89,7 +89,7 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 10
-            text: root.muted ? "Muted" : root.value
+            text: root.muted ? qsTr("Muted") : root.value
             color: "white"
             font.pixelSize: 14
             font.bold: true

@@ -152,7 +152,7 @@ Item {
 				
 				// TODAY label
 				Text {
-					text: "Today"
+					text: qsTr("Today")
 					color: "#99FFFFFF"
 					font.pixelSize: parent.width * 0.075
 					font.weight: Font.Light
@@ -241,7 +241,7 @@ Item {
 				Item { height: parent.height * 0.02 }
 				
 				Text {
-					text: "Today"
+					text: qsTr("Today")
 					color: "#99FFFFFF"
 					font.pixelSize: parent.width * 0.075
 					font.weight: Font.Light

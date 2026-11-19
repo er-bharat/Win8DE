@@ -1,5 +1,6 @@
 <RCC>
     <qresource>
         <file>main.qml</file>
+        <file alias="i18n/Win8Settings_zh_CN.qm">translations/Win8Settings_zh_CN.qm</file>
     </qresource>
 </RCC>

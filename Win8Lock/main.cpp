@@ -13,6 +13,8 @@
 #include <QSharedMemory>
 #include <QStandardPaths>
 #include <QTimer>
+#include <QLocale>
+#include <QTranslator>
 
 // -------------------------------------------------
 // ORIGINAL GLOBALS (unchanged)
@@ -228,6 +230,10 @@ void createWindowIfNeeded() {
 // -------------------------------------------------
 int runLockscreen(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
+
+  QTranslator translator;
+  if (translator.load(":/i18n/Win8Lock_" + QLocale::system().name()))
+    app.installTranslator(&translator);
 
   QSharedMemory sharedMemory("Win8LockSingleton");
   if (!sharedMemory.create(1)) {

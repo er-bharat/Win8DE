@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="/">
     <file>main.qml</file>
+    <file alias="i18n/Win8Start_zh_CN.qm">translations/Win8Start_zh_CN.qm</file>
     <file>icons/user.svg</file>
     <file>icons/settings.svg</file>
     <file>icons/logout.svg</file>
